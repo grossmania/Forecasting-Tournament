@@ -68,7 +68,7 @@ dat$isExpert.factor <- factor(dat$isExpert, levels = c(0,1), labels = c("Prolifi
 
 # domain - indicates which domain the forecast is for. Shorthand is used here with the following terms referring to each domain:
 # lifesat = Life Satisfaction
-# postaffect = Positive Affect
+# posaffect = Positive Affect
 # negaffect = Negative Affect
 # ideoldem = Political Ideology - Democrat
 # ideolrep = Political Ideology - Republican
