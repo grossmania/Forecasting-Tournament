@@ -1,0 +1,195 @@
+StartDate,EndDate,Status,IPAddress,Progress,Duration (in seconds),Finished,RecordedDate,ResponseId,RecipientLastName,RecipientFirstName,RecipientEmail,ExternalReference,LocationLatitude,LocationLongitude,DistributionChannel,UserLanguage,team_info_1,team_members_1,leader,team_expertise,code
+2020-04-22 18:00,2020-04-22 18:02,0,87.214.251.3,100,156,1,2020-04-22 18:02,R_10NIHhko0QCyr4s,,,,,51.71800232,5.318603516,anonymous,EN,1859,1,,,26356342
+2020-04-22 23:43,2020-04-22 23:49,0,75.186.29.244,100,341,1,2020-04-22 23:49,R_1ibc3VUi07UQntU,,,,,39.74899292,-84.15730286,anonymous,EN,R4VST9,2,,,78900117
+2020-04-23 10:54,2020-04-23 10:56,0,80.102.9.226,100,113,1,2020-04-23 10:56,R_R2zvN7TN95MVwaJ,,,,,40.41430664,-3.701599121,anonymous,EN,ms607,1,,,92742159
+2020-04-24 18:12,2020-04-24 18:13,0,76.124.15.159,100,66,1,2020-04-24 18:13,R_2Bqy6gQx96oOiAC,,,,,39.94859314,-75.23390198,anonymous,EN,Forecasting Team 1,1,,,8481094
+2020-04-27 3:59,2020-04-27 4:01,0,130.238.218.45,100,94,1,2020-04-27 4:01,R_3Jr8e0OvGYGmWof,,,,,59.85839844,17.64460754,anonymous,EN,TheMets,,,,5288868
+2020-04-20 9:30,2020-04-20 9:30,0,67.71.85.122,73,11,0,2020-04-27 9:30,R_12gygqF2vtCpVql,,,,,,,anonymous,EN,,,,,99120388
+2020-04-27 17:02,2020-04-27 17:09,0,192.226.194.87,100,400,1,2020-04-27 17:09,R_25Gx01BbsjcdXno,,,,,45.47239685,-73.6140976,anonymous,EN,C-Team,2,,,44282368
+2020-04-30 11:30,2020-04-30 11:32,0,87.214.251.3,100,84,1,2020-04-30 11:32,R_1FtzPGlDjPSrajK,,,,,51.55670166,5.078903198,anonymous,EN,1859,1,,,22580699
+2020-05-01 14:30,2020-05-01 14:34,0,109.145.244.46,100,249,1,2020-05-01 14:34,R_3nAxc148LlsvHKs,,,,,52.33580017,-3.963897705,anonymous,EN,Mr Muddle,0,,,31601532
+2020-04-26 0:47,2020-04-26 0:48,0,162.156.16.140,21,21,0,2020-05-03 0:48,R_3lVszWR36cqIB1g,,,,,,,anonymous,EN,,,,,9148225
+2020-04-30 13:55,2020-04-30 13:57,0,75.186.29.244,86,146,0,2020-05-07 13:58,R_2qE3K08NWzIInOi,,,,,,,anonymous,EN, R4VST9 - revised,2,,,45921037
+2020-05-07 15:04,2020-05-07 15:05,0,24.211.150.181,100,67,1,2020-05-07 15:05,R_OKbVsMVCBtziBYl,,,,,35.9151001,-79.09719849,anonymous,EN,CarrNCUSA,1,,,78412005
+2020-05-09 9:07,2020-05-09 9:08,0,184.147.63.179,100,67,1,2020-05-09 9:08,R_2TtnwF0KfmF8JHs,,,,,43.66569519,-79.37180328,anonymous,EN,Little Bear,1,,,46807299
+2020-05-10 17:38,2020-05-10 17:41,0,206.45.26.168,100,146,1,2020-05-10 17:41,R_BsHjJEBIuSAfov7,,,,,49.86369324,-97.16929626,anonymous,EN,Old Chicken,1,,,20159433
+2020-05-11 23:32,2020-05-11 23:34,0,101.176.42.128,100,142,1,2020-05-11 23:34,R_3iEYXtDylmPOYFk,,,,,-37.78450012,145.0083008,anonymous,EN,Abracadabra,3,,,27983635
+2020-05-12 8:12,2020-05-12 8:14,0,86.29.212.225,100,147,1,2020-05-12 8:14,R_ctNV1O9nP9GpEwp,,,,,52.90620422,-1.0440979,anonymous,EN,,,,,58350785
+2020-05-05 10:51,2020-05-05 10:55,0,100.40.10.51,86,216,0,2020-05-12 10:55,R_3PhtBCb4H7fhAV5,,,,,,,anonymous,EN,,,,,97848682
+2020-05-12 11:35,2020-05-12 11:44,0,41.189.42.167,100,586,1,2020-05-12 11:44,R_XGOMnQjLSpaiVrj,,,,,5.3072052,-4.012405396,anonymous,EN,tchetche,8,,,28317316
+2020-05-14 6:12,2020-05-14 6:17,0,82.1.208.158,100,331,1,2020-05-14 6:17,R_3I9JKQmDDr6P58I,,,,,52.19320679,0.142593384,anonymous,EN,Heather Shimmer,4,,,21983910
+2020-05-14 8:14,2020-05-14 8:17,0,134.100.145.57,100,183,1,2020-05-14 8:17,R_a64JAxDQq5zzwch,,,,,53.54919434,9.941802979,anonymous,EN,BlackSwan,1,,,65921728
+2020-05-14 8:34,2020-05-14 8:35,0,209.239.187.98,100,83,1,2020-05-14 8:35,R_2dhZ7pZkd8NggWM,,,,,42.72729492,-73.66960144,anonymous,EN,Duckling Power,1,,,81991771
+2020-05-15 3:47,2020-05-15 3:49,0,134.100.145.57,100,124,1,2020-05-15 3:49,R_2aRk8DFxXR2ww37,,,,,53.54919434,9.941802979,anonymous,EN,BlackSwanRevised,1,,,88741999
+2020-05-09 8:58,2020-05-09 8:58,0,184.147.63.179,21,15,0,2020-05-16 8:59,R_1K1hyAw0A5Ql6Dg,,,,,,,anonymous,EN,Little Bear,1,,,15714215
+2020-05-09 9:08,2020-05-09 9:09,0,100.2.142.211,86,68,0,2020-05-16 9:09,R_OQ1zwticaSJRxND,,,,,,,anonymous,EN,FoxTrot,1,,,54905468
+2020-05-20 17:03,2020-05-20 17:05,0,66.111.118.249,100,146,1,2020-05-20 17:05,R_1gOLDfPglLMgAyZ,,,,,38.56770325,-109.5270996,anonymous,EN,blue duiker,1,,,61838273
+2020-05-21 10:27,2020-05-21 10:30,0,168.149.146.67,100,163,1,2020-05-21 10:30,R_2q2xGe8UQoJXIXf,,,,,40.73080444,-73.99749756,anonymous,EN,fearfulastra,1,,,87084387
+2020-05-14 13:10,2020-05-14 13:12,0,86.186.249.131,86,110,0,2020-05-21 13:12,R_3lKeADgGhYpHMuC,,,,,,,anonymous,EN,Average Joes,3,,,62115306
+2020-05-21 15:21,2020-05-21 15:26,0,93.214.71.54,100,338,1,2020-05-21 15:26,R_tRMJOOEsWk4ZU9b,,,,,50.14779663,11.05250549,anonymous,EN,FMTeam,2,,,94535592
+2020-05-21 16:07,2020-05-21 16:09,0,90.90.19.84,100,130,1,2020-05-21 16:09,R_qCte1A70jd0gJl7,,,,,48.6499939,1.833297729,anonymous,EN,Skuld Forecasting Systems,1,,,62590496
+2020-05-22 3:50,2020-05-22 3:53,0,109.148.221.82,100,197,1,2020-05-22 3:53,R_1jjQU8EiqNwRayU,,,,,52.19290161,0.125595093,anonymous,EN,King Octopus,1,,,7016917
+2020-05-22 5:12,2020-05-22 5:21,0,47.155.231.79,100,529,1,2020-05-22 5:21,R_pmZmKrqMeTvqYEh,,,,,34.05439758,-117.2555008,anonymous,EN,Broken Mirror Neurons,2,,,97602338
+2020-05-22 8:16,2020-05-22 8:20,0,178.218.233.121,100,217,1,2020-05-22 8:20,R_3GBUX6Vy17LxVIc,,,,,50.14520264,19.19039917,anonymous,EN,Imielin,1,,,15499829
+2020-05-22 15:30,2020-05-22 15:34,0,77.8.207.213,100,226,1,2020-05-22 15:34,R_pACc6AdVxAArySJ,,,,,53.60409546,10.04600525,anonymous,EN,4 chimps with a dart,4,,,7819357
+2020-05-22 17:23,2020-05-22 17:24,0,50.101.26.32,100,99,1,2020-05-22 17:24,R_3m3IvXeAsLUsqw1,,,,,43.38020325,-79.76260376,anonymous,EN,SCREEN Team,4,,,72810377
+2020-05-22 18:58,2020-05-22 19:02,0,77.65.103.234,100,215,1,2020-05-22 19:02,R_3ilD9HZJRcLCQIK,,,,,52.39619446,16.92930603,anonymous,EN,MORDEAUX Team,3,,,13241058
+2020-05-22 22:42,2020-05-22 22:44,0,74.98.241.242,100,105,1,2020-05-22 22:44,R_2X6XAxZw9nqdUv7,,,,,40.47349548,-79.95580292,anonymous,EN,Team Funemployed,4,,,19843971
+2020-05-24 16:04,2020-05-24 16:07,0,84.212.227.26,100,169,1,2020-05-24 16:07,R_1OUEsd2el3mm04L,,,,,59.84680176,10.77470398,anonymous,EN,WeGen,2,,,25774621
+2020-05-25 16:30,2020-05-25 16:32,0,99.250.252.217,100,156,1,2020-05-25 16:32,R_2ZEmoWLEjTXI11b,,,,,43.44760132,-80.4713974,anonymous,EN,Haku,1,,,45325423
+2020-05-25 21:05,2020-05-25 21:10,0,89.154.182.206,100,328,1,2020-05-25 21:10,R_2xLG1hfrZKnWp6K,,,,,41.55149841,-8.420501709,anonymous,EN,Comet,2,,,875182
+2020-05-26 15:29,2020-05-26 15:31,0,79.178.95.231,100,151,1,2020-05-26 15:31,R_3oEDgOJPBgZ8j4Y,,,,,32.0664978,34.76519775,anonymous,EN,Haifa_team,1,,,23821829
+2020-05-26 16:22,2020-05-26 16:24,0,104.2.9.73,100,88,1,2020-05-26 16:24,R_1nPUXFyjiKmlZBn,,,,,40.13169861,-88.28540039,anonymous,EN,md2000,1,,,24875526
+2020-05-26 21:48,2020-05-26 21:51,0,71.32.56.220,100,150,1,2020-05-26 21:51,R_2fl1x07yURg1mR8,,,,,46.97920227,-114.0602036,anonymous,EN,Goldensaber,1,,,65015160
+2020-05-27 14:56,2020-05-27 14:58,0,67.249.82.64,100,127,1,2020-05-27 14:58,R_2ANo5dsdGcOBXkN,,,,,42.44169617,-76.49849701,anonymous,EN,CheeseCake,1,,,74914333
+2020-05-27 19:47,2020-05-27 19:50,0,109.51.228.209,100,191,1,2020-05-27 19:50,R_2qk2FodQ4G9FXVe,,,,,38.96270752,-9.415603638,anonymous,EN,Patrícia Arriaga,1,,,
+2020-05-27 23:47,2020-05-27 23:49,0,98.248.213.50,100,139,1,2020-05-27 23:49,R_1OqJmlKJsQYfeK2,,,,,37.35899353,-122.0866013,anonymous,EN,Sociology,1,,,77227575
+2020-05-28 5:26,2020-05-28 5:36,0,41.207.14.210,100,625,1,2020-05-28 5:36,R_29n5xZWLMlEZBSY,,,,,5.3072052,-4.012405396,anonymous,EN,Root Boy Cash Money Billionnaire,10,,,
+2020-05-28 20:10,2020-05-28 20:12,0,108.250.185.33,100,110,1,2020-05-28 20:12,R_21gqH0B4kiAGlZm,,,,,35.58250427,-82.6115036,anonymous,EN,Team IPA,1,,,3784206
+2020-05-28 20:31,2020-05-28 20:33,0,134.197.68.45,100,156,1,2020-05-28 20:33,R_2c0gpCxDd8OH4ae,,,,,39.52420044,-119.8146057,anonymous,EN,Dutch East Indian Company,2,,,44031308
+2020-05-28 21:36,2020-05-28 21:38,0,134.197.68.45,100,125,1,2020-05-28 21:38,R_1ieC3L7zXEr8ggg,,,,,39.52420044,-119.8146057,anonymous,EN,Dutch East India Company,2,,,24233801
+2020-05-29 12:20,2020-05-29 12:22,0,109.146.233.234,100,156,1,2020-05-29 12:22,R_31ckEs6Z9VEkKga,,,,,53.230896,-4.140899658,anonymous,EN,StatFore,1,,,57811495
+2020-05-22 12:36,2020-05-22 12:56,0,70.181.10.235,86,1212,0,2020-05-29 12:56,R_2ykGw98FGuBJiBv,,,,,,,anonymous,EN,Nurni Flowenol,1,,,97177170
+2020-05-22 13:57,2020-05-22 13:58,0,66.115.145.77,86,38,0,2020-05-29 13:58,R_pADd8W2qokcm3sd,,,,,,,anonymous,EN,IGOR PLEASE STOP POSTING 10000 TIMES IN EVERY MAILING LIST EACH TIME YOU HAVE AN IDEA/INITIATIVE! Ridiculous ,,,,15564119
+2020-05-29 14:03,2020-05-29 14:05,0,67.71.81.140,100,137,1,2020-05-29 14:05,R_5sRwTZXRoVP55wR,,,,,43.45170593,-80.57109833,anonymous,EN,The Bingo Jingoists,1,,,1541126
+2020-05-29 14:09,2020-05-29 14:11,0,155.254.7.175,100,93,1,2020-05-29 14:11,R_8iFRRHtMwxE1Xhf,,,,,41.8710022,-87.62889862,anonymous,EN,CoronaSky,1,,,74582931
+2020-05-29 17:35,2020-05-29 17:38,0,98.215.86.142,100,174,1,2020-05-29 17:38,R_1FnNg8jEudVx4xE,,,,,40.46929932,-88.94239807,anonymous,EN,Compassionate Values,1,,,15664423
+2020-05-22 22:46,2020-05-22 22:47,0,74.98.241.242,86,22,0,2020-05-29 22:47,R_2Ym1EF5Cd6OqFFb,,,,,,,anonymous,EN,,,,,89270124
+2020-05-30 0:04,2020-05-30 0:06,0,75.75.0.72,100,100,1,2020-05-30 0:06,R_1lxFWF9SXcJPxQQ,,,,,38.09359741,-78.56230164,anonymous,EN,Not a fortune teller,1,,,62423160
+2020-05-30 10:05,2020-05-30 10:20,0,85.141.144.49,100,902,1,2020-05-30 10:20,R_3dG1KdA1QakxhK0,,,,,55.75270081,37.61720276,anonymous,EN,Alexander,1,,,19089359
+2020-05-30 16:23,2020-05-30 16:26,0,73.118.53.212,100,182,1,2020-05-30 16:26,R_2rkFvnB6p1xfjLM,,,,,30.33399963,-84.28700256,anonymous,EN,ForecastSnorecast,1,,,65127060
+2020-06-01 3:53,2020-06-01 3:54,0,108.207.60.143,100,84,1,2020-06-01 3:54,R_sHebWyzrfja4TSx,,,,,42.73669434,-84.47579956,anonymous,EN,Renegade,0,,,10984384
+2020-06-01 12:33,2020-06-01 12:34,0,37.6.122.164,100,111,1,2020-06-01 12:34,R_Z2afOHdH93ZeCcN,,,,,37.98420715,23.73530579,anonymous,EN,DrT,1,,,17345029
+2020-06-01 21:28,2020-06-01 21:29,0,174.95.170.102,100,62,1,2020-06-01 21:29,R_1QN2zclUIxkAnFX,,,,,43.41029358,-80.50379944,anonymous,EN,test,17,,,41629420
+2020-05-26 17:29,2020-05-26 17:30,0,104.2.9.73,86,54,0,2020-06-02 17:30,R_3jetsevyFwLsPfa,,,,,,,anonymous,EN,md2000,1,,,1564526
+2020-05-26 17:35,2020-05-26 17:36,0,104.2.9.73,86,53,0,2020-06-02 17:36,R_1BXSKP8fGfLcpH7,,,,,,,anonymous,EN,md2000,1,,,29357171
+2020-05-26 17:43,2020-05-26 17:44,8,104.2.9.73,86,55,0,2020-06-02 17:44,R_3g0onUrbNB9xAhU,,,,,,,anonymous,EN,md2000,1,,,98241341
+2020-06-03 19:47,2020-06-03 19:51,0,89.154.182.206,100,265,1,2020-06-03 19:51,R_3dGhlsv0AzpBAC4,,,,,41.55149841,-8.420501709,anonymous,EN,Comet,2,,,12010881
+2020-06-04 1:28,2020-06-04 1:32,0,103.100.225.220,100,224,1,2020-06-04 1:32,R_3nx6fHPNhK7kwQy,,,,,-27.47189331,153.0195923,anonymous,EN,The Well-Adjusted R Squares,3,,,45904686
+2020-06-04 6:51,2020-06-04 6:54,0,159.255.163.11,100,207,1,2020-06-04 6:54,R_20SYoYXiTDiGiso,,,,,36.18280029,44.01049805,anonymous,EN,HHH,1,,,65087135
+2020-06-05 7:58,2020-06-05 7:59,0,81.82.56.25,100,107,1,2020-06-05 7:59,R_3I0OZm4RWgXyzSk,,,,,51.06039429,4.360198975,anonymous,EN,AbCdEfG,1,,,10082093
+2020-06-05 15:02,2020-06-05 15:07,0,68.4.64.98,100,318,1,2020-06-05 15:07,R_3k51qHFjYAOA4xJ,,,,,33.73890686,-117.7480011,anonymous,EN,NYHC,1,,,58639527
+2020-05-29 18:35,2020-05-29 18:36,0,82.11.180.44,86,77,0,2020-06-05 18:36,R_bmBqsyJYtLKmQBr,,,,,,,anonymous,EN,Bordeaux,1,,,43886539
+2020-06-05 20:17,2020-06-05 20:21,0,81.206.169.99,100,246,1,2020-06-05 20:21,R_1HqR0Bo72YYxnUE,,,,,52.64039612,5.059799194,anonymous,EN,Bluebirds,2,,,65144157
+2020-06-06 4:34,2020-06-06 4:55,0,60.242.207.221,100,1249,1,2020-06-06 4:55,R_2ux1BKqgqWHc42f,,,,,-37.7684021,144.9512939,anonymous,EN,MLTS,2,,,78567868
+2020-06-06 10:03,2020-06-06 10:04,0,216.15.54.166,100,71,1,2020-06-06 10:04,R_2SwPDD5vUjDAkan,,,,,38.93919373,-77.05840302,anonymous,EN,Korrigan,1,,,92300072
+2020-06-06 16:39,2020-06-06 16:54,0,74.3.183.238,100,873,1,2020-06-06 16:54,R_2zSGAUuhvJDARyP,,,,,53.54170227,-113.5005035,anonymous,EN,Tosbik,1,,,9835346
+2020-06-06 17:10,2020-06-06 17:12,0,100.1.248.179,100,90,1,2020-06-06 17:12,R_ZBQMXKahRJyZThv,,,,,41.00950623,-74.00789642,anonymous,EN,platypus,1,,,98913043
+2020-06-06 17:15,2020-06-06 17:17,0,37.214.74.103,100,133,1,2020-06-06 17:17,R_2ErRWdQGl3OqJiZ,,,,,53.89959717,27.5677948,anonymous,EN,Junesix,1,,,17787972
+2020-06-06 18:00,2020-06-06 18:07,0,205.175.97.176,100,419,1,2020-06-06 18:07,R_3EQlZMfzevLFsYN,,,,,47.68589783,-122.2994003,anonymous,EN,ForeverJung90,7,,,96962555
+2020-06-06 23:06,2020-06-06 23:11,0,72.140.0.200,100,328,1,2020-06-06 23:11,R_w5KRlbEtyuLUoQ9,,,,,43.46650696,-80.50229645,anonymous,EN,Waterloo Purple Jackets,5,,,53089886
+2020-06-07 2:18,2020-06-07 2:20,0,128.9.16.43,100,125,1,2020-06-07 2:20,R_1M6AbQmhchvtXhs,,,,,34.03219604,-118.2835999,anonymous,EN,LongerSquigglyLines,2,,,7030283
+2020-06-07 3:17,2020-06-07 3:21,0,213.89.175.204,100,223,1,2020-06-07 3:21,R_1l5lz7NCTZ04jGu,,,,,59.33070374,18.0717926,anonymous,EN,Turing Tesla Solutions,1,,,73881613
+2020-06-07 9:45,2020-06-07 9:47,0,94.214.201.99,100,110,1,2020-06-07 9:47,R_1n6JCWEWPUsl8bC,,,,,53.22749329,6.543304443,anonymous,EN,A Woman Scientist,1,,,53196450
+2020-06-07 13:15,2020-06-07 13:21,0,82.10.222.138,100,305,1,2020-06-07 13:21,R_2UaoC8MEqs5DX3q,,,,,50.98460388,-1.399002075,anonymous,EN,BRTWN,5,,,73412674
+2020-05-31 14:51,2020-05-31 14:53,0,132.206.108.138,86,102,0,2020-06-07 14:54,R_3PT892tvP5kDSR6,,,,,,,anonymous,EN,Cynical Belief in the Inexorable Crush of the Wheel,1,,,75600874
+2020-06-07 17:00,2020-06-07 17:02,0,174.95.170.102,100,85,1,2020-06-07 17:02,R_1giFoSsoao19z5F,,,,,43.41029358,-80.50379944,anonymous,EN,Erebuni,2,,,69195828
+2020-06-07 17:45,2020-06-07 17:55,0,201.158.21.168,100,594,1,2020-06-07 17:55,R_3LchCRJHZKRLfVf,,,,,-22.31350708,-42.87409973,anonymous,EN,Turing Tesla Solutions,,,,80146982
+2020-06-07 19:23,2020-06-07 19:26,0,193.40.13.174,100,165,1,2020-06-07 19:26,R_1mrgedejGyxBiEM,,,,,58.3690033,26.74659729,anonymous,EN,Heisenburg,1,,,32227706
+2020-06-07 23:56,2020-06-07 23:59,0,89.206.112.10,100,175,1,2020-06-07 23:59,R_3jSUDew6iSy6Q85,,,,,47.36639404,8.554595947,anonymous,EN,IPZ_predi,2,,,46171358
+2020-06-10 13:53,2020-06-10 13:54,0,81.174.180.196,100,92,1,2020-06-10 13:54,R_3dGhnesP5a7F9cb,,,,,51.49639893,-0.122406006,anonymous,EN,WQXZ,2,,,12804635
+2020-06-11 2:03,2020-06-11 2:05,0,104.173.192.31,100,108,1,2020-06-11 2:05,R_1r6YEVx61YkFfAI,,,,,34.05979919,-118.3768997,anonymous,EN,HSCNAC,1,,,57190741
+2020-06-06 4:56,2020-06-06 4:57,0,60.242.207.221,21,23,0,2020-06-13 4:57,R_1JRyzNQ70Xytfk9,,,,,,,anonymous,EN,MLTS,2,,,78567868
+2020-06-07 15:00,2020-06-07 15:03,0,4.28.96.254,86,154,0,2020-06-14 15:03,R_2wcMQG6AG0r9q4R,,,,,,,anonymous,EN,The Forecasting Four,4,,,69734866
+2020-06-07 16:55,2020-06-07 16:56,0,216.249.83.126,86,61,0,2020-06-14 16:56,R_a9uNzkWGmwKhRYZ,,,,,,,anonymous,EN,The Nowcast,2,,,31658851
+2020-06-21 8:48,2020-06-21 8:51,0,86.138.47.88,100,210,1,2020-06-21 8:51,R_1GEpyQ53ElsCOxm,,,,,54.04789734,-2.797698975,anonymous,EN,Team29,1,,,41343451
+2020-06-21 10:05,2020-06-21 10:08,0,149.170.83.236,100,141,1,2020-06-21 10:08,R_V24U4ApfeRG8ry9,,,,,53.46060181,-2.257202148,anonymous,EN,TeamKL,1,,,30954700
+2020-08-04 2:47,2020-08-04 2:49,0,86.186.249.131,100,109,1,2020-08-04 2:49,R_31ZYj4ONfRf3dHF,,,,,56.52920532,-3.074493408,anonymous,EN,Average Joes,2,,,4343384
+2020-09-19 9:21,2020-09-19 9:45,0,41.66.11.232,86,1449,0,2020-09-26 9:46,R_2YLcS4Z7gJ6swyU,,,,,,,anonymous,EN,Root Boy Cash money billionnaire,10,,,
+2020-11-12 11:10,2020-11-12 11:13,0,99.251.76.216,100,196,1,2020-11-12 11:13,R_3kCkzc8p3LSZHeK,,,,,43.44760132,-80.4713974,anonymous,EN,,,,,62031070
+2020-11-12 12:24,2020-11-12 12:24,0,99.250.218.78,100,14,1,2020-11-12 12:24,R_1FLghEEZthZPK76,,,,,43.38490295,-80.48699951,anonymous,EN,,,,,47325489
+2020-11-12 12:28,2020-11-12 12:28,8,99.250.218.78,100,6,1,2020-11-12 12:28,R_3hyE5tAqQVjOdnq,,,,,43.38490295,-80.48699951,anonymous,EN,,,,,54468447
+2020-11-12 12:33,2020-11-12 12:33,8,99.250.218.78,100,7,1,2020-11-12 12:33,R_2YDnxIKE5aEgoP1,,,,,43.38490295,-80.48699951,anonymous,EN,,,,,56739582
+2020-11-12 12:43,2020-11-12 12:49,0,198.48.164.50,100,350,1,2020-11-12 12:49,R_2axyuYSDu1grIka,,,,,50.98039246,-114.1015015,anonymous,EN,,,,,42443735
+2020-11-13 10:02,2020-11-13 10:02,0,173.247.152.144,100,7,1,2020-11-13 10:02,R_1FrEoafl9rpd76M,,,,,42.98330688,-79.25,anonymous,EN,,,,,14375425
+2020-11-16 16:13,2020-11-16 16:14,0,74.69.171.214,100,75,1,2020-11-16 16:14,R_2s0b10y66aVJM1r,,,,,42.44520569,-76.49199677,anonymous,EN,Sociology,1,1,"I'm a assistant professor of sociology who studies inequality, attitudes, politics, and social change with a focus on gender.",57488568
+2020-11-16 17:41,2020-11-16 17:42,0,107.179.241.178,100,62,1,2020-11-16 17:42,R_54rlJvbOufJr2IF,,,,,45.52119446,-73.55239868,anonymous,EN,Cynical Belief in the Inexorable Crush of the Wheel,1,1,"Intergroup prejudice, impression formation",4547870
+2020-11-17 1:14,2020-11-17 1:14,0,108.207.60.143,100,31,1,2020-11-17 1:14,R_2yro0MXpsb4wngv,,,,,42.73669434,-84.47579956,anonymous,EN,Renegade,1,1,social/personality/developmental psychology; some work on bias and well-being,65552352
+2020-11-17 2:06,2020-11-17 2:11,0,220.233.34.127,100,304,1,2020-11-17 2:11,R_Agpq07rqpz6pB5L,,,,,-33.85910034,151.2001953,anonymous,EN,Dragon,1,1,Cognitive science of belief in misinformation,13662317
+2020-11-17 8:10,2020-11-17 8:11,0,134.100.145.57,100,47,1,2020-11-17 8:11,R_77ohKNKcGRh5qCd,,,,,53.55119324,9.966201782,anonymous,EN,BlackSwan,1,1,I am an assistant professor in social psychology who studies how people think about the future.,36029583
+2020-11-17 10:57,2020-11-17 10:58,0,68.84.78.9,100,45,1,2020-11-17 10:58,R_1nUUjmiRkz0TJRA,,,,,39.98429871,-75.22660065,anonymous,EN,Team Behavioral,1,1,Marketing,25253047
+2020-11-17 12:05,2020-11-17 12:07,0,2.96.55.19,100,123,1,2020-11-17 12:07,R_VR1JHTEMyyfluCZ,,,,,51.74859619,-3.362701416,anonymous,EN,Mr Muddle,1,1,Knowledge of a variety of psychological perspectives and have done a fair bit of research in a variety of areas but not Asian-American bias to be honest. ,13908412
+2020-11-17 12:53,2020-11-17 12:56,0,192.226.194.87,100,190,1,2020-11-17 12:56,R_QlBpA2HnITjxtdf,,,,,45.47239685,-73.6140976,anonymous,EN,C-Team,2,1,evolutionary and personality psychologists conducting research on social well-being,78524930
+2020-11-17 13:44,2020-11-17 13:44,0,82.5.237.122,100,31,1,2020-11-17 13:44,R_xt4zcU0YTuol865,,,,,52.21240234,0.153396606,anonymous,EN,,,,,63854920
+2020-11-18 14:21,2020-11-18 14:26,0,31.223.58.111,100,290,1,2020-11-18 14:26,R_RKc3wNYkXjPv47n,,,,,37.16220093,38.87219238,anonymous,EN,Tosbik,1,1,"I am a second-year PhD student in social psychology. I have published research on the social psychology of intergroup relations, prejudice, discrimination, and social identity.,",21859033
+2020-11-18 18:58,2020-11-18 19:02,0,76.126.9.160,100,231,1,2020-11-18 19:02,R_3DbxcbdJOIAIaF3,,,,,37.83709717,-122.277298,anonymous,EN,TAPE-Measurement (Twitter Affect and Project-Implicit Empirical Measurement) ,3,1,"We have conducted ITS analyses predicting media effects on implicit and explicit Americanness bias and explicit anti-Asian warmth bias, PSM's discerning residential and workplace contact effects on explicit anti-Black bias, and analyses of both PI and twitter affect data to understand relationships to health outcomes. We have also conducted a systematic reviews of bias related data, including trends. Finally, we have modeled bias trends using GSS data and compared to Charleworth and Banaji's work.",15215204
+2020-11-13 13:12,2020-11-13 13:13,0,173.247.152.144,71,25,0,2020-11-20 13:13,R_aaeZptoKAIITsit,,,,,,,anonymous,EN,,,,,17438731
+2020-11-22 18:28,2020-11-22 18:29,0,50.99.160.212,100,59,1,2020-11-22 18:29,R_2uCf5F4mJk7BWyQ,,,,,53.41439819,-113.4160004,anonymous,EN,Nigel Mantou Lou,1,1,Social Psyhcology PhD; Working on a CIHR-funded project on Anti-Chinese racism during COVID.,22229920
+2020-11-23 0:34,2020-11-23 0:36,0,164.67.165.83,100,68,1,2020-11-23 0:36,R_1f7Y7GeE2YANEfR,,,,,34.02900696,-118.4004974,anonymous,EN,HSCNAC,1,1,Ph.D. in psychology,15165220
+2020-11-16 15:03,2020-11-16 15:03,0,87.214.251.3,71,32,0,2020-11-23 15:03,R_1BWqs79nH4UNSpS,,,,,,,anonymous,EN,1859,1,1,"Social Psychology, Judgment and Decision-Making",13145851
+2020-11-17 8:54,2020-11-17 9:08,0,185.45.22.136,71,846,0,2020-11-24 9:08,R_2SI7E90nYY5wIQj,,,,,,,anonymous,EN,Team CCS,3,1,"Our team consists of three graduate students, with prior qualifications from social psychology, cognitive sciences, and economics, who all work on research within the behavioral sciences. All members of the team are in the process of publishing their research in high-impact academic journals or have already managed to do so. Importantly for this project, all members have a very high skill-level in data science and use such skills in their research. One of the team members have previously participated as a replication forecaster in another project, by different authors.",69253512
+2020-11-17 14:14,2020-11-17 14:19,0,31.16.252.134,71,313,0,2020-11-24 14:19,R_1rqScSqlGpKdtMC,,,,,,,anonymous,EN,Woodstock,1,1,I do research on persoanlity psychology,38265434
+2020-11-27 16:26,2020-11-27 16:27,0,67.249.82.64,100,66,1,2020-11-27 16:27,R_3hlKHV5lt00WdQs,,,,,42.44520569,-76.49199677,anonymous,EN,CheeseCake,1,1,Cognition; Memory; Culture influences,6403228
+2020-11-30 3:51,2020-11-30 3:57,0,88.212.37.89,100,406,1,2020-11-30 3:57,R_21GJtHzSRKVkXgg,,,,,48.77709961,21.21159363,anonymous,EN,Team42,1,1,I´m mainly interested in goal directed behavior. ,25271783
+2020-11-30 7:30,2020-11-30 7:37,0,61.68.228.92,100,435,1,2020-11-30 7:37,R_DV7K7IsK07SKnRL,,,,,-37.81590271,144.9668884,anonymous,EN,MLTS,2,1,Time Series Forecasting,35381196
+2020-11-30 12:17,2020-11-30 12:18,0,86.136.47.181,100,52,1,2020-11-30 12:18,R_XSenaPo1V3nDbzP,,,,,56.45970154,-2.977493286,anonymous,EN,Average Joes,2,1,"Behavioural Economics, Judgment and Decision Making",58212210
+2020-11-30 12:29,2020-11-30 12:31,0,66.75.246.14,100,119,1,2020-11-30 12:31,R_2AYUFQhJcf92Yy8,,,,,32.85949707,-117.2124023,anonymous,EN,,,,,54012920
+2020-11-30 13:32,2020-11-30 13:33,0,68.97.37.15,100,72,1,2020-11-30 13:33,R_6nZwYNtdN1mTuI9,,,,,35.20249939,-97.48349762,anonymous,EN,,2,1,,38548694
+2020-11-30 16:03,2020-11-30 16:23,0,68.97.37.15,100,1188,1,2020-11-30 16:23,R_2dnJnNaMds9lhFv,,,,,35.20249939,-97.48349762,anonymous,EN,,,,,8180389
+2020-11-30 19:00,2020-11-30 19:02,0,66.75.246.14,100,102,1,2020-11-30 19:02,R_3NwZMqwo04Rw1L5,,,,,32.85949707,-117.2124023,anonymous,EN,That Well-being Research,2,1,subjective well-being,78598014
+2020-11-30 19:02,2020-11-30 19:03,0,66.75.246.14,100,70,1,2020-11-30 19:03,R_305zZEITYXZVBU0,,,,,32.85949707,-117.2124023,anonymous,EN,That Well-being Research,1,1,subjective well-being,78598014
+2020-11-30 20:25,2020-11-30 20:30,0,188.211.162.39,100,321,1,2020-11-30 20:30,R_2vidG1Acxfrt95c,,,,,51.48309326,-0.164596558,anonymous,EN,FrostNova,1,1,cognitive psychology of memory and decision making,47537700
+2020-11-30 22:07,2020-11-30 22:08,0,210.186.194.4,100,68,1,2020-11-30 22:08,R_3dHeFTRx8fYNCdg,,,,,5.460800171,100.2814026,anonymous,EN,CPMY,1,1,Psychological Research,98513768
+2020-12-01 5:21,2020-12-01 5:22,0,178.255.153.164,100,49,1,2020-12-01 5:22,R_1QzIqmqyjT1GLqf,,,,,47.36669922,8.550003052,anonymous,EN,adamman,1,1,I have a Ph.D. in psychology and some modest expertise in data analysis.,50879301
+2020-12-01 6:04,2020-12-01 6:07,0,82.5.237.122,100,157,1,2020-12-01 6:07,R_3MKaH7l3Y9X4EGc,,,,,52.21240234,0.153396606,anonymous,EN,Heather Shimmer,4,1,Decision Scientists.,98913682
+2020-12-01 15:50,2020-12-01 15:52,0,75.186.31.81,100,94,1,2020-12-01 15:52,R_3OihmrpMzrXkBaS,,,,,39.74899292,-84.15730286,anonymous,EN,R4VST9,2,1,Our team has expertise in decision biases,37351715
+2020-12-01 17:20,2020-12-01 17:22,0,73.118.53.212,100,151,1,2020-12-01 17:22,R_3OeOEdIAQMQi1SN,,,,,30.42739868,-84.25800323,anonymous,EN,ForecastSnorecast,1,1,"Attitudes researcher who often researches implicit prejudice, particularly towards Blacks. ",26643656
+2020-11-26 1:16,2020-11-26 1:16,0,68.97.37.15,71,36,0,2020-12-03 1:17,R_3G1ilryhN0Y1WqI,,,,,,,anonymous,EN,,,,,42492272
+2020-11-26 15:18,2020-11-26 15:23,0,37.4.229.144,71,297,0,2020-12-03 15:23,R_3dDJscC6vnbXUWb,,,,,,,anonymous,EN,Team Supreme Ignorance,1,1,"social scientist with some background in computer science, having lived in the US for several years, closely following US news",26714784
+2020-11-27 15:18,2020-11-27 15:20,0,88.212.37.152,71,94,0,2020-12-04 15:20,R_332AwfSExOdbIQw,,,,,,,anonymous,EN,,,,,57857946
+2020-12-04 19:08,2020-12-04 19:09,0,104.220.179.32,100,95,1,2020-12-04 19:09,R_33205xLzqfIKQKh,,,,,38.43739319,-121.8121948,anonymous,EN,Team Apple,1,1,Developmental neuroscience,44880096
+2020-12-04 19:19,2020-12-04 19:27,0,27.125.160.128,100,503,1,2020-12-04 19:27,R_djsvBlE0pbdd2Wl,,,,,1.319107056,103.7886963,anonymous,EN,Star Trek,1,1,"Team's expertise focuses on the area of well-being. Studies how positive interventions can be used to enhance well-being, and whether the determinants/predictors of well-being would relate differentially to various types of well-being.",77477927
+2020-12-06 5:02,2020-12-06 5:06,0,81.224.53.138,100,202,1,2020-12-06 5:06,R_7PVZvalrGmnusy5,,,,,61,14.55000305,anonymous,EN,Otto,1,1,"The team leader (and sole team member) has a PhD in psychology, is a marketing professor, and has the following areas of expertise: social psychology, evolutionary psychology, consumer behavior. ",94813366
+2020-12-06 13:58,2020-12-06 14:00,0,37.45.237.35,100,118,1,2020-12-06 14:00,R_28HEq91tyfcqF2Q,,,,,53.8999939,27.56669617,anonymous,EN,Junesix,1,1,"the team has expertise in data analysis in sociology and social psychology, with the focus on identity and attitudes, but no specific expertise on the US",54824424
+2020-12-06 15:01,2020-12-06 15:02,0,81.82.56.25,100,41,1,2020-12-06 15:02,R_20Yb9jQ69p1Xfvl,,,,,51.05050659,4.418106079,anonymous,EN,AbCdEfG,1,1,Economics,26988250
+2020-11-29 15:03,2020-11-29 15:08,0,100.40.10.51,71,291,0,2020-12-06 15:08,R_26o7kMarHpIj3Bq,,,,,,,anonymous,EN,forecasting_2020,1,1,"My expertise is on consumer behavior, mainly perception, morality and social influence. ",5282298
+2020-12-06 17:03,2020-12-06 17:04,0,84.212.227.26,100,97,1,2020-12-06 17:04,R_1F3qArMxTBJiIjO,,,,,59.84570313,10.78230286,anonymous,EN,WeGen,1,1,"Research on wellbeing, life satisfaction, affect, genetics and environmental factors",68779328
+2020-12-06 21:08,2020-12-06 21:09,0,50.234.189.37,100,85,1,2020-12-06 21:09,R_2zcrltA4eh5BEIx,,,,,42.373703,-71.12840271,anonymous,EN,savvy time traveler,1,1,phd student,83321122
+2020-12-07 0:16,2020-12-07 0:17,0,218.252.26.40,100,54,1,2020-12-07 0:17,R_2B5UKviy9Okklsc,,,,,22.30000305,113.9500122,anonymous,EN,,,,,17650270
+2020-12-07 1:19,2020-12-07 1:21,0,128.12.122.47,100,90,1,2020-12-07 1:21,R_1Oxd0WB6oMEgjon,,,,,37.42300415,-122.1638947,anonymous,EN,Polarization Disciples,2,2,"We are two PhD students in Sociology. We have researched and published on topics related to political ideology, political polarization, implicit and explicit biases. We have experience doing predictions using machine learning.",67111271
+2020-12-07 5:17,2020-12-07 5:19,0,218.212.188.112,100,121,1,2020-12-07 5:19,R_3qrLbhkeF75GGWU,,,,,1.283996582,103.831604,anonymous,EN,The Frugal Few ,3,1,"Organizational Behavior, Psychology, Mindfulness, Decision Making ",54094512
+2020-12-07 8:54,2020-12-07 8:55,0,71.234.22.80,100,67,1,2020-12-07 8:55,R_242AbfomChG2Vqz,,,,,41.76550293,-72.68190002,anonymous,EN,The Causal Lab,1,1,"Research Methodologist and Psychologist who studies the effects of causality on cognitive development, social perception, metascience.",26310525
+2020-11-30 9:04,2020-11-30 9:04,0,199.48.170.4,71,40,0,2020-12-07 9:05,R_22ELJcYko6LvjaX,,,,,,,anonymous,EN,Duckling Power,1,1,Economics,47586143
+2020-12-07 10:22,2020-12-07 10:23,0,163.116.169.114,100,48,1,2020-12-07 10:23,R_XH3HNMEbN86Y2Od,,,,,40.41720581,-3.684005737,anonymous,EN,ms607,1,1,Forecasting researcher,7901151
+2020-12-07 10:56,2020-12-07 11:01,0,88.212.37.152,100,306,1,2020-12-07 11:01,R_7UJjhKWnao1p3BD,,,,,48.67790222,21.26719666,anonymous,EN,teamGreenLake,3,1,"All three team members have different levels of expertise in statistical modelling techniques (not as much with predictive modelling though), two of them are trained psychologists with some subject-matter experience in the following two variables: life satisfaction and affect on social media (and have published 1 paper on related topic each) ",75949339
+2020-12-07 12:42,2020-12-07 12:43,0,155.4.39.133,100,67,1,2020-12-07 12:43,R_Wp2JelZi77kQhjj,,,,,59.32870483,18.07170105,anonymous,EN,The Oracles of Delphi,3,1,Political Psychology; Psychology; Educational Psychology,58095046
+2020-12-07 15:01,2020-12-07 15:03,0,176.58.195.113,100,93,1,2020-12-07 15:03,R_1d03nR04GtOYNQ1,,,,,37.98420715,23.73530579,anonymous,EN,DrT,1,1,"Model-based forecasting, time series analysis, econometrics, data analytics",51906177
+2020-12-07 15:14,2020-12-07 15:16,0,213.55.241.56,100,109,1,2020-12-07 15:16,R_3iCKygllCqqvEhd,,,,,47.36669922,8.550003052,anonymous,EN,UhZettHa,1,1,,92557145
+2020-11-30 16:09,2020-11-30 16:13,0,80.113.19.114,71,242,0,2020-12-07 16:13,R_1OpYwFBwtYWV7aj,,,,,,,anonymous,EN,FMTeam,2,1,Applied statistics and methodology,45948196
+2020-12-07 16:37,2020-12-07 16:39,0,84.78.248.154,100,94,1,2020-12-07 16:39,R_1CIomklrGRqIFT8,,,,,41.38879395,2.158996582,anonymous,EN,Lady in Black,1,1,I´m a researcher interested in forecasting/predictions and in some of the outcome variables ,58991493
+2020-12-07 18:18,2020-12-07 18:20,0,216.249.83.126,100,149,1,2020-12-07 18:20,R_1FDNON2VVpizPwM,,,,,39.13969421,-86.51409912,anonymous,EN,The Nowcast,2,1,Economic empirical methods including forecasting and political science.,52377822
+2020-12-07 19:04,2020-12-07 19:06,0,142.127.252.26,100,145,1,2020-12-07 19:06,R_3ilnp7MVoqnUr6x,,,,,43.66929626,-79.31580353,anonymous,EN,Waterloo Purple Jackets,3,1,"Data-driven modeling, machine learning, time series analysis; team members published on the prediction of biosignals (such as blood pressure) or biomechanically relevant events (such as Freezing of Gait in Parkinson's disease) but not on the predicted variables noted in this challenge",11113533
+2020-12-07 19:03,2020-12-07 19:07,0,68.44.59.235,100,232,1,2020-12-07 19:07,R_6XpiC1Me7wmuVup,,,,,40.06359863,-85.6815033,anonymous,EN,The Star,1,1,"Over 6 years of research expertise in the area of well-being and emotions, including life satisfaction, positive and negative affect. Expertise in statistical modeling using Stata and Mplus. ",53291647
+2020-12-07 20:39,2020-12-07 20:40,0,24.211.150.181,100,44,1,2020-12-07 20:40,R_1HpN1jYhndtQ62W,,,,,35.9151001,-79.09719849,anonymous,EN,CarrNCUSA,1,1,cultural psychology,66219641
+2020-12-07 20:59,2020-12-07 21:03,0,76.64.141.66,100,234,1,2020-12-07 21:03,R_1ps4i8keWTNbyK6,,,,,43.41029358,-80.50379944,anonymous,EN,Erebuni,2,1,MA students in psychology (clinical & social),78470169
+2020-12-07 22:11,2020-12-07 22:12,0,218.252.26.40,100,86,1,2020-12-07 22:12,R_1o27HWwLEgqC5IQ,,,,,22.30000305,113.9500122,anonymous,EN,Motivation & Emotion,3,2,"Positive Psychology, Social Media, Emotion, Machine Learning",70630090
+2020-12-07 22:32,2020-12-07 22:33,0,24.25.245.34,100,74,1,2020-12-07 22:33,R_2XpWznfvtxch7S2,,,,,21.31329346,-157.822998,anonymous,EN,Hi5,1,1,Research on well-being,18925417
+2020-12-07 22:53,2020-12-07 22:55,0,209.6.168.202,100,110,1,2020-12-07 22:55,R_ZlwxMzgLCDduLvP,,,,,42.28030396,-71.25,anonymous,EN,Team Blue Skies,4,1,All members are PhD students in psychology. ,7282252
+2020-12-07 23:59,2020-12-07 23:59,0,69.113.75.23,100,30,1,2020-12-07 23:59,R_2tzGmFjlTFYqSag,,,,,41.31370544,-72.92700195,anonymous,EN,Platypus,1,1,Cognitive neuroscientist,8717156
+2020-12-08 0:37,2020-12-08 0:38,0,47.155.231.79,100,63,1,2020-12-08 0:38,R_1FrjefF5cnKKLgs,,,,,34.05439758,-117.2555008,anonymous,EN,Broken Mirror Neurons,2,1,culture and health; health disparities; sleep; pediatric psychology; behavioral neuroscience,56250008
+2020-12-08 3:11,2020-12-08 3:18,0,93.173.132.5,100,463,1,2020-12-08 3:18,R_23VIIwKBAKWtukg,,,,,32.06669617,34.76669312,anonymous,EN,Pythia,2,1,Social psychology with an emphasis on intergroup relations,40185214
+2020-12-08 4:48,2020-12-08 4:51,0,118.217.33.207,100,163,1,2020-12-08 4:51,R_AFOj39VlwbHZnG1,,,,,36.32139587,127.4197083,anonymous,EN,scaled-humanity,1,1,Computational social science and social computing ,92519566
+2020-12-01 3:50,2020-12-01 9:14,0,116.15.190.53,71,19422,0,2020-12-08 9:15,R_2ab0z30aqUCS4CG,,,,,,,anonymous,EN,,,,,46541865
+2020-12-01 10:21,2020-12-01 10:22,0,42.61.218.1,71,29,0,2020-12-08 10:23,R_1E5TUn8FnGDP7Gj,,,,,,,anonymous,EN,,,,,30175929
+2020-12-08 16:25,2020-12-08 16:29,0,73.119.99.115,100,239,1,2020-12-08 16:29,R_bkZlCTFNNEetFW9,,,,,42.27830505,-71.15930176,anonymous,EN,Team Social Psychological Skill,2,1,"We are experts in social cognition and social cognitive skills. Thus, in our approach, we examined whether a recently identified social cognitive skill--social psychological skill--can inform forecasting.",69112847
+2020-12-03 13:38,2020-12-03 13:44,0,68.97.37.15,71,374,0,2020-12-10 13:44,R_5mPZf40ooRJ0gx3,,,,,,,anonymous,EN,datamodelers,2,1,Cognitive/Quantitative Psychology,34708185
+2020-12-04 5:32,2020-12-04 5:42,0,155.4.39.133,71,567,0,2020-12-11 5:42,R_2P5X8KrySgEU4cI,,,,,,,anonymous,EN,,,,,87659090
+2020-12-06 6:38,2020-12-06 6:41,0,178.218.233.121,71,165,0,2020-12-13 6:42,R_12a0TJUAsUi86i0,,,,,,,anonymous,EN,Imielin,1,1,"Moral psychologist, psychotherapist.",24071246
+2020-12-06 6:53,2020-12-06 6:55,0,95.136.11.123,71,126,0,2020-12-13 6:55,R_3DjQvL4pRpGBbkM,,,,,,,anonymous,EN,Comet ,,1,Mathematics knowledge were important in this forecast ,8525664
+2020-12-06 19:17,2020-12-06 19:18,0,49.50.196.247,71,59,0,2020-12-13 19:18,R_W9wYEMWiCA6U3QJ,,,,,,,anonymous,EN,Lotus,1,1,Social and political psychology; Diversity; Intergroup relations; Implicit and explicit bias,45258362
+2020-12-07 11:46,2020-12-07 11:51,0,65.185.126.147,71,320,0,2020-12-14 11:51,R_3NK5RmVDQZGKcpL,,,,,,,anonymous,EN,blue duiker,1,1,"graduate student with mathematics and data analysis experience and general interest in politics, but not much time to devote to this project currently.",74564517
+2020-12-07 12:14,2020-12-07 12:16,0,42.61.218.1,71,142,0,2020-12-14 12:16,R_rrHEaT04WS0sOQN,,,,,,,anonymous,EN,5casters,5,1,"The team has expertise in the area of daily events that encompass prosocial acts, the effects of various daily occurrences on subjective well-being, as well as a range of research in the area of executive functions and self-regulation. Collectively, the team has published more than 30 peer-reviewed journal articles in these areas.",53713802
+2020-12-07 12:45,2020-12-07 12:50,0,155.4.39.133,71,319,0,2020-12-14 12:51,R_eaLpt3vNDAiTkgp,,,,,,,anonymous,EN,,,,,87705722
+2020-12-07 13:24,2020-12-07 13:26,0,63.153.91.195,71,149,0,2020-12-14 13:26,R_2cCl2TGgK5gqejU,,,,,,,anonymous,EN,Goldensaber,1,1,Political ideology; cultural psychology; cognitive complexity,6602922
+2020-12-07 13:50,2020-12-07 13:53,0,47.55.236.197,71,188,0,2020-12-14 13:54,R_3JgRy020fqwzGo0,,,,,,,anonymous,EN,Northstar,1,1,"Assistant Professor of Psychology, social psychology",40868677
+2020-12-07 13:47,2020-12-07 13:56,0,109.173.212.239,71,561,0,2020-12-14 13:57,R_3IQY4MigOs6wI6q,,,,,,,anonymous,EN,MORDEAUX Team,3,1,"Psychologists (social psychology, decision making, psychophysiology)",51312801
+2020-12-14 19:28,2020-12-14 19:29,0,65.185.126.147,100,57,1,2020-12-14 19:29,R_BzGxvOpr44LM5ot,,,,,39.80259705,-84.01540375,anonymous,EN,blue duiker,1,1,"graduate student in mathematics applied to psychology, with a general interest in politics",55535892
+2020-12-07 19:20,2020-12-07 19:31,0,89.206.112.10,71,681,0,2020-12-14 19:32,R_0cd49UUkLJqmoZX,,,,,,,anonymous,EN,IPZ_predi,2,1,"Two political scientists, one professor and one PhD candidate. Both very strong experience with forecasting with prediction markets and good knowledge of quantitative methods. However, none of us is an expert on US politics.",89944588
+2020-12-16 17:25,2020-12-16 17:26,0,98.215.86.142,100,54,1,2020-12-16 17:26,R_1Pc4ODLNrZKrldx,,,,,40.46929932,-88.94239807,anonymous,EN,Compassionate Values,1,1,"I have a Ph.D. in psychology, but I do not believe I am able to predict the future very well.",33660650
+2020-12-09 23:38,2020-12-09 23:41,0,73.20.181.101,71,208,0,2020-12-16 23:41,R_1jeTD8C1vJPrgUo,,,,,,,anonymous,EN,LoneGradStudent,1,1,"1 grad student in experimental psychology MS program, have another MS.  My background is in anthropology",33838300
+2020-12-17 3:37,2020-12-17 3:38,0,176.41.24.225,100,37,1,2020-12-17 3:38,R_2BzZAm9H4XfSiFW,,,,,39.92539978,32.84100342,anonymous,EN,A Woman Scientist,1,1,,41955833
+2020-12-18 15:20,2020-12-18 15:25,0,205.175.97.176,100,337,1,2020-12-18 15:25,R_AGoNFgaS7e9Ovkt,,,,,47.68589783,-122.2994003,anonymous,EN,ForeverJung90,7,1,The team is composed by social psychologists with PhDs and by social psychology PhD students,11185295
+2020-12-12 23:08,2020-12-13 4:03,0,103.100.225.220,71,17708,0,2020-12-20 4:04,R_aabHDyK5BgSdaeJ,,,,,,,anonymous,EN,The Well-Adjusted R Squares,3,1,We are all quant social/OB researchers holding academic positions.,64714623
+2020-12-23 12:45,2020-12-23 12:48,0,81.96.150.80,100,154,1,2020-12-23 12:48,R_3j7mIN1YUTvBOli,,,,,50.915802,-1.360107422,anonymous,EN,BRTWN,5,1,"Data analysis, forecasting, prediction market, computational economics, experimental/behavioural economics, behavoural finance",1439288
+2020-12-19 0:45,2020-12-19 15:33,0,97.118.238.125,71,53267,0,2020-12-26 15:33,R_2rkL58Msh1sHbPk,,,,,,,anonymous,EN,Forecasting Four,4,1,"Moderate expertise in the psychology and neuroscience of mental health, but no expertise with the process of estimating Life Satisfaction from Twitter feed.",23725479
+2020-12-19 0:29,2020-12-19 19:06,0,97.118.238.125,71,67021,0,2020-12-26 19:06,R_8q5i0bzmylzlpHX,,,,,,,anonymous,EN,Forecasting Four,4,1,Moderate expertise in the psychology of emotion.  Little to no expertise in affect on social media or predictive mathematical modelling,88180315
