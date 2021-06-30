@@ -203,7 +203,7 @@ historicalMean <- as.numeric(c(
 # historical means compared to the baseline
 historicalMean.Abs <- abs((historicalMean - startingPoint) / startingPoint)
 
-
+setwd("..")
 ```
 
 ### Coder Agreement
@@ -625,7 +625,7 @@ summaryEGend2 <- plyr::ddply(datEGend, "Month", summarise,
 
 ```{r Overall Trends - Graphs}
 
-setwd("./Graphs/OverallTrend")
+setwd("./OverallTrend")
 
 
 datTemp <- datDif
@@ -692,6 +692,8 @@ plot(Plot)
 
 file_name <- paste0("OverallTrendsByDomain", date, ".png")
 ggsave(file_name, width = 9, height = 9, dpi = 400)
+
+setwd("..")
 
 ```
 
