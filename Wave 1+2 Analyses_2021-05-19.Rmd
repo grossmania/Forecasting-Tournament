@@ -111,7 +111,9 @@ dat$RMSE_cutoff_Naive_rwf.factor <- factor(dat$RMSE_cutoff_Naive_rwf, levels = c
 # Method - indicates forecasting method used to generate forecast - either Intuition/Theory, Data-Driven, Mixed, Simulation, or Objective - latter category is used to indicate the objective data for each domain for Months 1-6
 # Method.coded - coded 1-4 scale with 1 = Intuition/Theory, 2 = Data-Driven, 3 = Mixed, 4 = Objective
 
-dat$Method.coded.factor <- factor(dat$Method.coded, levels = c(1:4), labels = c("Intuition/Theory", "Data-Driven", "Mixed", "Objective"))
+dat$Method.fixed <- ifelse(dat$Method.coded > 1, dat$Method.coded - 1, dat$Method.coded)
+
+dat$Method.coded.factor <- factor(dat$Method.fixed, levels = c(1:6), labels = c("Intuition/Theory","Data-Driven", "Hybrid","Objective", "Naive - linear", "Naive - rwf"))
 
 # Method.complex - ONLY PHASE 1, coded 1-3 scale indicating whether the Data-driven or Mixed method used is simple (e.g. regression to the mean), moderate (e.g. auto-regression w time lag, univariate time series), or complex (e.g. ARIMA, dynamic econometric model)
 
@@ -510,6 +512,13 @@ prolific_inc <- dat_lay_demo %>% group_by(Income.factor) %>%
 # 7 $100,001 - $150,000   189  0.129 
 # 8 Over $150,000         165  0.112 
 # 9 NA                     91  0.0619
+
+prolific_methods <- dat_lay_demo %>% group_by(Method) %>% 
+  dplyr::summarise(
+  N = length(Method),
+  Percent =  N / nrow(dat_lay_demo)
+)
+
 
 ```
 
@@ -931,6 +940,31 @@ analysis.method <- lmer(root_mean_sqr_error~Method.coded.factor+(1|ResponseId), 
 anova.teams <- car::Anova(analysis.teams,type="III")
 
 # no effect of method used
+
+```
+```{r}
+
+test <- phase1 %>% group_by(Method.coded.factor) %>%
+    dplyr::summarise(
+  N = length(is_multidisciplinary),
+  Percent = N / nrow(phase1_exp)
+)
+
+coded_groups <- phase1 %>% group_by(is_multidisciplinary) %>% 
+  dplyr::summarise(
+  N = length(is_multidisciplinary),
+  Percent = N / nrow(phase1_exp)
+)
+
+#pd <- position_dodge(0.5) # move them .05 to the left and right
+
+dat_long %>% subset(phase == 1 & !is.na(Method.coded.factor)) %>%
+   ggplot(aes(x = Month, y = value))+
+  geom_smooth(aes(x = Month, y = value, colour = Method.coded.factor, fill=Method.coded.factor),method = "loess") +  theme_minimal(base_size = 14) +
+    facet_wrap(vars(domain), scales = "free", nrow = 3) +
+theme(legend.position="bottom") + ggsci::scale_color_d3()+ ggsci::scale_fill_d3()+  #scale_x_continuous(breaks=seq(1, 12, 2)) +
+  labs(colour = "Sample",fill="Sample", x="Time (in months)",y="Estimate (M +/- 95%CI)")
+
 
 ```
 

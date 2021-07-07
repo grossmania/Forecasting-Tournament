@@ -112,12 +112,13 @@ wave2$Month.6 <- NA
 wave2$phase <- 2
 
 # Add column indicating that these rows consist of predictions by academic sample
-dat$isExpert <- 1
+
 
 
 #merge phase 1 & 2 into a single data frame
 dat <- plyr::rbind.fill(wave1, wave2)
 
+dat$isExpert <- 1
 
 # rename column where participants indicated they number of predictor considered in their forecast
 dat <- dat %>% dplyr::rename(
@@ -173,7 +174,7 @@ dat[which(dat$team_name == "Mr Muddle "), "team_name"] <- "Mr Muddle"
 # capitalized Platypus so that they match
 dat[which(dat$team_name == "platypus"), "team_name"] <- "Platypus"
 
-dat_name <- dat[which(dat$team_name == "R4VST9" | dat$team_name == "R4VST9 - Revised"), ]
+# dat_name <- dat[which(dat$team_name == "R4VST9" | dat$team_name == "R4VST9 - Revised"), ]
 # removing "- Revised" from team name
 dat[which(dat$team_name == "R4VST9 - Revised"), "team_name"] <- "R4VST9"
 
@@ -258,12 +259,13 @@ dat$team_name[agrep("heisenburg", dat$team_name)] <- "Heisenburg"
 demographics_filtered <- filter(demographics, teamname %in% dat$team_name)
 # nrow(demographics_filtered)
 
+# rename columns to reflect the data they contain
 demographics_filtered <- demographics_filtered %>% dplyr::rename (
   age = demo_3,
   country = demo_4
 )
 
-
+# Make references to country consistent so that all countries are displayed similarly
 demographics_filtered$country[which(demographics_filtered$country == "UK")] <- "United Kingdom"
 demographics_filtered$country[which(demographics_filtered$country == "USA" | demographics_filtered$country == "US"  )] <- "United States"
 demographics_filtered$country[which(demographics_filtered$country == "Netherlands")] <- "the Netherlands"
@@ -282,7 +284,6 @@ demographics_unique <- demographics_filtered[!duplicated(demographics_filtered$d
 # Import prolific sample predictions
 dat_lay <- read.csv("Lay_Sample_Filtered_2021-05-18.csv", stringsAsFactors = FALSE)
 
-# Remove 
 dat_lay <- filter(dat_lay, Final.OT == 0)
 dat_lay$Month.13 <- NA
 dat_lay$Month.14 <- NA
@@ -351,7 +352,7 @@ dat_wave_2 <- filter(dat, phase == 2)
 
 initial_participants <- as.character(unique(dat_wave_1$team_name))
 # length(initial_participants)
-# 87 inital participants
+# 87 initial participants
 
 dat_return <- dat[which(dat_wave_2$team_name %in% initial_participants), ]
 
@@ -429,6 +430,9 @@ dat_size <- read.csv("team_descriptives_2021-04-22.csv", stringsAsFactors = FALS
 
 dat <- dat %>% left_join(dat_size, by = c("team_name"))
 
+
+
+
 ```
 
 
@@ -445,6 +449,13 @@ dat_coded <- dat_coded %>% dplyr::rename(
   Method.complex = Complexity.Final
 )
 
+# Implement same name changes that were previously corrected in dat
+dat_coded[which(dat_coded$team_name == "1859 revised"), "team_name"] <- "1859"
+dat_coded[which(dat_coded$team_name == "BlackSwanrevised"), "team_name"] <- "BlackSwan"
+dat_coded[which(dat_coded$team_name == "Compassionate Values`"), "team_name"] <- "Compassionate Values"
+dat_coded[which(dat_coded$team_name == "Mr Muddle "), "team_name"] <- "Mr Muddle"
+dat_coded[which(dat_coded$team_name == "platypus"), "team_name"] <- "Platypus"
+dat_coded[which(dat_coded$team_name == "R4VST9 - Revised"), "team_name"] <- "R4VST9"
 
 # merge with main data file
 dat <- dat %>% left_join(dat_coded, by = c("phase", "team_name", "domain"))
@@ -453,6 +464,32 @@ dat <- dat %>% left_join(dat_coded, by = c("phase", "team_name", "domain"))
 
 
 ```
+
+```{r Import coded Counterfactuals}
+
+dat_counter <- read.csv("Counterfactuals_2020-09-23_Merged.csv", stringsAsFactors = FALSE)
+dat_counter <- dat_counter[ , c("team_name", "Issue", "Presence.Final", "COVID.Final", "Blame.Final")]
+
+dat_counter <- dat_counter %>% dplyr::rename(
+  domain = Issue
+)
+
+dat_counter$phase <- 1
+
+
+# Implement same name changes that were previously corrected in dat
+dat_counter[which(dat_counter$team_name == "1859 revised"), "team_name"] <- "1859"
+dat_counter[which(dat_counter$team_name == "BlackSwanrevised"), "team_name"] <- "BlackSwan"
+dat_counter[which(dat_counter$team_name == "Compassionate Values`"), "team_name"] <- "Compassionate Values"
+dat_counter[which(dat_counter$team_name == "Mr Muddle "), "team_name"] <- "Mr Muddle"
+dat_counter[which(dat_counter$team_name == "platypus"), "team_name"] <- "Platypus"
+dat_counter[which(dat_counter$team_name == "R4VST9 - Revised"), "team_name"] <- "R4VST9"
+
+dat <- dat %>% left_join(dat_counter, by = c("phase", "team_name", "domain"))
+
+
+```
+
 
 ```{r fix scoring error for subject expertise & covidcondyn}
 # dat1 <- dat
