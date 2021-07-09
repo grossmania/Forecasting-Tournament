@@ -456,6 +456,8 @@ dat_coded[which(dat_coded$team_name == "Compassionate Values`"), "team_name"] <-
 dat_coded[which(dat_coded$team_name == "Mr Muddle "), "team_name"] <- "Mr Muddle"
 dat_coded[which(dat_coded$team_name == "platypus"), "team_name"] <- "Platypus"
 dat_coded[which(dat_coded$team_name == "R4VST9 - Revised"), "team_name"] <- "R4VST9"
+dat_coded[which(dat_coded$team_name == "heisenburg"), "team_name"] <- "Heisenburg"
+dat_coded[which(dat_coded$team_name == "PatrÃ­cia Arriaga"), "team_name"] <- "Patricia Arriaga"
 
 # merge with main data file
 dat <- dat %>% left_join(dat_coded, by = c("phase", "team_name", "domain"))
@@ -786,38 +788,41 @@ rows_ideol <- which(dat$domain == "ideoldem" | dat$domain == "ideolrep")
 
 # for each relevant row,
 for (i in rows_ideol) {
+  
+  # Avoid generating accuracy scores for ground truth values
+  if (dat$Method.coded[i] != 5 | is.na(dat$Method.coded[i])) {
+    domain <- dat$domain[i]
+      
+      # pull values for all months except month 9 (Jan 2021)
+    val <- c(
+      dat$Month.1[i], 
+      dat$Month.2[i], 
+      dat$Month.3[i],
+      dat$Month.4[i],
+      dat$Month.5[i],
+      dat$Month.6[i],
+      dat$Month.7[i],
+      dat$Month.8[i],
+      dat$Month.10[i],
+      dat$Month.11[i],
+      dat$Month.12[i])
     
-  
-  domain <- dat$domain[i]
+    # Pull ground truth data for predicted months minus Jan 2021  
+    hist <- dat_hist[c(41:48, 50:52), domain]
     
-    # pull values for all months except month 9 (Jan 2021)
-  val <- c(
-    dat$Month.1[i], 
-    dat$Month.2[i], 
-    dat$Month.3[i],
-    dat$Month.4[i],
-    dat$Month.5[i],
-    dat$Month.6[i],
-    dat$Month.7[i],
-    dat$Month.8[i],
-    dat$Month.10[i],
-    dat$Month.11[i],
-    dat$Month.12[i])
-  
-  # Pull ground truth data for predicted months minus Jan 2021  
-  hist <- dat_hist[c(41:48, 50:52), domain]
-  
-  # calculate accuracy  
-  acc <- forecast::accuracy(val, hist)
-  
-  # Update relevant columns for the row
-  dat$mean_error[i] <- acc[1]
-  dat$root_mean_sqr_error[i] <- acc[2]
-  dat$mean_abs_error[i] <- acc[3]
-  dat$mean_percent_error[i] <- acc[4]
-  dat$mean_abs_percent_error[i] <- acc[5]
-  dat$mean_abs_scaled_error_1[i] <- computeMASE(val, dat_hist[1:40, domain], hist, 1)
-  dat$mean_abs_scaled_error_2[i] = mase(hist, val, step_size = 1) 
+    # calculate accuracy  
+    acc <- forecast::accuracy(val, hist)
+    
+    # Update relevant columns for the row
+    dat$mean_error[i] <- acc[1]
+    dat$root_mean_sqr_error[i] <- acc[2]
+    dat$mean_abs_error[i] <- acc[3]
+    dat$mean_percent_error[i] <- acc[4]
+    dat$mean_abs_percent_error[i] <- acc[5]
+    dat$mean_abs_scaled_error_1[i] <- computeMASE(val, dat_hist[1:40, domain], hist, 1)
+    dat$mean_abs_scaled_error_2[i] = mase(hist, val, step_size = 1) 
+  }
+    
   
 }
 
@@ -829,17 +834,6 @@ for (i in rows_ideol) {
 ```{r Compare forecast RMSE to naive approach}
 
 # Compare each prediction's RMSE score to the two types of naive approaches generated and create a cutoff score, indicating whether the row's RMSE value is greater or less than the naive forecast's RMSE value
-
-dat1 <- dat
-
-# dat$Method <- as.factor(dat$Method)
-# levels(dat$Method) <- c(levels(dat$Method), c("Objective", "Naive"))
-
-
-# dat$Method.coded <- factor(dat$Method.coded,
-#                            levels = c(1,2,3,4,5, 6),
-#                            labels = levels(dat$Method)
-#                            )
 
 dat$RMSE_cutoff_Naive_linear <- NA
 dat$RMSE_cutoff_Naive_rwf <- NA
@@ -932,7 +926,7 @@ for (i in 1:length(domains)) {
 
 write.csv(dat, "Wave1+2data_2021-06-30.csv")
 write.csv(demographics_unique, "Wave1+2demographics_2021-06-30.csv")
-write.csv(dat_long, "wave1+2data_long_2021-06-30.csv")
+# write.csv(dat_long, "wave1+2data_long_2021-06-30.csv")
 # write.csv(dat_lay, "Wave1_Lay sample.csv")
 # write.csv(dat_hist, "historical_data_2021-05-19.csv")
 write.csv(dat_comp_1, "team_size_2021-06-30.csv")
