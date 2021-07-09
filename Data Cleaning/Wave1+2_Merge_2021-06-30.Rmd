@@ -770,10 +770,60 @@ for (i in 1:length(domains)) {
   )
 }
 
-mase(domain_outcomes, naive_forecast.test, step_size = 1)
-
 # [1] "lifesat"   "posaffect" "negaffect" "ideoldem"  "ideolrep"  "polar"     "iasian"    "easian"    "iafric"    "eafric"    "igend" #[12] "egend"
 ```
+
+```{r Correct ideoldem and ideolrep MASE}
+
+# correcting ideoldem and ideolrep forecasts because of the missing data point (Jan 2021) in the ground truth data. 
+# Due to the missing data point, the uneven number of predictions vs ground truth were resulting in NAs for MASE scores
+# As a result, we are recalculating accuracy scores, ignoring forecasts submitted for Jan 2011 so that both ground truth and predictions contain 11 data points to calculate MASE
+
+dat_temp <- dat
+
+# get list of relevant rows that submitted predictions for ideology domains
+rows_ideol <- which(dat$domain == "ideoldem" | dat$domain == "ideolrep")
+
+# for each relevant row,
+for (i in rows_ideol) {
+    
+  
+  domain <- dat$domain[i]
+    
+    # pull values for all months except month 9 (Jan 2021)
+  val <- c(
+    dat$Month.1[i], 
+    dat$Month.2[i], 
+    dat$Month.3[i],
+    dat$Month.4[i],
+    dat$Month.5[i],
+    dat$Month.6[i],
+    dat$Month.7[i],
+    dat$Month.8[i],
+    dat$Month.10[i],
+    dat$Month.11[i],
+    dat$Month.12[i])
+  
+  # Pull ground truth data for predicted months minus Jan 2021  
+  hist <- dat_hist[c(41:48, 50:52), domain]
+  
+  # calculate accuracy  
+  acc <- forecast::accuracy(val, hist)
+  
+  # Update relevant columns for the row
+  dat$mean_error[i] <- acc[1]
+  dat$root_mean_sqr_error[i] <- acc[2]
+  dat$mean_abs_error[i] <- acc[3]
+  dat$mean_percent_error[i] <- acc[4]
+  dat$mean_abs_percent_error[i] <- acc[5]
+  dat$mean_abs_scaled_error_1[i] <- computeMASE(val, dat_hist[1:40, domain], hist, 1)
+  dat$mean_abs_scaled_error_2[i] = mase(hist, val, step_size = 1) 
+  
+}
+
+
+```
+
 
 
 ```{r Compare forecast RMSE to naive approach}
