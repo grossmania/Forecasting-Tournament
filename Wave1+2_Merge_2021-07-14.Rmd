@@ -1,0 +1,1277 @@
+---
+title: "Merge Wave 1 + 2"
+author: "Oliver Twardus"
+date: "2/23/2021"
+output: html_document
+---
+
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyverse)
+library(forecast)
+library(psych)
+library(Metrics)
+library(ggplot2)
+# library(fpp2)
+# library(smooth)
+# library(Hmisc)
+
+# shortform list of domains that participants predicted
+# lifesat = life satisfaction
+# posaffect & negaffect = positive affect and negative affect
+# ideoldem & ideolrep = ideological preferences for democrats and republicans
+# polar = political polarization
+# iasian & easian = implicit & explicit Asian-American bias
+# iafric & eafric = implicit & explicit African-American bias
+# igend & egend = implicit and explicit gender-career bias
+domains <- c("lifesat", "posaffect", "negaffect", "ideoldem",  "ideolrep",  "polar", "iasian", "easian", "iafric", "eafric", "igend", "egend")
+
+
+# Function to compute MASE based on code found online
+# taken from https://stackoverflow.com/a/27690626
+  
+computeMASE <- function(forecast,train,test,period){
+  # forecast - forecasted values
+  # train - data used for forecasting .. used to find scaling factor
+  # test - actual data used for finding MASE.. same length as forecast
+  # period - in case of seasonal data.. if not, use 1
+  forecast <- as.vector(forecast)
+  train <- as.vector(train)
+  test <- as.vector(test)
+  n <- length(train)
+  scalingFactor <- sum(abs(train[(period+1):n] - train[1:(n-period)])) / (n-period)
+  et <- abs(test-forecast)
+  qt <- et/scalingFactor
+  meanMASE <- mean(qt)
+  return(meanMASE)
+}
+
+```
+
+```{r NOTES}
+
+#######################
+#combined data and analyzed mase + other markers for Phase 1 and Phase 2
+#all phase 1 analyses preceed phase 2
+######################
+
+```
+
+
+```{r Import Wave 1 + 2 Data & Clean column names}
+
+# read wave1 academic data file
+wave1 <- read.csv("Wave1Forecasts-Cleaned_2021-05-17.csv", stringsAsFactors = FALSE)
+
+# rename columns to match those in wave2
+wave1 <- wave1 %>% dplyr::rename(
+  team_email = Email,
+  domain = Issue
+)
+
+# add blank columns for additional 6 months of forecasts done in wave2
+wave1$Month.13 <- NA
+wave1$Month.14 <- NA
+wave1$Month.15 <- NA
+wave1$Month.16 <- NA
+wave1$Month.17 <- NA
+wave1$Month.18 <- NA
+
+# Add column to indicate which phase the data is a part of
+wave1$phase <- 1
+
+
+# read wave2 data file
+wave2 <- read.csv("Wave2Forecasts-Cleaned_2021-05-17.csv", stringsAsFactors = FALSE)
+
+# rename columns to match names in wave1. Additionally increase current month columns by 6 (e.g. Month.1 becomes Month.7) to account for these forecasts being set 6 months after phase1
+wave2 <- wave2 %>% dplyr::rename(
+  counter_imp = counter,
+  basis_5_TEXT = basis5TEXT,
+  numpred_4 = numpred4,
+  covidmeas_6_TEXT = covidmeas.6.TEXT,
+  codeupload_Id = codeuploadId,
+  codeupload_Name = codeuploadName,
+  codeupload_Size = codeuploadSize,
+  codeupload_Type = codeuploadType,
+  counter_yn = counter.yn,
+  Month.18 = Month.12,
+  Month.17 = Month.11,
+  Month.16 = Month.10,
+  Month.15 = Month.9,
+  Month.14 = Month.8,
+  Month.13 = Month.7,
+  Month.12 = Month.6,
+  Month.11 = Month.5,
+  Month.10 = Month.4,
+  Month.9 = Month.3,
+  Month.8 = Month.2,
+  Month.7 = Month.1
+)
+
+#add blank columns for Months 1-6 so that columns between phase 1 & 2 match
+wave2$Month.1 <- NA
+wave2$Month.2 <- NA
+wave2$Month.3 <- NA
+wave2$Month.4 <- NA
+wave2$Month.5 <- NA
+wave2$Month.6 <- NA
+
+# Add column to indicate which phase the data is a part of
+wave2$phase <- 2
+
+# Add column indicating that these rows consist of predictions by academic sample
+
+
+
+#merge phase 1 & 2 into a single data frame
+dat <- plyr::rbind.fill(wave1, wave2)
+
+dat$isExpert <- 1
+
+# rename column where participants indicated they number of predictor considered in their forecast
+dat <- dat %>% dplyr::rename(
+  numpred = numpred_4
+)
+
+# remove outliers from predictions column - removing instances where teams indicated more than 20 predictors were considered and they did not use a data-driven method
+dat[which(dat$numpred > 20 & dat$DataDriven == 0) , "numpred"] <- NA
+
+# re-arrange columns for clarity to ensure that related columns are adjacent to eachother
+dat <- dat[, c(1:match("Month.12", names(dat)), 
+                match("Month.13", names(dat)):match("Month.18", names(dat)),
+                match("subexpert", names(dat)):match("keep", names(dat)),
+                match("phase", names(dat)):length(names(dat))
+                  )]
+```
+
+
+
+## Correct Team names
+
+```{r check team names for errors}
+
+# Team names were manually checked to identify instances where a team submitted multiple times but team name varied (e.g. one submission had a typo or an added letter).
+# following code corrects team names to ensure they are consistent in such cases.
+
+# teams to check: 
+# "1859 & 1859 revised",
+# "BlackSwan & BlackSwanrevised",
+# "Compassionate Values" & "Compassionate Values`",
+# "Mr Muddle" & "Mr Muddle ", (second one has a blank space at the end)
+# "platypus" & "Platypus",
+# "R4VST9" & R4VST9 - Revised"  
+# "TAPE-Measurement (Twitter Affect and Project-implicit Empirical-Measurement)" & "TAPE-Measurement (Twitter Affect and Project-Implicit Empirical Measurement)"
+
+# dat_name <- dat[which(dat$team_name == "1859" | dat$team_name == "1859 revised"), ]
+# changing "1859 revised" to "1859" as a result
+dat[which(dat$team_name == "1859 revised"), "team_name"] <- "1859"
+
+# dat_name <- dat[which(dat$team_name == "BlackSwan" | dat$team_name == "BlackSwanrevised"), ]
+# changing BlackSwanrevised to BlackSwan
+dat[which(dat$team_name == "BlackSwanrevised"), "team_name"] <- "BlackSwan"
+
+# dat_name <- dat[which(dat$team_name == "Compassionate Values" | dat$team_name == "Compassionate Values`"), ]
+# changing "Compassionate Values`" to "Compassionate Values"
+dat[which(dat$team_name == "Compassionate Values`"), "team_name"] <- "Compassionate Values"
+
+# dat_name <- dat[which(dat$team_name == "Mr Muddle" | dat$team_name == "Mr Muddle "), ]
+# Removing space from name
+dat[which(dat$team_name == "Mr Muddle "), "team_name"] <- "Mr Muddle"
+
+# dat_name <- dat[which(dat$team_name == "platypus" | dat$team_name == "Platypus"), ]
+# capitalized Platypus so that they match
+dat[which(dat$team_name == "platypus"), "team_name"] <- "Platypus"
+
+# dat_name <- dat[which(dat$team_name == "R4VST9" | dat$team_name == "R4VST9 - Revised"), ]
+# removing "- Revised" from team name
+dat[which(dat$team_name == "R4VST9 - Revised"), "team_name"] <- "R4VST9"
+
+# dat_name <- dat[which(dat$team_name == "TAPE-Measurement (Twitter Affect and Project-implicit Empirical-Measurement)" | dat$team_name == "TAPE-Measurement (Twitter Affect and Project-Implicit Empirical Measurement)"), ]
+# capitalized I in implicit to address
+dat[which(dat$team_name == "TAPE-Measurement (Twitter Affect and Project-implicit Empirical-Measurement)"), "team_name"] <- "TAPE-Measurement (Twitter Affect and Project-Implicit Empirical Measurement)"
+
+
+
+```
+
+```{r Demographics}
+
+# get list of unique teams in cleaned data files
+unique_teams <- unique(as.vector(dat$team_name))
+
+# order teams alphabetically to better identify errors / duplicates
+unique_teams <- unique_teams[order(unique_teams)]
+
+# import demographic survey data
+demographics <- read.csv("Team_Demographics.csv", stringsAsFactors = FALSE)
+
+# filter out all entries that did not include a team name
+demographics <- demographics[demographics$teamname != "", ]
+
+# filter out all entries that did not include either a name or an email
+demographics <- demographics[demographics$demo_1 != "" & demographics$demo_2 != "", ]
+
+# remove white space in team names
+demographics$teamname <- trimws(demographics$teamname)
+
+# teams <- as.vector(dat$team_name)
+# teams_unique <- unique(teams)
+# teams_unique <- teams_unique[order(teams_unique)]
+
+# get list of all team names in demographic file
+teams_demo <- as.vector(demographics$teamname)
+
+# order demographics team names alphabetically
+teams_demo <- teams_demo[order(teams_demo)]
+
+# identify all unique team names 
+teams_demo <- unique(teams_demo)
+
+# View(unique_teams)
+
+# rename teams that contain typos based on spelling in submission file
+# 4 chimps, 4 Chimps with a Dart both renamed to 	4 chimps with a dart
+demographics$teamname[agrep("4 chimps", demographics$teamname)] <- "4 chimps with a dart"
+
+# 5casters renamed to 4casters
+demographics$teamname[agrep("5casters", demographics$teamname)] <- "4casters"
+
+# Broken mirror neurons renamed to Broken Mirror Neurons
+demographics$teamname[agrep("Broken Mirror Neurons", demographics$teamname)] <- "Broken Mirror Neurons"
+
+# Forever Jung renamed to ForeverJung90
+demographics$teamname[agrep("Forever Jung", demographics$teamname)] <- "ForeverJung90"
+
+# Mordeaux Team & MORDEAUXTeam renamed to MORDEAUX Team
+demographics$teamname[agrep("Mordeaux Team", demographics$teamname)] <- "MORDEAUX Team"
+demographics$teamname[agrep("MORDEAUXTeam", demographics$teamname)] <- "MORDEAUX Team"
+
+# PatrÃ?cia Arriaga renamed to Patricia Arriaga
+dat$team_name[agrep("Arriaga", dat$team_name)] <- "Patricia Arriaga"
+
+# R4VST9 - revised renamed to R4VST9
+demographics$teamname[agrep("R4VST9", demographics$teamname)] <- "R4VST9"
+
+# TAPE-Measurement (Twitter Affect and Project-Implicit Empirical Measurement) renamed to TAPE-Measurement
+dat$team_name[agrep("TAPE-Measurement", dat$team_name)] <- "TAPE-Measurement"
+
+# The Well-Adjusted R squares renamed to The Well-Adjusted R Squares
+demographics$teamname[agrep("Well-Adjusted R squares", demographics$teamname)] <- "The Well-Adjusted R Squares"
+
+# forcasting-2020 to forecasting_2020
+dat$team_name[agrep("forcasting-2020", dat$team_name)] <- "forecasting_2020"
+
+# heisenburg to Heisenburg
+dat$team_name[agrep("heisenburg", dat$team_name)] <- "Heisenburg"
+
+demographics_filtered <- filter(demographics, teamname %in% dat$team_name)
+# nrow(demographics_filtered)
+
+# rename columns to reflect the data they contain
+demographics_filtered <- demographics_filtered %>% dplyr::rename (
+  age = demo_3,
+  country = demo_4
+)
+
+# Make references to country consistent so that all countries are displayed similarly
+demographics_filtered$country[which(demographics_filtered$country == "UK")] <- "United Kingdom"
+demographics_filtered$country[which(demographics_filtered$country == "USA" | demographics_filtered$country == "US"  )] <- "United States"
+demographics_filtered$country[which(demographics_filtered$country == "Netherlands")] <- "the Netherlands"
+demographics_filtered$country[which(demographics_filtered$country == "germany")] <- "Germany"
+
+demographics_filtered$prevtournament <- dplyr::recode(demographics_filtered$prevtournament, "1" = 1, "3" = 2)
+
+demographics_unique <- demographics_filtered[!duplicated(demographics_filtered$demo_1, fromLast = TRUE), ]
+
+```
+
+# Add lay data
+
+```{r Import lay predictions}
+
+# Import prolific sample predictions
+dat_lay <- read.csv("Lay_Sample_Filtered_2021-05-18.csv", stringsAsFactors = FALSE)
+
+dat_lay <- filter(dat_lay, Final.OT == 0)
+dat_lay$Month.13 <- NA
+dat_lay$Month.14 <- NA
+dat_lay$Month.15 <- NA
+dat_lay$Month.16 <- NA
+dat_lay$Month.17 <- NA
+dat_lay$Month.18 <- NA
+dat_lay$phase <- 1
+dat_lay$isExpert <- 0
+dat_lay$team_name <- NA
+
+# rename column to match academic sample columns
+dat_lay <- dat_lay %>% dplyr::rename(
+  domain = Issue
+)
+
+# remove responses that spent too little time answering the predictions
+dat_lay$time_upload <- dat_lay$up_Last.Click - dat_lay$up_First.Click
+
+# lay_plot <- ggplot(dat_lay, aes(x = domain, y = time_upload)) +
+#   geom_point(position = "jitter") +
+#   theme_minimal()
+
+
+# Check individual upload times for each prediction and exclude submissions that were uploaded in less than 50 seconds
+dat_lay <- dat_lay %>% subset(time_upload > 50)
+
+
+```
+
+
+```{r import historical data}
+
+# create a single data frame that contains the historical values for all 12 domains
+
+
+# import data frame with Months ranging from -45 to -1
+dat_hist <- read.csv("Historical_Data.csv")
+
+
+# get mean of each domain
+mean_hist <- colMeans(dat_hist[2:ncol(dat_hist)])
+
+# isolate the last value of each column to use as a baseline for phase 1 & 2, respectively
+
+# baselines for participant phase 1 submissions
+baseline_1 <- dat_hist[nrow(dat_hist) - 12, 1:ncol(dat_hist)]
+
+
+# baselines for participant phase 2 submissions
+baseline_2 <- dat_hist[nrow(dat_hist) - 6, 1:ncol(dat_hist)]
+
+
+# last 12 months of data that can be compared to phase 1 submissions
+domain_outcomes <- dat_hist[(nrow(dat_hist) - 11):nrow(dat_hist), 1:ncol(dat_hist)]
+
+
+
+```
+
+```{r Revised submissions}
+# identify which participants submitted to both phase 1 & 2
+
+dat_wave_1 <- filter(dat, phase == 1)
+dat_wave_2 <- filter(dat, phase == 2)
+
+initial_participants <- as.character(unique(dat_wave_1$team_name))
+# length(initial_participants)
+# 87 initial participants
+
+dat_return <- dat[which(dat_wave_2$team_name %in% initial_participants), ]
+
+
+dat$revised <- ifelse(dat$team_name %in% dat_return$team_name, 1, 0)
+
+
+```
+
+```{r team composition info}
+
+# Aggregate demographic infor teams submitted and correct team names to match main data frame
+dat_comp <- read.csv("team_composition_2021-04-22.csv", stringsAsFactors = FALSE)
+dat_comp <- dat_comp %>% dplyr::rename(
+  team_name = "team_info_1"
+)
+
+# Alexander to Alex
+dat_comp$team_name[agrep("Alex", dat_comp$team_name)] <- "Alex"
+
+# BlackSwanRevised to BlackSwan
+dat_comp$team_name[agrep("BlackSwan", dat_comp$team_name)] <- "BlackSwan"
+
+# Dutch East Indian Company to Dutch East India Company
+dat_comp$team_name[agrep("Dutch East Indian Company", dat_comp$team_name)] <- "Dutch East India Company"
+
+# Old Chicken to Old Chickens
+dat_comp$team_name[agrep("Old Chicken", dat_comp$team_name)] <- "Old Chickens"
+
+# PatrÃ�cia Arriaga to Patricia Arriaga
+dat_comp$team_name[agrep("Arriaga", dat_comp$team_name)] <- "Patricia Arriaga"
+
+# platypus to Platypus
+dat_comp$team_name[agrep("platypus", dat_comp$team_name)] <- "Platypus"
+
+# R4VST9 - revised to R4VST9
+dat_comp$team_name[agrep("R4VST9", dat_comp$team_name)] <- "R4VST9"
+
+# TAPE-Measurement (Twitter Affect and Project-Implicit Empirical Measurement) to TAPE-Measurement
+dat_comp$team_name[agrep("TAPE-Measurement", dat_comp$team_name)] <- "TAPE-Measurement"
+
+#remove whitespace in team names
+dat_comp$team_name <- trimws(dat_comp$team_name)
+
+comp_teams <- unique(dat_comp$team_name[dat_comp$team_name != ""])
+comp_teams <- comp_teams[order(comp_teams)]
+
+# remove demographic info from teams that submitted demographic info but did not submit forecasts
+dat_comp <- dat_comp[which(dat_comp$team_name %in% unique_teams), ]
+
+dat_comp_1 <- dat_comp[!duplicated(dat_comp$team_name, fromLast = TRUE),]
+
+```
+
+
+```{r Insert demographics into main dat file}
+
+dat_comp_2 <- dat_comp[, c("team_name", "team_members_1", "team_expertise")]
+dat_comp_2$team_members_1[which(dat_comp_2$team_members_1 == "") ] <- NA
+
+dat$team_size <- NA
+dat$team_expertise <- NA
+
+for (i in 1:nrow(dat_comp_2)) {
+  rows <- which(dat$team_name == dat_comp_2$team_name[i])
+  dat$team_size[rows] <- dat_comp_2$team_members_1[i]
+  dat$team_expertise[rows] <- dat_comp_2$team_expertise[i]
+}
+
+```
+
+```{r Add info about team composition & size}
+
+dat_size <- read.csv("team_descriptives_2021-04-22.csv", stringsAsFactors = FALSE)
+
+dat <- dat %>% left_join(dat_size, by = c("team_name"))
+
+
+
+
+```
+
+
+
+```{r Import coded Method types}
+# Import manually coded method & complexity codes for participant submissions (Academic sample only)
+
+dat_coded <- read.csv("Method_ComplexityCoding_Merged_2021-04-22.csv")
+
+dat_coded <- dat_coded[ , c("phase", "team_name", "Issue", "Type.Final", "Complexity.Final")]
+
+dat_coded <- dat_coded %>% dplyr::rename(
+  domain = Issue,
+  Method.coded = Type.Final,
+  Method.complex = Complexity.Final
+)
+
+# Implement same name changes that were previously corrected in dat
+dat_coded[which(dat_coded$team_name == "1859 revised"), "team_name"] <- "1859"
+dat_coded[which(dat_coded$team_name == "BlackSwanrevised"), "team_name"] <- "BlackSwan"
+dat_coded[which(dat_coded$team_name == "Compassionate Values`"), "team_name"] <- "Compassionate Values"
+dat_coded[which(dat_coded$team_name == "Mr Muddle "), "team_name"] <- "Mr Muddle"
+dat_coded[which(dat_coded$team_name == "platypus"), "team_name"] <- "Platypus"
+dat_coded[which(dat_coded$team_name == "R4VST9 - Revised"), "team_name"] <- "R4VST9"
+dat_coded[which(dat_coded$team_name == "heisenburg"), "team_name"] <- "Heisenburg"
+dat_coded[which(dat_coded$team_name == "PatrÃcia Arriaga"), "team_name"] <- "Patricia Arriaga"
+
+# merge with main data file
+dat <- dat %>% left_join(dat_coded, by = c("phase", "team_name", "domain"))
+
+
+
+
+```
+
+```{r Import coded Counterfactuals}
+
+dat_counter <- read.csv("Counterfactuals_2020-09-23_Merged.csv", stringsAsFactors = FALSE)
+dat_counter <- dat_counter[ , c("team_name", "Issue", "Presence.Final", "COVID.Final", "Blame.Final")]
+
+dat_counter <- dat_counter %>% dplyr::rename(
+  domain = Issue
+)
+
+dat_counter$phase <- 1
+
+
+# Implement same name changes that were previously corrected in dat
+dat_counter[which(dat_counter$team_name == "1859 revised"), "team_name"] <- "1859"
+dat_counter[which(dat_counter$team_name == "BlackSwanrevised"), "team_name"] <- "BlackSwan"
+dat_counter[which(dat_counter$team_name == "Compassionate Values`"), "team_name"] <- "Compassionate Values"
+dat_counter[which(dat_counter$team_name == "Mr Muddle "), "team_name"] <- "Mr Muddle"
+dat_counter[which(dat_counter$team_name == "platypus"), "team_name"] <- "Platypus"
+dat_counter[which(dat_counter$team_name == "R4VST9 - Revised"), "team_name"] <- "R4VST9"
+
+dat <- dat %>% left_join(dat_counter, by = c("phase", "team_name", "domain"))
+
+
+```
+
+
+```{r fix scoring error for subject expertise & covidcondyn}
+# dat1 <- dat
+# subexpert (subject expertise) column for phase 1 all domains, and phase 2 all domains except lifesat were incorrectly coded as 1,2,4,5,6,9,10 instead of 1-7
+# dat <- dat1
+
+
+for (i in 1:nrow(dat)) {
+  if (dat$phase[i] == 2 & dat$domain[i] == "lifesat"){
+    
+  } else {
+    if (dat$subexpert[i] == 4) {
+      dat$subexpert[i] <- 3
+    } else if (dat$subexpert[i] == 5) {
+      dat$subexpert[i] <- 4
+    } else if (dat$subexpert[i] == 6) {
+      dat$subexpert[i] <- 5
+    } else if (dat$subexpert[i] == 9) {
+      dat$subexpert[i] <- 6
+    } else if (dat$subexpert[i] == 10) {
+      dat$subexpert[i] <- 7
+    }
+  }
+}
+
+
+```
+
+
+```{r Merge expert & lay data sets}
+
+
+dat <- dat %>% plyr::rbind.fill(dat_lay)
+
+# remove 2 duplicates that were identified
+
+dat[which(dat$covidcondyn == 1 & (dat$numpred == 0 | is.na(dat$numpred))) , "numpred"] <- 1
+dat$covidcondyn <- dplyr::recode(dat$covidcondyn, "1" = 1, "2" = 0)
+
+dat_temp <- dat
+
+#update duplicate column names
+
+dat <- dat %>% dplyr::rename(
+  team_size = team_size.x,
+  team_size.coded = team_size.y,
+  flag_lay_response = Final.OT
+
+)
+
+```
+
+##PHASE 1 ANALYSES - COMPUTE MASE AND COMPARE TO NAIVE FORECASTS
+
+```{r comparing accuracy of past predictions - phase 1}
+#domain_outcomes
+# creates a new data frame that contains the mean error, root mean square error, mean absolute error, mean percent error, and mean absolute percent error or participant submissions 
+
+# shift data frame to long format
+dat_long <- pivot_longer(dat, cols = starts_with("Month"), names_to = "Month", names_prefix = "Month.")
+dat_long$Month <- as.numeric(dat_long$Month)
+
+dat_wave_1 <- filter(dat_long, phase == 1)
+
+dat_predicted_w1 <- filter(dat_wave_1, Month < 13)
+
+unique_teams_predicted_w1 <- unique(dat_predicted_w1$ResponseId)
+
+# create data set that will be merged with dat, that contains additional columns for mean error, root mean square error, mean percent error, mean absolute error, mean absolute percent error and the two types of mean absolute scaled error that are being calculated (#1 uses function declared on line 34, #2 uses Metrics::mase function)
+dat_accuracy_w1 <- tibble(
+  ResponseId_w1 = character(),
+  domain_w1 = character(),
+  mean_error_w1 = numeric(),
+  root_mean_sqr_error_w1 = numeric(),
+  mean_abs_error_w1 = numeric(),
+  mean_percent_error_w1 = numeric(),
+  mean_abs_percent_error_w1 = numeric(),
+  MASE1_w1 = numeric(),
+  MASE2_w1 = numeric()
+)
+
+# For each team that submitted a prediction, filter dataset by team & domain
+# pull relevant historic data for the domain and generate forecast accuracy to get mean error, root mean square error, mean absolute error, mean percent error, and mean absolute percent error
+# calculate both types of MASE values
+for (i in 1:length(unique_teams_predicted_w1)) {
+  dat_temp_1_w1 <- filter(dat_predicted_w1, ResponseId == unique_teams_predicted_w1[i])
+  
+  domain_list_w1 <- unique(dat_temp_1_w1$domain)
+  
+  for (n in 1:length(domain_list_w1)) {
+    
+    dat_temp_2_w1 <- filter(dat_temp_1_w1, domain == domain_list_w1[n])
+    
+    vals_w1 <- as.vector(dat_temp_2_w1$value)
+    
+    objective_data <- dat_hist[ , which(names(dat_hist) == domain_list_w1[n])]
+    objective_data <- as.vector((objective_data))
+    
+    outcome_w1 <- forecast::accuracy(dat_temp_2_w1$value, domain_outcomes[, which(names(domain_outcomes) == domain_list_w1[n])])
+
+    dat_accuracy_w1 <- dat_accuracy_w1 %>% add_row(
+      ResponseId_w1 = unique_teams_predicted_w1[i],
+      domain_w1 = domain_list_w1[n],
+      mean_error_w1 = outcome_w1[1],
+      root_mean_sqr_error_w1 = outcome_w1[2],
+      mean_abs_error_w1 = outcome_w1[3],
+      mean_percent_error_w1 = outcome_w1[4],
+      mean_abs_percent_error_w1 = outcome_w1[5],
+      MASE1_w1 = computeMASE(dat_temp_2_w1$value, objective_data[1:40], objective_data[41:52], 1),
+      MASE2_w1 = mase(objective_data[41:52], vals_w1, step_size = 1)
+                             )
+
+  }
+}
+
+dat_accuracy_w1$phase <- 1
+
+# merge dat_accuracy with dat by matching response ID, phase, and domain
+dat <- dat %>% left_join(dat_accuracy_w1, by = c("phase" = "phase", "ResponseId" = "ResponseId_w1", "domain" = "domain_w1"))
+
+```
+
+
+```{r add historic data to data frame}
+
+# Append historical data as its own rows in the data set, under Method type "Objective"
+
+dat$Method <- as.factor(dat$Method)
+levels(dat$Method) <- c(levels(dat$Method), c("Objective", "Naive - linear ext", "Naive - rwf"))
+
+
+for (i in 1:length(domains)) {
+  dat <- dat %>% add_row(
+    domain = domains[i],
+    Month.1 = dat_hist[41, domains[i]],
+    Month.2 = dat_hist[42, domains[i]],
+    Month.3 = dat_hist[43, domains[i]],
+    Month.4 = dat_hist[44, domains[i]],
+    Month.5 = dat_hist[45, domains[i]],
+    Month.6 = dat_hist[46, domains[i]],
+    Month.7 = dat_hist[47, domains[i]],
+    Month.8 = dat_hist[48, domains[i]],
+    Month.9 = dat_hist[49, domains[i]],
+    Month.10 = dat_hist[50, domains[i]],
+    Month.11 = dat_hist[51, domains[i]],
+    Month.12 = dat_hist[52, domains[i]],
+    Method = "Objective",
+    phase = 1,
+    Method.coded = 5
+  )
+}
+
+```
+
+```{r Naive forecast with linear extrapolation}
+
+
+# Generate one row for each domain that contains forecasts generated through linear extrapolation.
+# how did forecasts hold up against simple model 
+
+for (i in 1:length(domains)) {
+  
+  start <- dat_hist[40, domains[i]]
+  trend <- (dat_hist[40, domains[i]] - dat_hist[1, domains[i]]) / 40
+  
+  objective_data <- domain_outcomes[ , domains[i]]
+  objective_data <- as.vector((objective_data))
+  
+  vals_w1 <- seq(from = start + trend, by = trend, length.out = 12)
+  
+  naive_acc_w1 <- forecast::accuracy(vals_w1, objective_data)
+  
+  dat <- dat %>% add_row(
+    
+    domain = domains[i],
+    Method = "Naive - linear",
+    Month.1 = vals_w1[1],
+    Month.2 = vals_w1[2],
+    Month.3 = vals_w1[3],
+    Month.4 = vals_w1[4],
+    Month.5 = vals_w1[5],
+    Month.6 = vals_w1[6],
+    Month.7 = vals_w1[7],
+    Month.8 = vals_w1[8],
+    Month.9 = vals_w1[9],
+    Month.10 = vals_w1[10],
+    Month.11 = vals_w1[11],
+    Month.12 = vals_w1[12],
+    mean_error_w1 = naive_acc_w1[1],
+    root_mean_sqr_error_w1 = naive_acc_w1[2],
+    mean_abs_error_w1 = naive_acc_w1[3],
+    mean_percent_error_w1 = naive_acc_w1[4],
+    mean_abs_percent_error_w1 = naive_acc_w1[5],
+    MASE1_w1 = computeMASE(vals_w1, dat_hist[1:40, domains[i]], dat_hist[41:52, domains[i]], 1),
+    MASE2_w1 = mase(objective_data, vals_w1, step_size = 1),
+    Method.coded = 6,
+    phase = 1
+  )
+}
+
+```
+
+```{r Create naive forecasts with rwf}
+
+# Generate naive forecasts using random walk method
+
+# compare RMSE to objective markers 
+# get naive forecasts - compare RMSE to objective markers
+# use RMSE as cutoff - split team groups by whether they are above or below by domain 
+# use table to get percentages per group
+
+
+for (i in 1:length(domains)) {
+  
+  time_series <- ts(dat_hist[, domains[i]], frequency = 12, start = c(2017, 1))
+  prediction_basis <- ts(dat_hist[1:40, domains[i]], frequency = 12, start = c(2017, 1))
+  
+  objective_data <- domain_outcomes[ , domains[i]]
+  
+  naive_forecast <- naive(prediction_basis, h = 12)
+  naive_forecast.tib <- as_tibble(naive_forecast)
+  
+  naive_forecast.test <- pull(naive_forecast.tib[,1])
+  time_series.test <- dat_hist[41:52, domains[i]]
+  
+  naive_acc.test <-  forecast::accuracy(naive_forecast.test, time_series.test)
+  naive_acc.test <- as_tibble(naive_acc.test)
+  
+  # naive_acc <- forecast::accuracy(naive_forecast, time_series)
+  # naive_acc.tib <- as_tibble(naive_acc)
+  
+  dat <- dat %>% add_row(
+    
+    domain = domains[i],
+    Method = "Naive - rwf",
+    # Month.1 = pull(naive_forecast.tib[1, 1]),
+    # Month.2 = pull(naive_forecast.tib[2, 1]),
+    # Month.3 = pull(naive_forecast.tib[3, 1]),
+    # Month.4 = pull(naive_forecast.tib[4, 1]),
+    # Month.5 = pull(naive_forecast.tib[5, 1]),
+    # Month.6 = pull(naive_forecast.tib[6, 1]),
+    # mean_error = pull(naive_acc.tib[2, 1]),
+    # root_mean_sqr_error = pull(naive_acc.tib[2, 2]),
+    # mean_abs_error = pull(naive_acc.tib[2, 3]),
+    # mean_percent_error = pull(naive_acc.tib[2, 4]),
+    # mean_abs_percent_error = pull(naive_acc.tib[2, 5]),
+    Month.1 = naive_forecast.test[1],
+    Month.2 = naive_forecast.test[2],
+    Month.3 = naive_forecast.test[3],
+    Month.4 = naive_forecast.test[4],
+    Month.5 = naive_forecast.test[5],
+    Month.6 = naive_forecast.test[6],
+    Month.7 = naive_forecast.test[7],
+    Month.8 = naive_forecast.test[8],
+    Month.9 = naive_forecast.test[9],
+    Month.10 = naive_forecast.test[10],
+    Month.11 = naive_forecast.test[11],
+    Month.12 = naive_forecast.test[12],
+    
+    mean_error_w1 = pull(naive_acc.test[1]),
+    root_mean_sqr_error_w1 = pull(naive_acc.test[2]),
+    mean_abs_error_w1 = pull(naive_acc.test[3]),
+    mean_percent_error_w1 = pull(naive_acc.test[4]),
+    mean_abs_percent_error_w1 = pull(naive_acc.test[5]),
+    MASE1_w1 = computeMASE(naive_forecast.test, dat_hist[1:40, domains[i]], dat_hist[41:52, domains[i]], 1),
+    MASE2_w1 = mase(objective_data, naive_forecast.test, step_size = 1),
+    #mean_abs_scaled_error = pull(naive_acc.tib[2, 6]),
+    Method.coded = 7,
+    phase = 1
+  )
+}
+
+# [1] "lifesat"   "posaffect" "negaffect" "ideoldem"  "ideolrep"  "polar"     "iasian"    "easian"    "iafric"    "eafric"    "igend" #[12] "egend"
+```
+
+```{r Correct ideoldem and ideolrep MASE - Phase 1 }
+
+# correcting ideoldem and ideolrep forecasts because of the missing data point (Jan 2021) in the ground truth data. 
+# Due to the missing data point, the uneven number of predictions vs ground truth were resulting in NAs for MASE scores
+# As a result, we are recalculating accuracy scores, ignoring forecasts submitted for Jan 2011 so that both ground truth and predictions contain 11 data points to calculate MASE
+
+dat_temp <- dat
+
+# get list of relevant rows that submitted predictions for ideology domains
+rows_ideol <- which(dat$domain == "ideoldem" | dat$domain == "ideolrep")
+
+# for each relevant row,
+for (i in rows_ideol) {
+  
+  # Avoid generating accuracy scores for ground truth values
+  if ((dat$Method.coded[i] != 5 | is.na(dat$Method.coded[i])) & dat$phase[i] == 1) {
+    domain <- dat$domain[i]
+      
+      # pull values for all months except month 9 (Jan 2021)
+    val_w1 <- c(
+      dat$Month.1[i], 
+      dat$Month.2[i], 
+      dat$Month.3[i],
+      dat$Month.4[i],
+      dat$Month.5[i],
+      dat$Month.6[i],
+      dat$Month.7[i],
+      dat$Month.8[i],
+      dat$Month.10[i],
+      dat$Month.11[i],
+      dat$Month.12[i])
+    
+    # Pull ground truth data for predicted months minus Jan 2021  
+    hist_w1 <- dat_hist[c(41:48, 50:52), domain]
+    
+    # calculate accuracy  
+    acc <- forecast::accuracy(val_w1, hist_w1)
+    
+    # Update relevant columns for the row
+    dat$mean_error_w1[i] <- acc[1]
+    dat$root_mean_sqr_error_w1[i] <- acc[2]
+    dat$mean_abs_error_w1[i] <- acc[3]
+    dat$mean_percent_error_w1[i] <- acc[4]
+    dat$mean_abs_percent_error_w1[i] <- acc[5]
+    dat$MASE1_w1[i] <- computeMASE(val_w1, dat_hist[1:40, domain], hist_w1, 1)
+    dat$MASE2_w1[i] = mase(hist_w1, val_w1, step_size = 1) 
+  }
+    
+  
+}
+
+
+```
+
+
+```{r Compare forecast RMSE to naive approach}
+
+
+# Compare each prediction's RMSE score to the two types of naive approaches generated and create a cutoff score, indicating whether the row's RMSE value is greater or less than the naive forecast's RMSE value
+
+dat$RMSE_cutoff_Naive_linear <- NA
+dat$RMSE_cutoff_Naive_rwf <- NA
+
+
+for (i in 1:length(domains)) {
+  
+
+  cutoff1 <- dat$root_mean_sqr_error_w1[which(dat$domain == domains[i] & dat$Method %in% "Naive - linear")]
+  cutoff2 <- dat$root_mean_sqr_error_w1[which(dat$domain == domains[i] & dat$Method %in% "Naive - rwf")]
+
+ 
+  list_val <- which(dat$phase == 1 & dat$domain == domains[i] & !dat$Method %in% c("Naive - rwf", "Naive - linear", "Objective"))
+
+                      
+  for (n in 1:length(list_val)) {
+    if (!is.na(dat$root_mean_sqr_error_w1[list_val[n]]) & dat$root_mean_sqr_error_w1[list_val[n]] < cutoff1) {
+      dat$RMSE_cutoff_Naive_linear[list_val[n]] <- 0
+
+
+    } else if (!is.na(dat$root_mean_sqr_error_w1[list_val[n]]) & dat$root_mean_sqr_error_w1[list_val[n]] > cutoff1){
+      dat$RMSE_cutoff_Naive_linear[list_val[n]] <- 1
+
+
+    }
+    
+    if (!is.na(dat$root_mean_sqr_error_w1[list_val[n]]) & dat$root_mean_sqr_error_w1[list_val[n]] < cutoff2) {
+      dat$RMSE_cutoff_Naive_rwf[list_val[n]] <- 0
+    } else if (!is.na(dat$root_mean_sqr_error_w1[list_val[n]]) & dat$root_mean_sqr_error_w1[list_val[n]] > cutoff2){
+      dat$RMSE_cutoff_Naive_rwf[list_val[n]] <- 1
+    }
+  }
+}
+
+dat$compare_to_naive_linear <- factor(dat$RMSE_cutoff_Naive_linear, levels = c(0, 1),
+                          labels = c("Below Naive linear", "Above Naive linear"))
+
+dat$compare_to_naive_rwf <- factor(dat$RMSE_cutoff_Naive_rwf, levels = c(0, 1),
+                          labels = c("Below Naive rwf", "Above Naive rwf"))
+
+```
+
+```{r time spent}
+
+dat$time_spent <- dat$Last.Click - dat$First.Click
+
+```
+
+
+```{r Create Long data set with difference scores}
+## Convert to Long + Calculate difference scores.
+
+dat$prediction_id <- seq(1, nrow(dat), 1)
+
+# move all predicted values to a single column
+dat_long <- pivot_longer(dat, cols = starts_with("Month"), names_to = "Month", names_prefix = "Month.")
+dat_long$Month <- as.numeric(dat_long$Month)
+
+# exclude rows without values in the "value" column
+dat_long <- filter(dat_long, !is.na(value))
+
+
+# add column to store difference values as % change predicted from baseline
+dat_long$value.dif <- as.numeric(NA)
+
+# for each of the 12 domains, get pre
+for (i in 1:length(domains)) {
+  
+  hist <- dat[which(dat$domain == domains[i] & dat$Method == "Objective"), ]
+  
+  for (n in 1:6) {
+    dat_long[which(dat_long$domain == domains[i] & dat_long$Month == n), "value.dif" ] <- dat_long[which(dat_long$domain == domains[i] & dat_long$Month == n), "value" ] - hist[1, paste0("Month.", n)]
+  }
+  
+  
+}
+
+
+
+```
+
+
+##PHASE 2 ANALYSES - COMPUTE MASE AND COMPARE TO NAIVE FORECASTS
+
+
+```{r comparing accuracy of past predictions - phase 2}
+#domain_outcomes
+# creates a new data frame that contains the mean error, root mean square error, mean absolute error, mean percent error, and mean absolute percent error or participant submissions 
+
+# last 12 months of data that can be compared to phase 1 submissions
+domain_outcomes_w2 <- filter(domain_outcomes, Month > 6)
+
+# shift data frame to long format
+dat_long <- pivot_longer(dat, cols = starts_with("Month"), names_to = "Month", names_prefix = "Month.")
+dat_long$Month <- as.numeric(dat_long$Month)
+
+dat_wave_1 <- filter(dat_long, phase == 2)
+
+dat_predicted_w2 <- filter(dat_wave_1, Month > 6 & Month < 13)
+
+unique_teams_predicted_w2 <- unique(dat_predicted_w2$ResponseId)
+
+# create data set that will be merged with dat, that contains additional columns for mean error, root mean square error, mean percent error, mean absolute error, mean absolute percent error and the two types of mean absolute scaled error that are being calculated (#1 uses function declared on line 34, #2 uses Metrics::mase function)
+dat_accuracy_w2 <- tibble(
+  ResponseId_w2 = character(),
+  domain_w2 = character(),
+  mean_error_w2 = numeric(),
+  root_mean_sqr_error_w2 = numeric(),
+  mean_abs_error_w2 = numeric(),
+  mean_percent_error_w2 = numeric(),
+  mean_abs_percent_error_w2 = numeric(),
+  MASE1_w2 = numeric(),
+  MASE2_w2 = numeric()
+)
+
+# For each team that submitted a prediction, filter dataset by team & domain
+# pull relevant historic data for the domain and generate forecast accuracy to get mean error, root mean square error, mean absolute error, mean percent error, and mean absolute percent error
+# calculate both types of MASE values
+for (i in 1:length(unique_teams_predicted_w2)) {
+  dat_temp_1_w2 <- filter(dat_predicted_w2, ResponseId == unique_teams_predicted_w2[i])
+  
+  domain_list_w2 <- unique(dat_temp_1_w2$domain)
+  
+  for (n in 1:length(domain_list_w2)) {
+    
+    dat_temp_2_w2 <- filter(dat_temp_1_w2, domain == domain_list_w2[n])
+    
+    vals_w2 <- as.vector(dat_temp_2_w2$value)
+    
+    objective_data <- dat_hist[ , which(names(dat_hist) == domain_list_w2[n])]
+    objective_data <- as.vector((objective_data))
+    
+    outcome_w2 <- forecast::accuracy(dat_temp_2_w2$value, domain_outcomes_w2[, which(names(domain_outcomes_w2) == domain_list_w2[n])])
+
+    dat_accuracy_w2 <- dat_accuracy_w2 %>% add_row(
+      ResponseId_w2 = unique_teams_predicted_w2[i],
+      domain_w2 = domain_list_w2[n],
+      mean_error_w2 = outcome_w2[1],
+      root_mean_sqr_error_w2 = outcome_w2[2],
+      mean_abs_error_w2 = outcome_w2[3],
+      mean_percent_error_w2 = outcome_w2[4],
+      mean_abs_percent_error_w2 = outcome_w2[5],
+      MASE1_w2 = computeMASE(dat_temp_2_w2$value, objective_data[1:46], objective_data[47:52], 1),
+      MASE2_w2 = mase(objective_data[47:52], vals_w2, step_size = 1)
+                             )
+
+  }
+}
+
+dat_accuracy_w2$phase <- 2
+
+# merge dat_accuracy with dat by matching response ID, phase, and domain
+dat <- dat %>% left_join(dat_accuracy_w2, by = c("phase" = "phase", "ResponseId" = "ResponseId_w2", "domain" = "domain_w2"))
+
+```
+
+
+```{r Make ResponseId consistent for all team submissions}
+
+# Ensure each unique team name has the same consistent ResponseId because some teams submitted forecasts across multiple submissions or phases
+unique_teams <- unique(dat$team_name)
+
+for (i in 1:length(unique_teams)) {
+  row_list <- which(dat$team_name == unique_teams[i])
+  dat$ResponseId[which(dat$team_name == unique_teams[i])] <- dat$ResponseId[row_list[1]]
+}
+
+```
+
+```{r add historic data to data frame}
+
+# Append historical data as its own rows in the data set, under Method type "Objective"
+
+dat$Method <- as.factor(dat$Method)
+levels(dat$Method) <- c(levels(dat$Method), c("Objective", "Naive - linear ext", "Naive - rwf"))
+
+
+for (i in 1:length(domains)) {
+  dat <- dat %>% add_row(
+    domain = domains[i],
+    Month.7 = dat_hist[47, domains[i]],
+    Month.8 = dat_hist[48, domains[i]],
+    Month.9 = dat_hist[49, domains[i]],
+    Month.10 = dat_hist[50, domains[i]],
+    Month.11 = dat_hist[51, domains[i]],
+    Month.12 = dat_hist[52, domains[i]],
+    Method = "Objective",
+    phase = 2,
+    Method.coded = 5
+  )
+}
+
+```
+
+```{r Naive forecast with linear extrapolation}
+
+# Generate one row for each domain that contains forecasts generated through linear extrapolation.
+# how did forecasts hold up against simple model 
+
+for (i in 1:length(domains)) {
+  
+  start <- dat_hist[46, domains[i]]
+  trend <- (dat_hist[46, domains[i]] - dat_hist[1, domains[i]]) / 46
+  
+  objective_data <- domain_outcomes[ , domains[i]]
+  objective_data <- as.vector((objective_data))
+  
+  vals_w2 <- seq(from = start + trend, by = trend, length.out = 6)
+  
+  naive_acc_w2 <- forecast::accuracy(vals_w1, objective_data)
+  
+  dat <- dat %>% add_row(
+    
+ domain = domains[i],
+    Method = "Naive - linear",
+    Month.7 = vals_w2[1],
+    Month.8 = vals_w2[2],
+    Month.9 = vals_w2[3],
+    Month.10 = vals_w2[4],
+    Month.11 = vals_w2[5],
+    Month.12 = vals_w2[6],
+    mean_error_w2 = naive_acc_w2[1],
+    root_mean_sqr_error_w2 = naive_acc_w2[2],
+    mean_abs_error_w2 = naive_acc_w2[3],
+    mean_percent_error_w2 = naive_acc_w2[4],
+    mean_abs_percent_error_w2 = naive_acc_w2[5],
+    MASE1_w2 = computeMASE(vals_w2, dat_hist[1:46, domains[i]], dat_hist[47:52, domains[i]], 1),
+    MASE2_w2 = mase(objective_data, vals_w2, step_size = 1),
+    Method.coded = 6,
+    phase = 2
+  )
+}
+
+
+```
+
+```{r Create naive forecasts with rwf}
+
+# Generate naive forecasts using random walk method
+
+# compare RMSE to objective markers 
+# get naive forecasts - compare RMSE to objective markers
+# use RMSE as cutoff - split team groups by whether they are above or below by domain 
+# use table to get percentages per group
+
+
+for (i in 1:length(domains)) {
+  
+  time_series <- ts(dat_hist[, domains[i]], frequency = 12, start = c(2017, 1))
+  prediction_basis <- ts(dat_hist[1:46, domains[i]], frequency = 12, start = c(2017, 1))
+  
+  objective_data <- domain_outcomes_w2[ , domains[i]]
+  
+  naive_forecast_w2 <- naive(prediction_basis, h = 6)
+  naive_forecast.tib_w2 <- as_tibble(naive_forecast)
+  
+  naive_forecast.test_w2 <- pull(naive_forecast.tib_w2[,1])
+  time_series.test_w2 <- dat_hist[47:52, domains[i]]
+  
+  naive_acc.test_w2 <-  forecast::accuracy(naive_forecast.test_w2, time_series.test_w2)
+  naive_acc.test_w2 <- as_tibble(naive_acc.test_w2)
+  
+  # naive_acc <- forecast::accuracy(naive_forecast, time_series)
+  # naive_acc.tib <- as_tibble(naive_acc)
+  
+  dat <- dat %>% add_row(
+    
+    domain = domains[i],
+    Method = "Naive - rwf",
+    Month.7 = naive_forecast.test_w2[7],
+    Month.8 = naive_forecast.test_w2[8],
+    Month.9 = naive_forecast.test_w2[9],
+    Month.10 = naive_forecast.test_w2[10],
+    Month.11 = naive_forecast.test_w2[11],
+    Month.12 = naive_forecast.test_w2[12],
+    
+    mean_error_w2 = pull(naive_acc.test_w2[1]),
+    root_mean_sqr_error_w2 = pull(naive_acc.test_w2[2]),
+    mean_abs_error_w2 = pull(naive_acc.test_w2[3]),
+    mean_percent_error_w2 = pull(naive_acc.test_w2[4]),
+    mean_abs_percent_error_w2 = pull(naive_acc.test_w2[5]),
+    MASE1_w2 = computeMASE(naive_forecast.test_w2, dat_hist[1:46, domains[i]], dat_hist[47:52, domains[i]], 1),
+    MASE2_w2 = mase(objective_data, naive_forecast.test_w2, step_size = 1),
+    #mean_abs_scaled_error = pull(naive_acc.tib[2, 6]),
+    Method.coded = 7,
+    phase = 2
+  )
+} 
+
+
+# [1] "lifesat"   "posaffect" "negaffect" "ideoldem"  "ideolrep"  "polar"     "iasian"    "easian"    "iafric"    "eafric"    "igend" #[12] "egend"
+```
+
+```{r Correct ideoldem and ideolrep MASE - Phase 2 }
+
+# correcting ideoldem and ideolrep forecasts because of the missing data point (Jan 2021) in the ground truth data. 
+# Due to the missing data point, the uneven number of predictions vs ground truth were resulting in NAs for MASE scores
+# As a result, we are recalculating accuracy scores, ignoring forecasts submitted for Jan 2011 so that both ground truth and predictions contain 11 data points to calculate MASE
+
+# get list of relevant rows that submitted predictions for ideology domains
+rows_ideol <- which((dat$domain == "ideoldem" | dat$domain == "ideolrep") & dat$phase == 2)
+
+# for each relevant row,
+for (i in rows_ideol) {
+  
+  # Avoid generating accuracy scores for ground truth values
+  if (dat$Method.coded[i] != 5 | is.na(dat$Method.coded[i])) {
+    domain <- dat$domain[i]
+      
+      # pull values for all months except month 9 (Jan 2021)
+    val_w2 <- c(
+      dat$Month.7[i],
+      dat$Month.8[i],
+      dat$Month.10[i],
+      dat$Month.11[i],
+      dat$Month.12[i])
+    
+    # Pull ground truth data for predicted months minus Jan 2021  
+    hist_w2 <- dat_hist[c(47:48, 50:52), domain]
+    
+    # calculate accuracy  
+    acc_w2 <- forecast::accuracy(val_w2, hist_w2)
+    
+    # Update relevant columns for the row
+    dat$mean_error_w2[i] <- acc_w2 [1]
+    dat$root_mean_sqr_error_w2[i] <- acc_w2 [2]
+    dat$mean_abs_error_w2[i] <- acc_w2 [3]
+    dat$mean_percent_error_w2[i] <- acc_w2 [4]
+    dat$mean_abs_percent_error_w2[i] <- acc[5]
+    dat$MASE1_w2[i] <- computeMASE(val_w2 , dat_hist[1:46, domain], hist_w2, 1)
+    dat$MASE2_w2[i] = mase(hist_w2, val_w2 , step_size = 1) 
+  }
+    
+  
+}
+
+
+```
+
+```{r Compare forecast RMSE to naive approach - phase 2}
+
+# Compare each prediction's RMSE score to the two types of naive approaches generated and create a cutoff score, indicating whether the row's RMSE value is greater or less than the naive forecast's RMSE value
+
+dat$RMSE_cutoff_Naive_linear_w2 <- NA
+dat$RMSE_cutoff_Naive_rwf_w2 <- NA
+
+
+for (i in 1:length(domains)) {
+  
+
+  cutoff1_w2 <- dat$root_mean_sqr_error_w2[which(dat$domain == domains[i] & dat$Method %in% "Naive - linear" & dat$phase == 2)]
+  cutoff2_w2 <- dat$root_mean_sqr_error_w2[which(dat$domain == domains[i] & dat$Method %in% "Naive - rwf" & dat$phase == 2)]
+
+ 
+  list_val_w2 <- which(dat$phase == 2 & dat$domain == domains[i] & !dat$Method %in% c("Naive - rwf", "Naive - linear", "Objective"))
+
+                      
+  for (n in 1:length(list_val_w2)) {
+    if (!is.na(dat$root_mean_sqr_error_w2[list_val_w2[n]]) & dat$root_mean_sqr_error_w2[list_val_w2[n]] < cutoff1_w2) {
+      dat$RMSE_cutoff_Naive_linear_w2[list_val_w2[n]] <- 0
+
+
+    } else if (!is.na(dat$root_mean_sqr_error_w2[list_val_w2[n]]) & dat$root_mean_sqr_error_w2[list_val_w2[n]] > cutoff1_w2){
+      dat$RMSE_cutoff_Naive_linear_w2[list_val_w2[n]] <- 1
+
+
+    }
+    
+    if (!is.na(dat$root_mean_sqr_error_w2[list_val_w2[n]]) & dat$root_mean_sqr_error_w2[list_val_w2[n]] < cutoff2_w2) {
+      dat$RMSE_cutoff_Naive_rwf_w2[list_val_w2[n]] <- 0
+    } else if (!is.na(dat$root_mean_sqr_error_w2[list_val_w2[n]]) & dat$root_mean_sqr_error_w2[list_val_w2[n]] > cutoff2_w2){
+      dat$RMSE_cutoff_Naive_rwf_w2[list_val_w2[n]] <- 1
+    }
+  }
+}
+
+
+dat$compare_to_naive_linear_w2 <- factor(dat$RMSE_cutoff_Naive_linear_w2, levels = c(0, 1),
+                          labels = c("Below Naive linear", "Above Naive linear"))
+
+dat$compare_to_naive_rwf_w2 <- factor(dat$RMSE_cutoff_Naive_rwf_w2, levels = c(0, 1),
+                          labels = c("Below Naive rwf", "Above Naive rwf"))
+
+```
+
+```{r time spent}
+
+dat$time_spent <- dat$Last.Click - dat$First.Click
+
+```
+
+
+```{r Create Long data set with difference scores}
+## Convert to Long + Calculate difference scores.
+
+dat$prediction_id <- seq(1, nrow(dat), 1)
+
+# move all predicted values to a single column
+dat_long <- pivot_longer(dat, cols = starts_with("Month"), names_to = "Month", names_prefix = "Month.")
+dat_long$Month <- as.numeric(dat_long$Month)
+
+# exclude rows without values in the "value" column
+dat_long <- filter(dat_long, !is.na(value))
+
+
+# add column to store difference values as % change predicted from baseline
+dat_long$value.dif <- as.numeric(NA)
+
+# for each of the 12 domains, get pre
+for (i in 1:length(domains)) {
+  
+  hist <- dat[which(dat$domain == domains[i] & dat$Method == "Objective"), ]
+  
+  for (n in 1:6) {
+    dat_long[which(dat_long$domain == domains[i] & dat_long$Month == n), "value.dif" ] <- dat_long[which(dat_long$domain == domains[i] & dat_long$Month == n), "value" ] - hist[1, paste0("Month.", n)]
+  }
+  
+  
+}
+
+
+
+```
+
+
+
+```{r output files}
+
+write.csv(dat, "Wave1+2data_2021-07-19.csv")
+write.csv(demographics_unique, "Wave1+2demographics_2021-07-19.csv")
+# write.csv(dat_long, "wave1+2data_long_2021-06-30.csv")
+# write.csv(dat_lay, "Wave1_Lay sample.csv")
+# write.csv(dat_hist, "historical_data_2021-05-19.csv")
+write.csv(dat_comp_1, "team_size_2021-07-19.csv")
+```
+
