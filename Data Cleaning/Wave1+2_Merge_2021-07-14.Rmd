@@ -83,6 +83,8 @@ wave1$Month.18 <- NA
 # Add column to indicate which phase the data is a part of
 wave1$phase <- 1
 
+# Recode covidmeas values which were coded as 4-6 instead of 1-3
+wave1$covidmeas <- wave1$covidmeas - 3
 
 # read wave2 data file
 wave2 <- read.csv("Wave2Forecasts-Cleaned_2021-05-17.csv", stringsAsFactors = FALSE)
@@ -122,6 +124,8 @@ wave2$Month.6 <- NA
 
 # Add column to indicate which phase the data is a part of
 wave2$phase <- 2
+wave2$covidmeas <- wave2$covidmeas - 3
+
 
 # Add column indicating that these rows consist of predictions by academic sample
 
@@ -197,6 +201,30 @@ dat[which(dat$team_name == "TAPE-Measurement (Twitter Affect and Project-implici
 
 
 ```
+
+```{r fix covidmeas}
+
+# Certain teams indicated that they selected "Other" for covidmeas by accident, and did not intend to select the option at all
+# Bluebirds
+# Team42
+# The Causal Lab
+# scaled-humanity
+
+dat[which(dat$team_name == "Bluebirds"), "covidcondyn"] <- 0
+dat[which(dat$team_name == "Bluebirds"), "covidmeas"] <- NA
+
+dat[which(dat$team_name == "Team42"), "covidcondyn"] <- 0
+dat[which(dat$team_name == "Team42"), "covidmeas"] <- NA
+
+dat[which(dat$team_name == "The Causal Lab"), "covidcondyn"] <- 0
+dat[which(dat$team_name == "The Causal Lab"), "covidmeas"] <- NA
+
+dat[which(dat$team_name == "scaled-humanity"), "covidcondyn"] <- 0
+dat[which(dat$team_name == "scaled-humanity"), "covidmeas"] <- NA
+
+
+```
+
 
 ```{r Demographics}
 
@@ -306,6 +334,9 @@ dat_lay$Month.18 <- NA
 dat_lay$phase <- 1
 dat_lay$isExpert <- 0
 dat_lay$team_name <- NA
+
+# Set covidmeas as 2 to indicate that prolific teams only provided estimates for covid cases (were not provided option for covid deaths)
+dat_lay$covidmeas <- 2
 
 # rename column to match academic sample columns
 dat_lay <- dat_lay %>% dplyr::rename(
