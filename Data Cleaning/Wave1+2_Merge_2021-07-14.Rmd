@@ -1088,7 +1088,7 @@ for (i in 1:length(unique_teams_predicted_w1)) {
       mean_percent_error_w1_lastmonths = outcome_w1_lastmonths[4],
       mean_abs_percent_error_w1_lastmonths = outcome_w1_lastmonths[5],
       MASE1_w1_lastmonths = computeMASE(dat_temp_2_w1_lastmonths$value, objective_data_lastmonths[1:40], objective_data_lastmonths[47:52], 1),
-      MASE2_w1_lastmonths = Metrics::mase(objective_data_lastmonths[47:52], vals_w1, step_size = 1)
+      MASE2_w1_lastmonths = Metrics::mase(objective_data_lastmonths[47:52], vals_w1_lastmonths, step_size = 1)
                              )
 
  
@@ -1154,7 +1154,7 @@ for (i in rows_ideol) {
     dat$mean_percent_error_w1_lastmonths[i] <- acc_w1_lastmonths[4]
     dat$mean_abs_percent_error_w1_lastmonths[i] <- acc_w1_lastmonths[5]
     dat$MASE1_w1_lastmonths[i] <- computeMASE(val_w1_lastmonths , dat_hist[1:40, domain], hist_w1_lastmonths, 1)
-    dat$MASE2_w1_lastmonths[i] = Metrics::mase(hist_w2, val_w1_lastmonths , step_size = 1) 
+    dat$MASE2_w1_lastmonths[i] = Metrics::mase(hist_w1_lastmonths, val_w1_lastmonths , step_size = 1) 
   }
     
   
