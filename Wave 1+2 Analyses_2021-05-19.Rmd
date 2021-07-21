@@ -51,7 +51,7 @@ for (i in 1:length(domains)) {
 ```{r Import Data}
 
 # filters by completion time, so that prolific sample excludes predictions that took less than 50 seconds to make
-dat <- read.csv("Wave1+2data_2021-06-30.csv", stringsAsFactors = FALSE)
+dat <- read.csv("Wave1+2data_2021-07-19.csv", stringsAsFactors = FALSE)
 
 # data set below does not filter lay sample by completion time
 # dat <- read.csv("Wave1+2data_coded_2021-05-18.csv", stringsAsFactors = FALSE)
@@ -160,7 +160,7 @@ dat$multi_dis.factor <- factor(dat$is_multidisciplinary, levels = c(0, 1), label
 
 # Month - specific Month being forecasted, from 1 (May 2020) to 18 (May 2021)
 # value - value predicted for the given Month
-# value.dif - value predicted minus the objective value for that domain/Month - currently only present for Months 1-6 until we get the full data from our Konstantyn
+# value.dif - value predicted minus the objective value for that domain/Month
 
 # set dataframe to long format
 dat_long <- pivot_longer(dat, cols = starts_with("Month"), names_to = "Month", names_prefix = "Month.")
@@ -179,7 +179,7 @@ for (i in 1:length(domains)) {
   # Retrieve row with correct historical value for the domain
   hist <- dat[which(dat$domain == domains[i] & dat$Method == "Objective"), ]
   
-  for (n in 1:6) {
+  for (n in 1:12) {
     # retrieve all rows from dat_long that match the domain + Month for Months 1-6 and calculate the correct
     dat_long[which(dat_long$domain == domains[i] & dat_long$Month == n), "value.dif" ] <- dat_long[which(dat_long$domain == domains[i] & dat_long$Month == n), "value" ] - hist[1, paste0("Month.", n)]
   }
@@ -191,6 +191,21 @@ for (i in 1:length(domains)) {
 # dat_long <- dat_long %>% subset(flag_lay_response == 0 | is.na(flag_lay_response))
 
 ```
+
+```{r add COVID data to dat_long, eval=FALSE, include=FALSE}
+
+# CURRENTLY DISABLED. Code is adding additional rows when it should only be linking matched columns 
+
+dat_covid <- pivot_longer(dat, cols = starts_with("covidest"), names_to = "Month", names_prefix = "covidest_", values_to = "covid_estimates")
+
+dat_covid$Month <- as.numeric(dat_covid$Month)
+
+dat_covid <- dat_covid[, c("ResponseId", "domain", "Month", "covid_estimates")]
+
+# dat_long <- dat_long %>% left_join(dat_covid, by = c("ResponseId" = "ResponseId", "domain" = "domain", "Month" = "Month"))
+
+```
+
 
 ```{r Import Team member Demographic info}
 

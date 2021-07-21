@@ -15,6 +15,9 @@ library(forecast)
 library(psych)
 library(Metrics)
 library(ggplot2)
+
+options(scipen = 1000)
+
 # library(fpp2)
 # library(smooth)
 # library(Hmisc)
@@ -222,6 +225,19 @@ dat[which(dat$team_name == "The Causal Lab"), "covidmeas"] <- NA
 dat[which(dat$team_name == "scaled-humanity"), "covidcondyn"] <- 0
 dat[which(dat$team_name == "scaled-humanity"), "covidmeas"] <- NA
 
+# Breakdown of "Other" response for covidmeas
+
+# Economic effect - AhamBrahamasmi
+# "temporal development of the crisis" - BlackSwan
+# time to enforce public measures - Broken Mirror Neurons
+# Both death & # of cases - Haku, NYHC, Erebuni
+# Development of vaccine - CheeseCake (lifesat)
+
+# attribution of cause to China - CheeseCake (easian)
+
+# Covid as election topic - Dutch East India Company
+# Own predictions of deaths and cases, not quantitative (?) - CoronaSky
+# Social policies in response to shutdown, life & job disruptions - Korrigan
 
 ```
 
@@ -645,7 +661,7 @@ for (i in 1:length(unique_teams_predicted_w1)) {
       mean_percent_error_w1 = outcome_w1[4],
       mean_abs_percent_error_w1 = outcome_w1[5],
       MASE1_w1 = computeMASE(dat_temp_2_w1$value, objective_data[1:40], objective_data[41:52], 1),
-      MASE2_w1 = mase(objective_data[41:52], vals_w1, step_size = 1)
+      MASE2_w1 = Metrics::mase(objective_data[41:52], vals_w1, step_size = 1)
                              )
 
   }
@@ -730,7 +746,7 @@ for (i in 1:length(domains)) {
     mean_percent_error_w1 = naive_acc_w1[4],
     mean_abs_percent_error_w1 = naive_acc_w1[5],
     MASE1_w1 = computeMASE(vals_w1, dat_hist[1:40, domains[i]], dat_hist[41:52, domains[i]], 1),
-    MASE2_w1 = mase(objective_data, vals_w1, step_size = 1),
+    MASE2_w1 = Metrics::mase(objective_data, vals_w1, step_size = 1),
     Method.coded = 6,
     phase = 1
   )
@@ -801,7 +817,7 @@ for (i in 1:length(domains)) {
     mean_percent_error_w1 = pull(naive_acc.test[4]),
     mean_abs_percent_error_w1 = pull(naive_acc.test[5]),
     MASE1_w1 = computeMASE(naive_forecast.test, dat_hist[1:40, domains[i]], dat_hist[41:52, domains[i]], 1),
-    MASE2_w1 = mase(objective_data, naive_forecast.test, step_size = 1),
+    MASE2_w1 = Metrics::mase(objective_data, naive_forecast.test, step_size = 1),
     #mean_abs_scaled_error = pull(naive_acc.tib[2, 6]),
     Method.coded = 7,
     phase = 1
@@ -856,7 +872,7 @@ for (i in rows_ideol) {
     dat$mean_percent_error_w1[i] <- acc[4]
     dat$mean_abs_percent_error_w1[i] <- acc[5]
     dat$MASE1_w1[i] <- computeMASE(val_w1, dat_hist[1:40, domain], hist_w1, 1)
-    dat$MASE2_w1[i] = mase(hist_w1, val_w1, step_size = 1) 
+    dat$MASE2_w1[i] = Metrics::mase(hist_w1, val_w1, step_size = 1) 
   }
     
   
@@ -919,37 +935,236 @@ dat$time_spent <- dat$Last.Click - dat$First.Click
 ```
 
 
-```{r Create Long data set with difference scores}
-## Convert to Long + Calculate difference scores.
+## PHASE 1 ANALYSES - COVID CASES + DEATHS
 
-dat$prediction_id <- seq(1, nrow(dat), 1)
+```{r covid MASE}
 
-# move all predicted values to a single column
-dat_long <- pivot_longer(dat, cols = starts_with("Month"), names_to = "Month", names_prefix = "Month.")
-dat_long$Month <- as.numeric(dat_long$Month)
+# domain_outcomes
+# creates a new data frame that contains the mean error, root mean square error, mean absolute error, mean percent error, and mean absolute percent error or participant submissions 
 
-# exclude rows without values in the "value" column
-dat_long <- filter(dat_long, !is.na(value))
+# shift data frame to long format
+
+dat_covid <- filter(dat, phase == 1)
+dat_covid <- filter (dat_covid, (!is.na(covidest_1) & !is.na(covidest_2) & !is.na(covidest_3) & !is.na(covidest_4) & !is.na(covidest_5) & !is.na(covidest_6) & !is.na(covidest_7) & !is.na(covidest_8) & !is.na(covidest_9) & !is.na(covidest_10) & !is.na(covidest_11) & !is.na(covidest_12)))
+
+dat_covid <- pivot_longer(dat_covid, cols = starts_with("covidest"), names_to = "Month", names_prefix = "covidest_")
+dat_covid$Month <- as.numeric(dat_covid$Month)
+
+unique_teams_predicted_covid_death <- unique(dat_covid$ResponseId)
 
 
-# add column to store difference values as % change predicted from baseline
-dat_long$value.dif <- as.numeric(NA)
+# create data set that will be merged with dat, that contains additional columns for mean error, root mean square error, mean percent error, mean absolute error, mean absolute percent error and the two types of mean absolute scaled error that are being calculated (#1 uses function declared on line 34, #2 uses Metrics::mase function)
+dat_accuracy_covid <- tibble(
+  ResponseId = character(),
+  domain = character(),
+  mean_error_covid = numeric(),
+  root_mean_sqr_error_covid = numeric(),
+  mean_abs_error_covid = numeric(),
+  mean_percent_error_covid = numeric(),
+  mean_abs_percent_error_covid = numeric(),
+  MASE1_covid = numeric(),
+  MASE2_covid = numeric()
+)
 
-# for each of the 12 domains, get pre
-for (i in 1:length(domains)) {
+# For each team that submitted a prediction, filter dataset by team & domain
+# pull relevant historic data for covidmeas they used for the given domain and generate forecast accuracy to get mean error, root mean square error, mean absolute error, mean percent error, and mean absolute percent error
+# calculate both types of MASE values
+for (i in 1:length(unique_teams_predicted_covid_death)) {
+  dat_temp_1_covid <- filter(dat_covid, ResponseId == unique_teams_predicted_covid_death[i])
   
-  hist <- dat[which(dat$domain == domains[i] & dat$Method == "Objective"), ]
+  domain_list_covid <- unique(dat_temp_1_covid$domain)
   
-  for (n in 1:6) {
-    dat_long[which(dat_long$domain == domains[i] & dat_long$Month == n), "value.dif" ] <- dat_long[which(dat_long$domain == domains[i] & dat_long$Month == n), "value" ] - hist[1, paste0("Month.", n)]
+  for (n in 1:length(domain_list_covid)) {
+    
+    dat_temp_2_covid <- filter(dat_temp_1_covid, domain == domain_list_covid[n])
+    
+    vals_covid <- as.vector(dat_temp_2_covid$value)
+    
+    if(dat_temp_2_covid$covidmeas[1] == 1) {
+      # covidmeas == 1 means covid deaths
+      objective_data <- dat_hist$COVID_deaths
+      outcome_covid <- domain_outcomes[, which(names(domain_outcomes) == "COVID_deaths")]
+      
+    } else {
+      # covidmeas == 2 means covid cases
+      objective_data <- dat_hist$COVID_cases
+      outcome_covid <- domain_outcomes[, which(names(domain_outcomes) == "COVID_cases")]
+      
+    }
+    
+    objective_data <- as.vector((objective_data))
+
+    
+    
+    
+    outcome_covid <- forecast::accuracy(dat_temp_2_covid$value, outcome_covid)
+
+    dat_accuracy_covid <- dat_accuracy_covid %>% add_row(
+      ResponseId = unique_teams_predicted_w1[i],
+      domain = domain_list_w1[n],
+      mean_error_covid = outcome_covid[1],
+      root_mean_sqr_error_covid = outcome_w1[2],
+      mean_abs_error_covid = outcome_w1[3],
+      mean_percent_error_covid = outcome_w1[4],
+      mean_abs_percent_error_covid = outcome_w1[5],
+      MASE1_covid = computeMASE(dat_temp_2_covid$value, objective_data[37:40], objective_data[41:52], 1),
+      MASE2_covid = Metrics::mase(objective_data[41:52], vals_covid, step_size = 1)
+                             )
+
   }
-  
-  
 }
 
+dat_accuracy_covid$phase <- 1
+
+# merge dat_accuracy with dat by matching response ID, phase, and domain
+dat <- dat %>% left_join(dat_accuracy_covid, by = c("phase" = "phase", "ResponseId" = "ResponseId", "domain" = "domain"))
 
 
 ```
+
+
+
+###compute mase for phase 1 months 7 to 12
+
+ 
+
+```{r compute mase for months 7 to 12 for phase 1 to compare to phase 2 - phase 1}
+
+ 
+
+# create data set that will be merged with dat, that contains additional columns for mean error, root mean square error, mean percent error, mean absolute error, mean absolute percent error and the two types of mean absolute scaled error that are being calculated (#1 uses function declared on line 34, #2 uses Metrics::mase function)
+dat_accuracy_w1_lastmonths <- tibble(
+  ResponseId_w1_lastmonths = character(),
+  domain_w1_lastmonths = character(),
+  mean_error_w1_lastmonths = numeric(),
+  root_mean_sqr_error_w1_lastmonths = numeric(),
+  mean_abs_error_w1_lastmonths = numeric(),
+  mean_percent_error_w1_lastmonths = numeric(),
+  mean_abs_percent_error_w1_lastmonths = numeric(),
+  MASE1_w1_lastmonths = numeric(),
+  MASE2_w1_lastmonths = numeric()
+)
+
+ 
+
+dat_predicted_w1_lastmonths <- filter(dat_wave_1, Month > 6 & Month < 13)
+domain_outcomes_w1_lastmonths <- filter(domain_outcomes, Month > 6 & Month < 13)
+
+ 
+
+# For each team that submitted a prediction, filter dataset by team & domain
+# pull relevant historic data for the domain and generate forecast accuracy to get mean error, root mean square error, mean absolute error, mean percent error, and mean absolute percent error
+# calculate both types of MASE values
+
+ 
+
+for (i in 1:length(unique_teams_predicted_w1)) {
+  dat_temp_1_w1_lastmonths <- filter(dat_predicted_w1_lastmonths, ResponseId == unique_teams_predicted_w1[i])
+  
+  domain_list_w1_lastmonths <- unique(dat_temp_1_w1_lastmonths$domain)
+  
+  for (n in 1:length(domain_list_w1_lastmonths)) {
+    
+    dat_temp_2_w1_lastmonths <- filter(dat_temp_1_w1_lastmonths, domain == domain_list_w1_lastmonths[n])
+    
+    vals_w1_lastmonths <- as.vector(dat_temp_2_w1_lastmonths$value)
+    
+    objective_data_lastmonths <- dat_hist[ , which(names(dat_hist) == domain_list_w1_lastmonths[n])]
+    objective_data_lastmonths <- as.vector((objective_data_lastmonths))
+
+ 
+
+    
+    outcome_w1_lastmonths <- forecast::accuracy(dat_temp_2_w1_lastmonths$value, domain_outcomes_w1_lastmonths[, which(names(domain_outcomes_w1_lastmonths) == domain_list_w1_lastmonths[n])])
+
+ 
+
+    dat_accuracy_w1_lastmonths <- dat_accuracy_w1_lastmonths %>% add_row(
+      ResponseId_w1_lastmonths = unique_teams_predicted_w1[i],
+      domain_w1_lastmonths = domain_list_w1_lastmonths[n],
+      mean_error_w1_lastmonths = outcome_w1_lastmonths[1],
+      root_mean_sqr_error_w1_lastmonths = outcome_w1_lastmonths[2],
+      mean_abs_error_w1_lastmonths = outcome_w1_lastmonths[3],
+      mean_percent_error_w1_lastmonths = outcome_w1_lastmonths[4],
+      mean_abs_percent_error_w1_lastmonths = outcome_w1_lastmonths[5],
+      MASE1_w1_lastmonths = computeMASE(dat_temp_2_w1_lastmonths$value, objective_data_lastmonths[1:40], objective_data_lastmonths[47:52], 1),
+      MASE2_w1_lastmonths = Metrics::mase(objective_data_lastmonths[47:52], vals_w1, step_size = 1)
+                             )
+
+ 
+
+  }
+}
+
+ 
+
+dat_accuracy_w1_lastmonths$phase <- 1
+
+ 
+
+# merge dat_accuracy with dat by matching response ID, phase, and domain
+dat <- dat %>% left_join(dat_accuracy_w1_lastmonths, by = c("phase" = "phase", "ResponseId" = "ResponseId_w1_lastmonths", "domain" = "domain_w1_lastmonths"))
+
+ 
+
+```
+
+ 
+
+```{r Correct ideoldem and ideolrep MASE - Phase 1 months 7 to 12 }
+
+ 
+
+# correcting ideoldem and ideolrep forecasts because of the missing data point (Jan 2021) in the ground truth data. 
+# Due to the missing data point, the uneven number of predictions vs ground truth were resulting in NAs for MASE scores
+# As a result, we are recalculating accuracy scores, ignoring forecasts submitted for Jan 2011 so that both ground truth and predictions contain 11 data points to calculate MASE
+
+ 
+
+# get list of relevant rows that submitted predictions for ideology domains
+rows_ideol <- which((dat$domain == "ideoldem" | dat$domain == "ideolrep") & dat$phase == 1)
+
+ 
+
+# for each relevant row,
+for (i in rows_ideol) {
+  
+  # Avoid generating accuracy scores for ground truth values
+  if (dat$Method.coded[i] != 5 | is.na(dat$Method.coded[i])) {
+    domain <- dat$domain[i]
+      
+      # pull values for all months except month 9 (Jan 2021)
+    val_w1_lastmonths <- c(
+      dat$Month.7[i],
+      dat$Month.8[i],
+      dat$Month.10[i],
+      dat$Month.11[i],
+      dat$Month.12[i])
+    
+    # Pull ground truth data for predicted months minus Jan 2021  
+    hist_w1_lastmonths <- dat_hist[c(47:48, 50:52), domain]
+    
+    # calculate accuracy  
+    acc_w1_lastmonths<- forecast::accuracy(val_w1_lastmonths, hist_w1_lastmonths)
+    
+    # Update relevant columns for the row
+    dat$mean_error_w1_lastmonths[i] <- acc_w1_lastmonths[1]
+    dat$root_mean_sqr_error_w1_lastmonths[i] <- acc_w1_lastmonths[2]
+    dat$mean_abs_error_w1_lastmonths[i] <- acc_w1_lastmonths[3]
+    dat$mean_percent_error_w1_lastmonths[i] <- acc_w1_lastmonths[4]
+    dat$mean_abs_percent_error_w1_lastmonths[i] <- acc_w1_lastmonths[5]
+    dat$MASE1_w1_lastmonths[i] <- computeMASE(val_w1_lastmonths , dat_hist[1:40, domain], hist_w1_lastmonths, 1)
+    dat$MASE2_w1_lastmonths[i] = Metrics::mase(hist_w2, val_w1_lastmonths , step_size = 1) 
+  }
+    
+  
+}
+
+ 
+
+
+```
+ 
 
 
 ##PHASE 2 ANALYSES - COMPUTE MASE AND COMPARE TO NAIVE FORECASTS
@@ -1013,7 +1228,7 @@ for (i in 1:length(unique_teams_predicted_w2)) {
       mean_percent_error_w2 = outcome_w2[4],
       mean_abs_percent_error_w2 = outcome_w2[5],
       MASE1_w2 = computeMASE(dat_temp_2_w2$value, objective_data[1:46], objective_data[47:52], 1),
-      MASE2_w2 = mase(objective_data[47:52], vals_w2, step_size = 1)
+      MASE2_w2 = Metrics::mase(objective_data[47:52], vals_w2, step_size = 1)
                              )
 
   }
@@ -1097,7 +1312,7 @@ for (i in 1:length(domains)) {
     mean_percent_error_w2 = naive_acc_w2[4],
     mean_abs_percent_error_w2 = naive_acc_w2[5],
     MASE1_w2 = computeMASE(vals_w2, dat_hist[1:46, domains[i]], dat_hist[47:52, domains[i]], 1),
-    MASE2_w2 = mase(objective_data, vals_w2, step_size = 1),
+    MASE2_w2 = Metrics::mase(objective_data, vals_w2, step_size = 1),
     Method.coded = 6,
     phase = 2
   )
@@ -1152,7 +1367,7 @@ for (i in 1:length(domains)) {
     mean_percent_error_w2 = pull(naive_acc.test_w2[4]),
     mean_abs_percent_error_w2 = pull(naive_acc.test_w2[5]),
     MASE1_w2 = computeMASE(naive_forecast.test_w2, dat_hist[1:46, domains[i]], dat_hist[47:52, domains[i]], 1),
-    MASE2_w2 = mase(objective_data, naive_forecast.test_w2, step_size = 1),
+    MASE2_w2 = Metrics::mase(objective_data, naive_forecast.test_w2, step_size = 1),
     #mean_abs_scaled_error = pull(naive_acc.tib[2, 6]),
     Method.coded = 7,
     phase = 2
@@ -1200,7 +1415,7 @@ for (i in rows_ideol) {
     dat$mean_percent_error_w2[i] <- acc_w2 [4]
     dat$mean_abs_percent_error_w2[i] <- acc[5]
     dat$MASE1_w2[i] <- computeMASE(val_w2 , dat_hist[1:46, domain], hist_w2, 1)
-    dat$MASE2_w2[i] = mase(hist_w2, val_w2 , step_size = 1) 
+    dat$MASE2_w2[i] = Metrics::mase(hist_w2, val_w2 , step_size = 1) 
   }
     
   
@@ -1255,12 +1470,6 @@ dat$compare_to_naive_rwf_w2 <- factor(dat$RMSE_cutoff_Naive_rwf_w2, levels = c(0
 
 ```
 
-```{r time spent}
-
-dat$time_spent <- dat$Last.Click - dat$First.Click
-
-```
-
 
 ```{r Create Long data set with difference scores}
 ## Convert to Long + Calculate difference scores.
@@ -1281,7 +1490,7 @@ dat_long$value.dif <- as.numeric(NA)
 # for each of the 12 domains, get pre
 for (i in 1:length(domains)) {
   
-  hist <- dat[which(dat$domain == domains[i] & dat$Method == "Objective"), ]
+  hist <- dat[which(dat$domain == domains[i] & dat$Method == "Objective" & dat$phase == 2), ]
   
   for (n in 1:6) {
     dat_long[which(dat_long$domain == domains[i] & dat_long$Month == n), "value.dif" ] <- dat_long[which(dat_long$domain == domains[i] & dat_long$Month == n), "value" ] - hist[1, paste0("Month.", n)]
