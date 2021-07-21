@@ -62,7 +62,7 @@ domains <- c("lifesat", "posaffect", "negaffect", "ideoldem",  "ideolrep",  "pol
 ```{r Import Data}
 
 # filters by completion time, so that prolific sample excludes predictions that took less than 50 seconds to make
-#dat <- read.csv("Wave1+2data_2021-07-20.csv", stringsAsFactors = FALSE)
+dat <- read.csv("Wave1+2data_2021-07-20.csv", stringsAsFactors = FALSE)
 
 # data set below does not filter lay sample by completion time
 # dat <- read.csv("Wave1+2data_coded_2021-05-18.csv", stringsAsFactors = FALSE)
@@ -595,13 +595,14 @@ theme(legend.position="bottom") +scale_color_d3()+scale_fill_d3()+
 
 #combine columns for MASE predictions for last 6 months of phase 1 and first 6 months of phase 2
   
-dat_long$MASE1_mth7to12 <- rowSums(dat_long[,c("MASE1_w2", "MASE2_w1_lastmonths")], na.rm = TRUE) #this isn't working
-
+dat_long$MASE1_mth7to12 <- ifelse(is.na(dat_long$MASE1_w2)==T,dat_long$MASE2_w1_lastmonths,dat_long$MASE1_w2)
+  
   #this compares MASE for months 7 to 12 for phase 1 and 2
   #NOTE: error bars not working, something off with phase 2
-dat_long %>% subset(isExpert.factor != "Prolific Academic" & Method.code!="Ground Truth"& Method.code!="Naive-linear"&Method.code!="Naive-rfw") %>%  ggplot(aes(x = domain, y = MASE1_mth7to12, colour = phase, fill=phase))+
+dat_long %>% subset(isExpert.factor!= "Prolific Academic" & Method.code!="Ground Truth"& Method.code!="Naive-linear"&Method.code!="Naive-rfw") %>%  
+  ggplot(aes(x = domain, y = MASE2_w1_lastmonths, colour = phase, fill=phase))+
  stat_summary(fun.data="mean_cl_boot",  position=pd)+  theme_minimal(base_size = 14) +
-theme(legend.position="bottom") +scale_color_d3()+scale_fill_d3()+  
+theme(legend.position="bottom") +scale_color_d3()+scale_fill_d3()+ 
   labs(colour = "Phase",fill="Phase", x="",y="MASE (M +/- 95%CI)") 
 
 
