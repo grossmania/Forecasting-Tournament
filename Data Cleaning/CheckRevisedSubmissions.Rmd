@@ -1,4 +1,14 @@
-```{r}
+```{r Import}
 
+dat <- read.csv("Wave1+2data_2021-07-20.csv", stringsAsFactors = FALSE)
+
+# dat1 <- dat %>% filter(revised == 1)
+
+
+dat2 <- dat %>% dplyr::arrange(ResponseId, domain, phase)
+
+dat3 <- dat2[, c("ResponseId", "phase", "domain", "model", "theory", "parameters", "numpred", "covidcondyn", "covidmeas", "coviddesc")]
+
+write.csv(dat3, "participant_revisedSubmissions.csv")
 ```
 

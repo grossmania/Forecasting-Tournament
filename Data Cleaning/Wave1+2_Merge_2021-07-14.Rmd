@@ -501,6 +501,9 @@ dat <- dat %>% left_join(dat_size, by = c("team_name"))
 
 dat_coded <- read.csv("Method_ComplexityCoding_Merged_2021-04-22.csv")
 
+# filter rows that were flagged
+dat_coded <- dat_coded %>% filter(is.na(OT.Flag))
+
 dat_coded <- dat_coded[ , c("phase", "team_name", "Issue", "Type.Final", "Complexity.Final")]
 
 dat_coded <- dat_coded %>% dplyr::rename(
@@ -553,6 +556,8 @@ dat <- dat %>% left_join(dat_counter, by = c("phase", "team_name", "domain"))
 ```
 
 
+
+
 ```{r fix scoring error for subject expertise & covidcondyn}
 # dat1 <- dat
 # subexpert (subject expertise) column for phase 1 all domains, and phase 2 all domains except lifesat were incorrectly coded as 1,2,4,5,6,9,10 instead of 1-7
@@ -601,6 +606,26 @@ dat <- dat %>% dplyr::rename(
   flag_lay_response = Final.OT
 
 )
+
+```
+
+
+
+```{r Exclude participants whose responses were flagged}
+
+dat_flag <- read.csv("participant_revisedSubmissions.csv", stringsAsFactors = FALSE)
+
+dat_flag <- dat_flag %>% filter(Flag == 1)
+
+# test <- dat
+dat <- test
+  
+for (i in 1:nrow(dat_flag)) {
+  temp <- dat_flag[i,]
+  
+  dat <- dat[which(dat$ResponseId != temp$ResponseId[1]), ]
+  
+}
 
 ```
 
@@ -1507,11 +1532,11 @@ for (i in 1:length(domains)) {
 
 ```{r output files}
 
-write.csv(dat, "Wave1+2data_2021-07-19.csv")
-write.csv(demographics_unique, "Wave1+2demographics_2021-07-19.csv")
+write.csv(dat, "Wave1+2data_2021-07-21.csv")
+write.csv(demographics_unique, "Wave1+2demographics_2021-07-21.csv")
 # write.csv(dat_long, "wave1+2data_long_2021-06-30.csv")
 # write.csv(dat_lay, "Wave1_Lay sample.csv")
 # write.csv(dat_hist, "historical_data_2021-05-19.csv")
-write.csv(dat_comp_1, "team_size_2021-07-19.csv")
+write.csv(dat_comp_1, "team_size_2021-07-21.csv")
 ```
 
