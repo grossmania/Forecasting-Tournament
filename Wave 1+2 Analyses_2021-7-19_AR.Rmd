@@ -560,14 +560,84 @@ dat %>% subset(phase == 1 & !is.na(isExpert.factor)& Method.code!="Ground Truth"
 theme(legend.position="bottom") +scale_color_d3()+scale_fill_d3()+  
   labs(colour = "Method",fill="Method", x="",y="MASE (M +/- 95%CI)") 
 
-dat$updated<-ifelse(dat$revised==1,"update","no update")
+
+dat.phase1<-dat %>% subset(phase == 1 & !is.na(isExpert.factor)& Method.code!="Ground Truth"& Method.code!="Naive-linear"&Method.code!="Naive-rfw")
+dat.phase1$Method.code <- relevel(factor(dat.phase1$Method.code), "Lay People") #use lay people as a reference group
+
+model.phase1<-  lmer(MASE1_w1~domain*Method.code+(1|ResponseId), data=dat.phase1)
+car::Anova(model.phase1,type="III") #no interaction, so just look at main effects
+
+summ(model.phase1, digits=4)
+emmeans(model.phase1,pairwise ~Method.code|domain, adjust = "none")
+#data driven and hybrid is better than lay people for igen (marginal), life satisfaction (sig)
 
 
+phase1.means<-as.data.frame(emmeans(model.phase1,pairwise ~domain|Method.code, adjust = "none")$emmeans)
+# reorder and get the order variable to maintain facet-specific orders (otherwise it get screwy)
+phase1.means <- phase1.means %>%
+  # 1. Remove grouping
+  ungroup() %>%
+  # 2. Arrange by
+  #   i.  facet group
+  #   ii. bar height
+  arrange(Method.code, emmean) %>%
+  # 3. Add order column of row numbers
+  mutate(order = row_number())
+
+#lollipop chart
+phase1.means %>% ggplot(aes(x=order, y=emmean, color=Method.code)) +  
+geom_point(size=3) + 
+  geom_segment(aes(x=order, 
+                   xend=order, 
+                   y=0, 
+                   yend=emmean)) +facet_wrap(vars(Method.code), scales = "free")+
+  scale_x_continuous(   # Add categories to axis
+    breaks = phase1.means$order,
+    labels = phase1.means$domain)+theme_minimal(base_size = 14) +geom_hline(yintercept =1, linetype='dashed', color='red', 14)+theme(legend.position="none")+
+scale_color_aaas()+ labs(colour = "Method",x="",y="Average MASE") 
+
+#errorbar charts, with scores ordered
+phase1.means %>% ggplot(aes(x=order, y=emmean, color=Method.code)) +  
+geom_point(size=3) + 
+geom_errorbar(aes(ymin=lower.CL, ymax=upper.CL))+
+ facet_wrap(vars(Method.code), scales = "free", nrow=4)+theme_minimal() +geom_hline(yintercept =1, linetype='dashed', color='red', 14)+theme(legend.position="none")+
+  scale_x_continuous(   # Add categories to axis
+    breaks = phase1.means$order,
+    labels = phase1.means$domain,expand = c(0,0))+
+scale_color_aaas()+ labs(colour = "Method",x="",y="Average MASE +/- 95% CI") 
+
+
+emmeans(model.phase1,pairwise ~domain|Method.code, adjust = "none")$contrast
+
+
+# - pos affect and eafric
+# - pos affect and iafric
+# - life sat and eafric
+# - life sat and iasian
+# - life sat and egender
+# - life sat and igender
+# - life sat and pos affect
+# - life sat and neg affect
+# - life sat and polarization
+# - ideology dem and rep
+# - ideology dem and life satisfaction
+# - ideology rep and polarization
+
+## EXAMINE EFFECTS OF UPDATING FOR PHASE I PREDICTIONS AMONG ACADEMICS
+dat.phase1$updated<-ifelse(dat.phase1$revised==1,"update","no update")
+
+model.phase1.update<-  lmer(MASE1_w1~domain*updated+(1|ResponseId), data=dat.phase1)
+car::Anova(model.phase1.update,type="III") #no interaction, just a sig effect of domain
+
+emmeans(model.phase1.update,pairwise ~updated|domain, adjust = "none") #nonsig
+
+#visualize
 dat %>% subset(phase == 1 & !is.na(isExpert.factor)& !is.na(revised)&Method.code!="Ground Truth"& Method.code!="Naive-linear"&Method.code!="Naive-rfw") %>% 
  ggplot(aes(x = domain, y = MASE1_w1, colour = updated , fill=updated ))+
  stat_summary(fun.data="mean_cl_boot",  position=pd)+  theme_minimal(base_size = 14) +geom_hline(yintercept =1, linetype='dashed', color='red', 14)+
 theme(legend.position="bottom") +scale_color_d3()+scale_fill_d3()+  
   labs(colour = "",fill="", x="",y="MASE (M +/- 95%CI)") 
+
 
 
 ##PHASE 2
