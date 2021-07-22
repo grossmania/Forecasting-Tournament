@@ -23,6 +23,8 @@ library(ggsci)
 library(dplyr)
 library(Hmisc)
 
+options(max.print = 20000, scipen = 1000)
+
 ```
 
 ```{r Global Variables}
@@ -40,21 +42,31 @@ domains <- c("lifesat", "posaffect", "negaffect", "ideoldem",  "ideolrep",  "pol
 
 ```
 
+```{r Functions}
+
+pct_change <- function(previous, new, as_decimal = FALSE) {
+  x <- abs(((new - previous) / previous) * 100)
+  if (as_decimal) x <- x / 100
+  return(x)
+}
+
+```
+
 
 ```{r historical data}
 
-# # import 46 months of historical values up to October 2020 
-# dat_hist <- read.csv("historical_data.csv", stringsAsFactors = FALSE)
-# 
-# # Create a list of trends for each domain, ordered in the same manner as domains variable up above 
-# hist_trend <- list()
-# 
-# for (i in 1:length(domains)) {
-#   
-#   trend <- dat_hist[40, domains[i]] - dat_hist[1, domains[i]]
-#   hist_trend[[i]] <- trend
-#   
-# }
+# import 46 months of historical values up to October 2020
+dat_hist <- read.csv("historical_data.csv", stringsAsFactors = FALSE)
+
+# Create a list of trends for each domain, ordered in the same manner as domains variable up above
+hist_trend <- list()
+
+for (i in 1:length(domains)) {
+
+  trend <- dat_hist[40, domains[i]] - dat_hist[1, domains[i]]
+  hist_trend[[i]] <- trend
+
+}
 ```
 
 
@@ -168,7 +180,7 @@ dat$multi_dis.factor <- factor(dat$is_multidisciplinary, levels = c(0, 1), label
 
 ```
 
-```{r Data - long format}
+```{r Data - long format + absolute percent difference}
 
 # set dataframe to long format
 dat_long <- pivot_longer(dat, cols = starts_with("Month"), names_to = "Month", names_prefix = "Month.")
@@ -181,15 +193,18 @@ dat_long <- filter(dat_long, !is.na(value))
 # add column to store difference values as change compared to objective results for that given month/domain
 dat_long$value.dif <- as.numeric(NA)
 
-# for each of the 12 domains, get pre
+# for each of the 12 domains:
 for (i in 1:length(domains)) {
   
   # Retrieve row with correct historical value for the domain
   hist <- dat[which(dat$domain == domains[i] & dat$Method == "Objective"), ]
   
   for (n in 1:12) {
-    # retrieve all rows from dat_long that match the domain + Month for Months 1-6 and calculate the correct
-    dat_long[which(dat_long$domain == domains[i] & dat_long$Month == n), "value.dif" ] <- dat_long[which(dat_long$domain == domains[i] & dat_long$Month == n), "value" ] - hist[1, paste0("Month.", n)]
+    # retrieve all rows from dat_long that match the domain + Month n and calculate the correct absolute percent difference
+    histval <- hist[1, paste0("Month.", n)]
+    predval <- dat_long[which(dat_long$domain == domains[i] & dat_long$Month == n), "value" ]
+    
+    dat_long[which(dat_long$domain == domains[i] & dat_long$Month == n), "value.dif" ] <- pct_change(histval, predval)
   }
   
   
