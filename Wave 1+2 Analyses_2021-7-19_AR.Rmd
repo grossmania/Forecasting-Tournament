@@ -536,6 +536,24 @@ dat_long %>% subset(phase == 1 & !is.na(Method.code)& Method.code!="Ground Truth
    theme(legend.position="bottom") +scale_color_d3()+scale_fill_d3()+ 
   labs(colour = "Sample",fill="Sample", x="Time (in months)",y="Estimate (M +/- 95%CI)")
 
+pd <- position_dodge(0.5) # move them .05 to the left and right
+
+#by method for phase 1
+dat %>% subset(phase == 1 & !is.na(isExpert.factor)& Method.code!="Ground Truth"& Method.code!="Naive-linear"&Method.code!="Naive-rfw") %>% 
+ ggplot(aes(x = domain, y = MASE1_w1, colour = Method.code, fill=Method.code))+
+ stat_summary(fun.data="mean_cl_boot",  position=pd)+  theme_minimal(base_size = 14) +geom_hline(yintercept =1, linetype='dashed', color='red', 14)+
+theme(legend.position="bottom") +scale_color_d3()+scale_fill_d3()+  
+  labs(colour = "Method",fill="Method", x="",y="MASE (M +/- 95%CI)") 
+
+dat$updated<-ifelse(dat$revised==1,"update","no update")
+
+
+dat %>% subset(phase == 1 & !is.na(isExpert.factor)& !is.na(revised)&Method.code!="Ground Truth"& Method.code!="Naive-linear"&Method.code!="Naive-rfw") %>% 
+ ggplot(aes(x = domain, y = MASE1_w1, colour = updated , fill=updated ))+
+ stat_summary(fun.data="mean_cl_boot",  position=pd)+  theme_minimal(base_size = 14) +geom_hline(yintercept =1, linetype='dashed', color='red', 14)+
+theme(legend.position="bottom") +scale_color_d3()+scale_fill_d3()+  
+  labs(colour = "",fill="", x="",y="MASE (M +/- 95%CI)") 
+
 
 ##PHASE 2
 
@@ -556,23 +574,14 @@ overlapdat_long %>% subset(phase == 2 & !is.na(Method.code)& Method.code!="Groun
 #analyze phase 2 method
 phase2_methods <- subset(overlapdat_long, phase == 2 & !is.na(Method.code)& Method.code!="Ground Truth" & Method.code!="Lay People" & Method.code!="Naive-linear" & Method.code!="Naive-rfw")
 
-phase2_methods <-lmer(MASE1_w2~Method.code +(1|ResponseId),data=phase2_methods )
-print(phase2_methods)
+phase2_methods_result <-lmer(MASE1_w2~Method.code +(1|ResponseId),data=phase2_methods)
+summ(phase2_methods_result, digits=3) #marginal difference of intuition/theory different from data at wave 2
 
-phase2_methods.anova <- car::Anova(phase2_methods,type="III")
-print(phase2_methods.anova)
+phase2_methods_anova <- car::Anova(phase2_methods_result,type="III")
+print(phase2_methods_anova)
 
 #Phases 1 and 2
 
-dat_long %>% subset(!is.na(Method.code)& Method.code!="Ground Truth") %>% 
-   ggplot(aes(x = Month, y = value, colour = Method.code, fill=Method.code))+
-  geom_smooth(aes(x = Month, y = value, colour = Method.code, fill=Method.code),method = "loess") +  
-    facet_wrap(vars(domain), scales = "free", nrow = 3)+theme_minimal(base_size = 14) +
-  geom_smooth(data=objective,se=F) + #here we add the ground truth markers without confidence band
-   theme(legend.position="bottom") +scale_color_d3()+scale_fill_d3()+ 
-  labs(colour = "Sample",fill="Sample", x="Time (in months)",y="Estimate (M +/- 95%CI)") 
-
-#without the naive benchmarks
 dat_long %>% subset(!is.na(Method.code)& Method.code!="Ground Truth"& Method.code!="Naive-linear"&Method.code!="Naive-rfw") %>% 
    ggplot(aes(x = Month, y = value, colour = Method.code, fill=Method.code))+
   geom_smooth(aes(x = Month, y = value, colour = Method.code, fill=Method.code),method = "loess") +  
@@ -587,24 +596,36 @@ dat_long %>% subset(!is.na(Method.code)& Method.code!="Ground Truth"& Method.cod
 pd <- position_dodge(0.5) # move them .05 to the left and right
 
 #by method for phase 2
-dat_long %>% subset(phase == 2 & !is.na(isExpert.factor)& Method.code!="Ground Truth"& Method.code!="Naive-linear"&Method.code!="Naive-rfw") %>% 
+dat %>% subset(phase == 2 & !is.na(isExpert.factor)& Method.code!="Ground Truth"& Method.code!="Naive-linear"&Method.code!="Naive-rfw") %>% 
  ggplot(aes(x = domain, y = MASE1_w2, colour = Method.code, fill=Method.code))+
- stat_summary(fun.data="mean_cl_boot",  position=pd)+  theme_minimal(base_size = 14) +
+ stat_summary(fun.data="mean_cl_boot",  position=pd)+  theme_minimal(base_size = 14) +geom_hline(yintercept =1, linetype='dashed', color='red', 14)+
 theme(legend.position="bottom") +scale_color_d3()+scale_fill_d3()+  
   labs(colour = "Method",fill="Method", x="",y="MASE (M +/- 95%CI)") 
 
 #combine columns for MASE predictions for last 6 months of phase 1 and first 6 months of phase 2
   
-dat_long$MASE1_mth7to12 <- ifelse(is.na(dat_long$MASE1_w2)==T,dat_long$MASE2_w1_lastmonths,dat_long$MASE1_w2)
-  
-  #this compares MASE for months 7 to 12 for phase 1 and 2
-  #NOTE: error bars not working, something off with phase 2
-dat_long %>% subset(isExpert.factor!= "Prolific Academic" & Method.code!="Ground Truth"& Method.code!="Naive-linear"&Method.code!="Naive-rfw") %>%  
-  ggplot(aes(x = domain, y = MASE2_w1_lastmonths, colour = phase, fill=phase))+
+dat$MASE1_mth7to12 <- ifelse(is.na(dat$MASE1_w2)==T,dat$MASE2_w1_lastmonths,dat$MASE1_w2)
+dat$phase<-factor(dat$phase)
+#this compares MASE for months 7 to 12 for phase 1 and 2
+dat %>% subset(isExpert.factor!= "Prolific Academic" & Method.code!="Ground Truth"& Method.code!="Naive-linear"&Method.code!="Naive-rfw") %>%  
+  ggplot(aes(x = domain, y = MASE1_mth7to12, colour = phase, fill=phase))+
  stat_summary(fun.data="mean_cl_boot",  position=pd)+  theme_minimal(base_size = 14) +
-theme(legend.position="bottom") +scale_color_d3()+scale_fill_d3()+ 
+theme(legend.position="bottom") +scale_color_d3()+scale_fill_d3()+ geom_hline(yintercept =1, linetype='dashed', 14)+geom_hline(yintercept =1, linetype='dashed', color='red', 14)+
   labs(colour = "Phase",fill="Phase", x="",y="MASE (M +/- 95%CI)") 
 
+  #this compares MASE for months 7 to 12 for phase 1 and 2
+dat %>% subset(isExpert.factor!= "Prolific Academic" & !is.na(revised)& Method.code!="Ground Truth"& Method.code!="Naive-linear"&Method.code!="Naive-rfw") %>%  
+  ggplot(aes(x = domain, y = MASE1_mth7to12, colour = updated, fill=updated))+
+ stat_summary(fun.data="mean_cl_boot",  position=pd)+  theme_minimal(base_size = 14) +
+theme(legend.position="bottom") +scale_color_d3()+scale_fill_d3()+ geom_hline(yintercept =1, linetype='dashed', color='red', 14)+
+  labs(colour = "",fill="", x="",y="MASE (M +/- 95%CI)") #those who did not update initially had lower inaccuracy than those who did update.
+
+
+dat %>% subset(phase == 2 & !is.na(isExpert.factor)& !is.na(revised)&Method.code!="Ground Truth"& Method.code!="Naive-linear"&Method.code!="Naive-rfw") %>% 
+ ggplot(aes(x = domain, y = MASE1_mth7to12, colour = updated , fill=updated ))+
+ stat_summary(fun.data="mean_cl_boot",  position=pd)+  theme_minimal(base_size = 14) +geom_hline(yintercept =1, linetype='dashed', color='red', 14)+
+theme(legend.position="bottom") +scale_color_d3()+scale_fill_d3()+  
+  labs(colour = "",fill="", x="",y="MASE (M +/- 95%CI)") 
 
 
 ```
