@@ -528,6 +528,7 @@ library(Hmisc)
 
 #set phase as factor
 dat_long$phase <- as.factor(dat_long$phase)
+pd <- position_dodge(0.5) # move them .05 to the left and right
 
 #PHASE 1
 #do by method (among experts now)
@@ -551,7 +552,26 @@ dat_long %>% subset(phase == 1 & !is.na(Method.code)& Method.code!="Ground Truth
    theme(legend.position="bottom") +scale_color_d3()+scale_fill_d3()+ 
   labs(colour = "Sample",fill="Sample", x="Time (in months)",y="Estimate (M +/- 95%CI)")
 
-pd <- position_dodge(0.5) # move them .05 to the left and right
+#get subset for analyses, focusing on value.dif column i -  absolute percent deviation for each predicted Month
+#For models evaluating accuracy of individual time points, we will use forecasting type (purely theoretical, purely data-driven and hybrid models), forecasting domain and time points as predictors, with absolute percent deviation scores nested within teams. 
+
+dat_long_phase1<-dat_long %>%subset(phase == 1 & !is.na(Method.code)& Method.code!="Ground Truth"& Method.code!="Naive-linear"&Method.code!="Naive-rfw")
+dat_long_phase1$Method.code <- relevel(factor(dat_long_phase1$Method.code), "Lay People") #use lay people as a reference group
+dat_long_phase1$Month0<-dat_long_phase1$Month-1
+
+#visualize
+dat_long_phase1 %>% ggplot(aes(x = as.factor(Month), y = value.dif,colour = Method.code, fill=Method.code))+
+   stat_summary(fun.data="mean_cl_boot",  position=pd)+
+    facet_wrap(vars(domain), scales = "free", nrow = 4)+theme_minimal(base_size = 14) +
+   theme(legend.position="bottom") +scale_color_d3()+scale_fill_d3()+
+  labs(colour = "Sample",fill="Sample", x="Time (in months)",y="Absolute Percentage Deviation (M +/- 95%CI)")
+
+model.long.phase1<-  lmer(value.dif~domain*Method.code*Month0+(1|ResponseId), data=dat_long_phase1)
+car::Anova(model.long.phase1,type="III") #sig effect of domain, method, Month, and domain * method
+
+summ(model.long.phase1, digits=4, center=T)
+emmeans(model.long.phase1,pairwise ~Method.code*Month0|domain, adjust = "none") #overall month (half a year estimate)
+emmeans(model.long.phase1,pairwise ~domain*Month0|Method.code, adjust = "none") #overall month (half a year estimate)
 
 #by method for phase 1
 dat %>% subset(phase == 1 & !is.na(isExpert.factor)& Method.code!="Ground Truth"& Method.code!="Naive-linear"&Method.code!="Naive-rfw") %>% 
@@ -564,14 +584,17 @@ theme(legend.position="bottom") +scale_color_d3()+scale_fill_d3()+
 dat.phase1<-dat %>% subset(phase == 1 & !is.na(isExpert.factor)& Method.code!="Ground Truth"& Method.code!="Naive-linear"&Method.code!="Naive-rfw")
 dat.phase1$Method.code <- relevel(factor(dat.phase1$Method.code), "Lay People") #use lay people as a reference group
 
+#analyses of phase 1  - MASE overall
+#For models evaluating overall accuracy of the forecasted model, we will use forecasting type (purely theoretical, purely data-driven and hybrid models), forecasting domain as predictors, with MASE scores nested within teams. 
 model.phase1<-  lmer(MASE1_w1~domain*Method.code+(1|ResponseId), data=dat.phase1)
 car::Anova(model.phase1,type="III") #no interaction, so just look at main effects
 
 summ(model.phase1, digits=4)
 emmeans(model.phase1,pairwise ~Method.code|domain, adjust = "none")
 #data driven and hybrid is better than lay people for igen (marginal), life satisfaction (sig)
+emmeans(model.phase1,pairwise ~domain|Method.code, adjust = "none")$contrast
 
-
+#get scores for visualizations
 phase1.means<-as.data.frame(emmeans(model.phase1,pairwise ~domain|Method.code, adjust = "none")$emmeans)
 # reorder and get the order variable to maintain facet-specific orders (otherwise it get screwy)
 phase1.means <- phase1.means %>%
@@ -606,10 +629,6 @@ geom_errorbar(aes(ymin=lower.CL, ymax=upper.CL))+
     labels = phase1.means$domain,expand = c(0,0))+
 scale_color_aaas()+ labs(colour = "Method",x="",y="Average MASE +/- 95% CI") 
 
-
-emmeans(model.phase1,pairwise ~domain|Method.code, adjust = "none")$contrast
-
-
 # - pos affect and eafric
 # - pos affect and iafric
 # - life sat and eafric
@@ -623,6 +642,16 @@ emmeans(model.phase1,pairwise ~domain|Method.code, adjust = "none")$contrast
 # - ideology dem and life satisfaction
 # - ideology rep and polarization
 
+## EXAMINE ONLY ACADEMICS, USING CONTRAST OF THEORY vs. DATA.HYBRID
+dat.phase1.academics<-dat.phase1 %>% subset(isExpert.factor == 'Academic')
+dat.phase1.academics$method.contrast<-ifelse(dat.phase1.academics$Method.code=='Intuition/Theory',0,1)
+
+model.phase1.contrast<-  lmer(MASE1_w1~domain*method.contrast+(1|ResponseId), data=dat.phase1.academics)
+car::Anova(model.phase1.contrast,type="III") #sig domain effect, marginal contrast and sig interaction
+
+summ(model.phase1.contrast, digits=4)
+emmeans(model.phase1.contrast,pairwise ~method.contrast|domain, adjust = "none")
+
 ## EXAMINE EFFECTS OF UPDATING FOR PHASE I PREDICTIONS AMONG ACADEMICS
 dat.phase1$updated<-ifelse(dat.phase1$revised==1,"update","no update")
 
@@ -630,6 +659,9 @@ model.phase1.update<-  lmer(MASE1_w1~domain*updated+(1|ResponseId), data=dat.pha
 car::Anova(model.phase1.update,type="III") #no interaction, just a sig effect of domain
 
 emmeans(model.phase1.update,pairwise ~updated|domain, adjust = "none") #nonsig
+#sig contrast difference among academics for #explicit asian bias, implicit asian bias, ideology  - democrats, ideology-republicans, life satisfaction
+#marginal trend for contrast difference among academics for #explicit afrian american bias, implicit gender bias
+
 
 #visualize
 dat %>% subset(phase == 1 & !is.na(isExpert.factor)& !is.na(revised)&Method.code!="Ground Truth"& Method.code!="Naive-linear"&Method.code!="Naive-rfw") %>% 
