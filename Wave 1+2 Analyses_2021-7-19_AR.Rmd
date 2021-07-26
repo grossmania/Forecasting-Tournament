@@ -74,7 +74,7 @@ for (i in 1:length(domains)) {
 ```{r Import Data}
 
 # filters by completion time, so that prolific sample excludes predictions that took less than 50 seconds to make
-dat <- read.csv("Wave1+2data_2021-07-20.csv", stringsAsFactors = FALSE)
+dat <- read.csv("Wave1+2data_2021-07-26.csv", stringsAsFactors = FALSE)
 
 # data set below does not filter lay sample by completion time
 # dat <- read.csv("Wave1+2data_coded_2021-05-18.csv", stringsAsFactors = FALSE)
@@ -670,23 +670,23 @@ dat %>% subset(phase == 1 & !is.na(isExpert.factor)& !is.na(revised)&Method.code
 theme(legend.position="bottom") +scale_color_d3()+scale_fill_d3()+  
   labs(colour = "",fill="", x="",y="MASE (M +/- 95%CI)") 
 
-## Examine effects of team type and confidence (instead of forecasting type) as predictors.
+## Examine effects of team type and confidence (instead of forecasting type) as predictors. Academics only.
 
-### overall MASE - NOTE ACADEMICS NOT INCLUDED!!!
+### overall MASE 
 #### first, confidence
 model.phase1.conf<-  lmer(MASE1_w1~domain*confidence+(1|ResponseId), data=dat.phase1.academics)
 car::Anova(model.phase1.conf,type="III") #no interaction, and no main effects of confidence
 summ(model.phase1.conf, digits=4, center=T)
-emtrends(model.phase1.conf,specs=pairwise~domain,var="confidence") #confidence does not play a role for any of the domains, and when comparing domains to each other
+emtrends(model.phase1.conf,specs=pairwise~domain,var="confidence") #confidence plays a role for ideology republicans - the more confident the LOWER the mase scores and for LIFE SATISFACTION - the MORE confident the MORE error
 
 ##### second, team type - just academics
 dat.phase1.academics$teamS<-as.factor(ifelse(dat.phase1.academics$team_size>=6,3,ifelse(dat.phase1.academics$team_size<6&dat.phase1.academics$team_size>1,2,ifelse(dat.phase1.academics$team_size==1,1,NA))))
 
 #####just count
 model.phase1.team<-  lmer(MASE1_w1~domain*team_size+(1|ResponseId), data=dat.phase1.academics)
-car::Anova(model.phase1.team,type="III") #marginal interaction between domain and team size
+car::Anova(model.phase1.team,type="III") #sig interaction between domain and team size
 summ(model.phase1.team, digits=4, center=T)
-emtrends(model.phase1.team,specs=pairwise~domain,var="team_size") #confidence does not play a role for any of the domains, and when comparing domains to each other
+emtrends(model.phase1.team,specs=pairwise~domain,var="team_size") #for ideology rep and life satisfaction, larger team is linked to lower accuracy
 #####apriori defined groups
 model.phase1.team3<-  lmer(MASE1_w1~domain*teamS+(1|ResponseId), data=dat.phase1.academics)
 car::Anova(model.phase1.team3,type="III") #no interaction between domain and team size
@@ -699,13 +699,14 @@ car::Anova(model.phase1.multidis.team,type="III") #interdisciplinary did not mat
 summ(model.phase1.multidis.team, digits=4, center=T)
 emmeans(model.phase1.multidis.team,pairwise ~is_multidisciplinary|domain, adjust = "none") #nonsig
 
-### Time-specific - NOTE ACADEMICS NOT INCLUDED!!!
+### Time-specific - 
 
 #### first, confidence
-model.long.phase1.conf<-  lmer(value.dif~domain*confidence*Month0+(1|ResponseId), data=dat_long_phase1)
-car::Anova(model.long.phase1.conf,type="III") #no interaction, but a main effect of confidence, and domain by confidence interaction. #note need to check with academics!
+model.long.phase1.conf<-  lmer(value.dif~domain*confidence*Month0+(1|ResponseId), data=subset(dat_long_phase1, isExpert.factor == 'Academic'))
+car::Anova(model.long.phase1.conf,type="III") #sig interaction between domain and confidence, also a marginal 3 way - domai x confidence x month
 summ(model.long.phase1.conf, digits=4, center=T) #the more confidence, the greater the error!
-emtrends(model.long.phase1.conf,specs=pairwise~domain*Month0,var="confidence") #confidence does  play a role for explicit bias (african and asian american), implicit african american bias. But not for other domains.
+emtrends(model.long.phase1.conf,specs=pairwise~domain*Month0,var="confidence") #confidence does  play a role for explicit bias (african american): high confidence LESS error, east asian bias - higher confidence means MORE error, ideology reps (high confidence lESS error), negative affect: higher confidence less error). But not for other domains.
+emtrends(model.long.phase1.conf,specs=pairwise~domain*Month0,var="confidence") #get trends for beginning, middle and end.XXXX
 
 ##### second, team type - just academics
 dat_long_phase1$teamS<-as.factor(ifelse(dat_long_phase1$team_size>=6,3,ifelse(dat_long_phase1$team_size<6&dat_long_phase1$team_size>1,2,ifelse(dat_long_phase1$team_size==1,1,NA))))
@@ -715,6 +716,7 @@ model.long.phase1.team<-  lmer(value.dif~domain*team_size*Month0+(1|ResponseId),
 car::Anova(model.long.phase1.team,type="III") #sig interaction between domain and team size, and domain and month
 summ(model.long.phase1.team, digits=4, center=T)
 emtrends(model.long.phase1.team,specs=pairwise~domain*Month0,var="team_size") #larger team size linked to less bias for east asian explicit bias, but not any other domain
+
 #####apriori defined groups
 model.long.phase1.team3<-  lmer(value.dif~domain*teamS*Month0+(1|ResponseId), data=dat_long_phase1)
 car::Anova(model.long.phase1.team3,type="III") #sig interaction between domain and team size, and marginal main effect of team size
@@ -728,7 +730,6 @@ summ(model.long.phase1.multidis.team, digits=4, center=T)
 emmeans(model.long.phase1.multidis.team,pairwise ~is_multidisciplinary|domain*Month0, adjust = "none") #for explicit asian, more interdiscplinary is better (less bias)
 
 ##CONDITIONALS - where they right for wrong reasons?
-### overall MASE - NOTE ACADEMICS NOT INCLUDED!!!
 #### first, confidence
 model.phase1.covid<-  lmer(MASE1_w1~domain*MASE1_covid+(1|ResponseId), data=dat.phase1) #DOES NOT WORK - DATA IS MISSING!!!
 car::Anova(model.phase1.conf,type="III") #
@@ -751,7 +752,6 @@ MAPE.t1<-dat_long_phase1 %>%select(team_name,value.dif,domain,Month,value.dif) %
   dplyr::slice_head(n = 20) %>% select(team_name,MAPE,domain)
 
 t1.accuracy<-MASE.t1 %>% inner_join(MAPE.t1) %>% inner_join(MAE.t1)
-
 
 ##PHASE 2
 
