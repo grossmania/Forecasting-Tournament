@@ -670,6 +670,87 @@ dat %>% subset(phase == 1 & !is.na(isExpert.factor)& !is.na(revised)&Method.code
 theme(legend.position="bottom") +scale_color_d3()+scale_fill_d3()+  
   labs(colour = "",fill="", x="",y="MASE (M +/- 95%CI)") 
 
+## Examine effects of team type and confidence (instead of forecasting type) as predictors.
+
+### overall MASE - NOTE ACADEMICS NOT INCLUDED!!!
+#### first, confidence
+model.phase1.conf<-  lmer(MASE1_w1~domain*confidence+(1|ResponseId), data=dat.phase1.academics)
+car::Anova(model.phase1.conf,type="III") #no interaction, and no main effects of confidence
+summ(model.phase1.conf, digits=4, center=T)
+emtrends(model.phase1.conf,specs=pairwise~domain,var="confidence") #confidence does not play a role for any of the domains, and when comparing domains to each other
+
+##### second, team type - just academics
+dat.phase1.academics$teamS<-as.factor(ifelse(dat.phase1.academics$team_size>=6,3,ifelse(dat.phase1.academics$team_size<6&dat.phase1.academics$team_size>1,2,ifelse(dat.phase1.academics$team_size==1,1,NA))))
+
+#####just count
+model.phase1.team<-  lmer(MASE1_w1~domain*team_size+(1|ResponseId), data=dat.phase1.academics)
+car::Anova(model.phase1.team,type="III") #marginal interaction between domain and team size
+summ(model.phase1.team, digits=4, center=T)
+emtrends(model.phase1.team,specs=pairwise~domain,var="team_size") #confidence does not play a role for any of the domains, and when comparing domains to each other
+#####apriori defined groups
+model.phase1.team3<-  lmer(MASE1_w1~domain*teamS+(1|ResponseId), data=dat.phase1.academics)
+car::Anova(model.phase1.team3,type="III") #no interaction between domain and team size
+summ(model.phase1.team3, digits=4, center=T)
+emmeans(model.phase1.team3,pairwise ~teamS|domain, adjust = "none") #nonsig
+
+#### third, multidisciplinarity of the teams - just academics
+model.phase1.multidis.team<-  lmer(MASE1_w1~domain*is_multidisciplinary+(1|ResponseId), data=dat.phase1.academics)
+car::Anova(model.phase1.multidis.team,type="III") #interdisciplinary did not matter
+summ(model.phase1.multidis.team, digits=4, center=T)
+emmeans(model.phase1.multidis.team,pairwise ~is_multidisciplinary|domain, adjust = "none") #nonsig
+
+### Time-specific - NOTE ACADEMICS NOT INCLUDED!!!
+
+#### first, confidence
+model.long.phase1.conf<-  lmer(value.dif~domain*confidence*Month0+(1|ResponseId), data=dat_long_phase1)
+car::Anova(model.long.phase1.conf,type="III") #no interaction, but a main effect of confidence, and domain by confidence interaction. #note need to check with academics!
+summ(model.long.phase1.conf, digits=4, center=T) #the more confidence, the greater the error!
+emtrends(model.long.phase1.conf,specs=pairwise~domain*Month0,var="confidence") #confidence does  play a role for explicit bias (african and asian american), implicit african american bias. But not for other domains.
+
+##### second, team type - just academics
+dat_long_phase1$teamS<-as.factor(ifelse(dat_long_phase1$team_size>=6,3,ifelse(dat_long_phase1$team_size<6&dat_long_phase1$team_size>1,2,ifelse(dat_long_phase1$team_size==1,1,NA))))
+
+#####just count
+model.long.phase1.team<-  lmer(value.dif~domain*team_size*Month0+(1|ResponseId), data=dat_long_phase1)
+car::Anova(model.long.phase1.team,type="III") #sig interaction between domain and team size, and domain and month
+summ(model.long.phase1.team, digits=4, center=T)
+emtrends(model.long.phase1.team,specs=pairwise~domain*Month0,var="team_size") #larger team size linked to less bias for east asian explicit bias, but not any other domain
+#####apriori defined groups
+model.long.phase1.team3<-  lmer(value.dif~domain*teamS*Month0+(1|ResponseId), data=dat_long_phase1)
+car::Anova(model.long.phase1.team3,type="III") #sig interaction between domain and team size, and marginal main effect of team size
+summ(model.long.phase1.team3, digits=4, center=T) #marginal contrast between single vs. 3 ppl.
+emmeans(model.long.phase1.team3,pairwise ~teamS|domain*Month0, adjust = "none") #nimplicit and explicit asian bias - larger team is less inaaccurate (but note reversal for explicit african american bias.)
+
+#### third, multidisciplinarity of the teams - just academics
+model.long.phase1.multidis.team<-  lmer(value.dif~domain*is_multidisciplinary*Month0+(1|ResponseId), data=dat_long_phase1)
+car::Anova(model.long.phase1.multidis.team,type="III") #interdisciplinary matters for interaction.
+summ(model.long.phase1.multidis.team, digits=4, center=T)
+emmeans(model.long.phase1.multidis.team,pairwise ~is_multidisciplinary|domain*Month0, adjust = "none") #for explicit asian, more interdiscplinary is better (less bias)
+
+##CONDITIONALS - where they right for wrong reasons?
+### overall MASE - NOTE ACADEMICS NOT INCLUDED!!!
+#### first, confidence
+model.phase1.covid<-  lmer(MASE1_w1~domain*MASE1_covid+(1|ResponseId), data=dat.phase1) #DOES NOT WORK - DATA IS MISSING!!!
+car::Anova(model.phase1.conf,type="III") #
+summ(model.phase1.conf, digits=4, center=T)
+emtrends(model.phase1.conf,specs=pairwise~domain,var="confidence") #
+
+###get top 20 teams  per domain for absolute percentage error
+
+MASE.t1<-dat.phase1.academics %>%
+arrange(domain,MASE1_w1) %>%group_by(domain) %>% dplyr::slice_head(n = 10) %>% select(team_name,MASE1_w1,domain)
+
+MAE.t1<-dat.phase1.academics %>%
+arrange(domain,mean_abs_error_w1) %>%group_by(domain) %>% 
+  dplyr::slice_head(n = 20) %>% select(team_name,mean_abs_error_w1,domain)
+
+MAPE.t1<-dat_long_phase1 %>%select(team_name,value.dif,domain,Month,value.dif) %>% pivot_wider(names_from=Month,values_from = value.dif,names_prefix = "m") %>% 
+  rowwise() %>% 
+  mutate(MAPE = mean(c_across(starts_with("m")),na.rm=T)) %>% 
+  ungroup() %>% arrange(domain,MAPE) %>%group_by(domain)%>%
+  dplyr::slice_head(n = 20) %>% select(team_name,MAPE,domain)
+
+t1.accuracy<-MASE.t1 %>% inner_join(MAPE.t1) %>% inner_join(MAE.t1)
 
 
 ##PHASE 2
