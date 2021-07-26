@@ -150,7 +150,7 @@ dat[which(dat$numpred > 20 & dat$DataDriven == 0) , "numpred"] <- NA
 # re-arrange columns for clarity to ensure that related columns are adjacent to eachother
 dat <- dat[, c(1:match("Month.12", names(dat)), 
                 match("Month.13", names(dat)):match("Month.18", names(dat)),
-                match("subexpert", names(dat)):match("keep", names(dat)),
+                match("confidence", names(dat)):match("keep", names(dat)),
                 match("phase", names(dat)):length(names(dat))
                   )]
 ```
