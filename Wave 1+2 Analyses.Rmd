@@ -1,0 +1,974 @@
+---
+title: "Wave 1+2 Analyses"
+author: "Igor Grossmann"
+date: "7/27/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(forecast)
+library(psych)
+library(tidyverse)
+library(irr)
+library(lme4)
+library(ggplot2)
+library(tidyr)
+library(emmeans)
+library(car)
+library(jtools)
+library(dplyr)
+library(ggsci)
+library(dplyr)
+library(Hmisc)
+
+options(max.print = 20000, scipen = 1000)
+
+```
+
+```{r setup working directory}
+setwd("~/GitHub/Forecasting-Tournament") #igor's working directory
+```
+
+```{r Import Data}
+
+dat <- read.csv("dat_for_analyses.csv", stringsAsFactors = FALSE)
+dat_long <- read.csv("dat_long.csv", stringsAsFactors = FALSE)
+
+#datasets that are filtered by phase (1 = May, 2 = November)
+phase1 <- filter(dat, phase == 1)
+phase2 <- filter(dat, phase == 2)
+
+# Phase 1 & 2further filtered to only include academics won't be necessary once we have updated objective data
+phase1_exp <- filter(phase1, isExpert == 1)
+phase2_exp <-filter(phase2, isExpert == 1)
+
+
+# dataset that only includes academic predictions
+academic_only <- filter(dat, isExpert == 1)
+```
+
+
+```{r create subsets for separate visualizations}
+
+#####download of phase 1 and 2 files########################
+t1.academ.sorted<-phase1_exp %>%
+arrange(domain,MASE1_w1) %>%group_by(domain) %>% select(team_name,domain,Month.1:Month.12,mean_abs_error_w1,MASE1_w1)
+
+t1.nonacadem.av.sorted<-phase1 %>% filter(isExpert.factor == 'Prolific') %>% select(team_name,domain,Month.1:Month.12,mean_abs_error_w1,MASE1_w1) %>% 
+  group_by(domain) %>% summarise(across(where(is.numeric), mean)) %>% arrange(domain,MASE1_w1) %>% mutate(team_name="average non-academic")
+
+t1.nonacadem.av.sorted<-phase1 %>% filter(isExpert.factor == 'Prolific') %>% select(team_name,domain,Month.1:Month.12,mean_abs_error_w1,MASE1_w1) %>% 
+  group_by(domain) %>% summarise(across(where(is.numeric), median)) %>% arrange(domain,MASE1_w1) %>% mutate(team_name="median non-academic")
+
+t1.scores<-rbind(t1.academ.sorted,t1.nonacadem.av.sorted)
+write.csv(t1.scores,"wave1.scores.csv")
+
+t2.academ.sorted<-phase2_exp %>%
+arrange(domain,MASE1_w2) %>%group_by(domain) %>% select(team_name,domain,Month.7:Month.12,mean_abs_error_w2,MASE1_w2)
+
+write.csv(t2.academ.sorted,"wave2.scores.csv")
+
+```
+
+# analyses across domains 
+
+```{r}
+
+#set phase as factor
+dat_long$phase <- as.factor(dat_long$phase)
+pd <- position_dodge(0.5) # move them .05 to the left and right
+
+#PHASE 1
+#do by method (among experts now)
+#get ground truth markers (subset)
+objective<-as.data.frame(subset(dat_long,phase == 1 & !is.na(Method.code)& Method.code=="Ground Truth"))
+
+dat_long %>% subset(phase == 1 & !is.na(Method.code)& Method.code!="Ground Truth") %>% 
+   ggplot(aes(x = Month, y = value, colour = Method.code, fill=Method.code))+
+  geom_smooth(aes(x = Month, y = value, colour = Method.code, fill=Method.code),method = "loess") +  
+    facet_wrap(vars(domain), scales = "free", nrow = 3)+theme_minimal(base_size = 14) +
+  geom_smooth(data=objective,se=F) + #here we add the ground truth markers without confidence band
+   theme(legend.position="bottom") +scale_color_d3()+scale_fill_d3()+ 
+  labs(colour = "Sample",fill="Sample", x="Time (in months)",y="Estimate (M +/- 95%CI)") 
+
+#without the naive benchmarks
+dat_long %>% subset(phase == 1 & !is.na(Method.code)& Method.code!="Ground Truth"& Method.code!="Naive-linear"&Method.code!="Naive-rfw") %>% 
+   ggplot(aes(x = Month, y = value, colour = Method.code, fill=Method.code))+
+  geom_smooth(aes(x = Month, y = value, colour = Method.code, fill=Method.code),method = "loess") +  
+    facet_wrap(vars(domain), scales = "free", nrow = 3)+theme_minimal(base_size = 14) +
+  geom_smooth(data=objective,se=F) + #here we add the ground truth markers without confidence band
+   theme(legend.position="bottom") +scale_color_d3()+scale_fill_d3()+ 
+  labs(colour = "Sample",fill="Sample", x="Time (in months)",y="Estimate (M +/- 95%CI)")
+
+#get subset for analyses, focusing on value.dif column i -  absolute percent deviation for each predicted Month
+#For models evaluating accuracy of individual time points, we will use forecasting type (purely theoretical, purely data-driven and hybrid models), forecasting domain and time points as predictors, with absolute percent deviation scores nested within teams. 
+
+dat_long_phase1<-dat_long %>%subset(phase == 1 & !is.na(Method.code)& Method.code!="Ground Truth"& Method.code!="Naive-linear"&Method.code!="Naive-rfw")
+dat_long_phase1$Method.code <- relevel(factor(dat_long_phase1$Method.code), "Lay People") #use lay people as a reference group
+dat_long_phase1$Month0<-dat_long_phase1$Month-1
+
+#######JUST PLOT _ ==>ELEGANT BUT ERRORS!
+#dat_long_phase1 %>% ggplot(aes(x = as.factor(Month), y = value.dif,colour = Method.code, fill=Method.code))+
+#   stat_summary(fun.data="mean_cl_boot",  position=pd)+
+#    facet_wrap(vars(domain), scales = "free", nrow = 4)+theme_minimal(base_size = 14) +
+#   theme(legend.position="bottom") +scale_color_d3()+scale_fill_d3()+
+#  labs(colour = "Sample",fill="Sample", x="Time (in months)",y="Absolute Percentage Deviation (M +/- 95%CI)")
+# THIS METHOD ASSUMES INDEPENDENCE OF RESPONSES!!!
+
+model.long.phase1<-  lmer(value.dif~domain*Method.code*Month0+(1|ResponseId), data=dat_long_phase1)
+car::Anova(model.long.phase1,type="III") #sig effect of domain, method, Month, and domain * method
+
+summ(model.long.phase1, digits=4, center=T)
+emmeans(model.long.phase1,specs = trt.vs.ctrl ~Method.code|domain, adjust = "none") #overall month (half a year estimate), contrast to lay people. Lay ppl sig worse for eafric
+emmeans(model.long.phase1,specs = trt.vs.ctrl ~Method.code|domain|Month0, adjust = "none", at=list(Month0=c(0,5,11))) #overall month (half a year estimate), contrast to lay people. Lay ppl sig worse for eafric
+emmeans(model.long.phase1,pairwise ~domain*Month0|Method.code, adjust = "none") #overall month (half a year estimate)
+
+#get scores for analyses
+model.long.phase1<-  lmer(value.dif~domain*Method.code*as.factor(Month0)+(1|ResponseId), data=dat_long_phase1)
+car::Anova(model.long.phase1,type="III") #sig effect of domain, method, Month, and domain * method
+
+data.long.phase1.abs.dev<-as.data.frame(emmeans(model.long.phase1,pairwise ~Method.code|domain|as.factor(Month0), adjust = "none")$emmeans) #overall month (half a year estimate)
+
+data.long.phase1.abs.dev %>% 
+ ggplot(aes(x = Month0, y = emmean, colour = Method.code, fill=Method.code))+
+ geom_pointrange(aes(ymin=asymp.LCL, ymax=asymp.UCL), position=pd)+  theme_minimal(base_size = 14) +geom_hline(yintercept =1, linetype='dashed', color='red', 14)+
+theme(legend.position="bottom") +scale_color_d3()+scale_fill_d3()+ facet_wrap(vars(domain), scales = "free", nrow = 4)+
+  labs(colour = "Sample",fill="Sample", x="Time (in months)",y="Absolute Percentage Deviation (M +/- 95%CI)")
+
+
+#by method for phase 1
+
+#######JUST PLOT _ ==>ELEGANT BUT ERRORS!
+#dat %>% subset(phase == 1 & !is.na(isExpert.factor)& Method.code!="Ground Truth"& Method.code!="Naive-linear"&Method.code!="Naive-rfw") %>% 
+# ggplot(aes(x = domain, y = MASE1_w1, colour = Method.code, fill=Method.code))+
+# stat_summary(fun.data="mean_cl_boot",  position=pd)+  theme_minimal(base_size = 14) +geom_hline(yintercept =1, linetype='dashed', color='red', 14)+
+#theme(legend.position="bottom") +scale_color_d3()+scale_fill_d3()+  
+#  labs(colour = "Method",fill="Method", x="",y="MASE (M +/- 95%CI)") 
+# THIS METHOD ASSUMES INDEPENDENCE OF RESPONSES!!!
+
+dat.phase1<-dat %>% subset(phase == 1 & !is.na(isExpert.factor)& Method.code!="Ground Truth"& Method.code!="Naive-linear"&Method.code!="Naive-rfw")
+dat.phase1$Method.code <- relevel(factor(dat.phase1$Method.code), "Lay People") #use lay people as a reference group
+
+#analyses of phase 1  - MASE overall
+#For models evaluating overall accuracy of the forecasted model, we will use forecasting type (purely theoretical, purely data-driven and hybrid models), forecasting domain as predictors, with MASE scores nested within teams. 
+model.phase1<-  lmer(MASE1_w1~domain*Method.code+(1|ResponseId), data=dat.phase1)
+car::Anova(model.phase1,type="III") #no interaction, so just look at main effects
+
+summ(model.phase1, digits=4)
+emmeans(model.phase1,pairwise ~Method.code|domain, adjust = "none")
+emmeans(model.phase1,trt.vs.ctrl ~Method.code|domain, adjust = "none") #lay vs. rest
+
+data.phase1.MASE<-as.data.frame(emmeans(model.phase1,pairwise ~Method.code|domain, adjust = "none")$emmeans)
+data.phase1.MASE %>% 
+ ggplot(aes(x = domain, y = emmean, colour = Method.code, fill=Method.code))+
+ geom_pointrange(aes(ymin=lower.CL, ymax=upper.CL), position=pd)+  theme_minimal(base_size = 14) +geom_hline(yintercept =1, linetype='dashed', color='red', 14)+
+theme(legend.position="bottom") +scale_color_d3()+scale_fill_d3()+  
+  labs(colour = "",fill="", x="",y="MASE (M +/- 95%CI)") 
+
+
+
+#data driven and hybrid is better than lay people for igen (marginal), life satisfaction (sig)
+
+#get scores for visualizations
+phase1.means<-as.data.frame(emmeans(model.phase1,pairwise ~domain|Method.code, adjust = "none")$emmeans)
+# reorder and get the order variable to maintain facet-specific orders (otherwise it get screwy)
+phase1.means <- phase1.means %>%
+  # 1. Remove grouping
+  ungroup() %>%
+  # 2. Arrange by
+  #   i.  facet group
+  #   ii. bar height
+  arrange(Method.code, emmean) %>%
+  # 3. Add order column of row numbers
+  mutate(order = row_number())
+
+#lollipop chart
+phase1.means %>% ggplot(aes(x=order, y=emmean, color=Method.code)) +  
+geom_point(size=3) + 
+  geom_segment(aes(x=order, 
+                   xend=order, 
+                   y=0, 
+                   yend=emmean)) +facet_wrap(vars(Method.code), scales = "free")+
+  scale_x_continuous(   # Add categories to axis
+    breaks = phase1.means$order,
+    labels = phase1.means$domain)+theme_minimal(base_size = 14) +geom_hline(yintercept =1, linetype='dashed', color='red', 14)+theme(legend.position="none")+
+scale_color_aaas()+ labs(colour = "Method",x="",y="Average MASE") 
+
+#errorbar charts, with scores ordered
+phase1.means %>% ggplot(aes(x=order, y=emmean, color=Method.code)) +  
+geom_point(size=3) + 
+geom_errorbar(aes(ymin=lower.CL, ymax=upper.CL))+
+ facet_wrap(vars(Method.code), scales = "free", nrow=4)+theme_minimal() +geom_hline(yintercept =1, linetype='dashed', color='red', 14)+theme(legend.position="none")+
+  scale_x_continuous(   # Add categories to axis
+    breaks = phase1.means$order,
+    labels = phase1.means$domain,expand = c(0,0))+
+scale_color_aaas()+ labs(colour = "Method",x="",y="Average MASE +/- 95% CI") 
+
+# - pos affect and eafric
+# - pos affect and iafric
+# - life sat and eafric
+# - life sat and iasian
+# - life sat and egender
+# - life sat and igender
+# - life sat and pos affect
+# - life sat and neg affect
+# - life sat and polarization
+# - ideology dem and rep
+# - ideology dem and life satisfaction
+# - ideology rep and polarization
+
+## EXAMINE ONLY ACADEMICS, USING CONTRAST OF THEORY vs. DATA.HYBRID
+dat.phase1.academics<-dat.phase1 %>% subset(isExpert.factor == 'Academic')
+dat.phase1.academics$method.contrast<-ifelse(dat.phase1.academics$Method.code=='Intuition/Theory',0,1)
+
+model.phase1.contrast<-  lmer(MASE1_w1~domain*method.contrast+(1|ResponseId), data=dat.phase1.academics)
+car::Anova(model.phase1.contrast,type="III") #sig domain effect, marginal contrast and sig interaction
+
+summ(model.phase1.contrast, digits=4)
+emmeans(model.phase1.contrast,pairwise ~method.contrast|domain, adjust = "none")
+
+## EXAMINE EFFECTS OF UPDATING FOR PHASE I PREDICTIONS AMONG ACADEMICS
+dat.phase1$updated<-ifelse(dat.phase1$revised==1,"update","no update")
+
+model.phase1.update<-  lmer(MASE1_w1~domain*updated+(1|ResponseId), data=dat.phase1)
+car::Anova(model.phase1.update,type="III") #no interaction, just a sig effect of domain
+
+emmeans(model.phase1.update,pairwise ~updated|domain, adjust = "none") #nonsig
+#contrast difference of updating forecasts for explicit asian bias, life satisfaction, neg affect, polarization, pos affect
+
+data.phase1.update<-as.data.frame(emmeans(model.phase1.update,pairwise ~updated|domain, adjust = "none")$emmeans) #nonsig
+
+#visualize
+data.phase1.update %>% 
+ ggplot(aes(x = domain, y = emmean, colour = updated, fill=updated))+
+ geom_pointrange(aes(ymin=lower.CL, ymax=upper.CL), position=pd)+  theme_minimal(base_size = 14) +geom_hline(yintercept =1, linetype='dashed', color='red', 14)+
+theme(legend.position="bottom") +scale_color_d3()+scale_fill_d3()+  
+  labs(colour = "",fill="", x="",y="MASE (M +/- 95%CI)") 
+
+## Examine effects of team type and confidence (instead of forecasting type) as predictors. Academics only.
+
+### overall MASE 
+#### first, confidence
+model.phase1.conf<-  lmer(MASE1_w1~domain*confidence+(1|ResponseId), data=dat.phase1.academics)
+car::Anova(model.phase1.conf,type="III") #no interaction, and no main effects of confidence
+summ(model.phase1.conf, digits=4, center=T)
+emtrends(model.phase1.conf,specs=pairwise~domain,var="confidence") #confidence plays a role for ideology republicans - the more confident the LOWER the mase scores and for LIFE SATISFACTION - the MORE confident the MORE error
+
+##### second, team type - just academics
+dat.phase1.academics$teamS<-as.factor(ifelse(dat.phase1.academics$team_size>=6,3,ifelse(dat.phase1.academics$team_size<6&dat.phase1.academics$team_size>1,2,ifelse(dat.phase1.academics$team_size==1,1,NA))))
+
+#####just count
+model.phase1.team<-  lmer(MASE1_w1~domain*team_size+(1|ResponseId), data=dat.phase1.academics)
+car::Anova(model.phase1.team,type="III") #sig interaction between domain and team size
+summ(model.phase1.team, digits=4, center=T)
+emtrends(model.phase1.team,specs=pairwise~domain,var="team_size") #for ideology rep and life satisfaction, larger team is linked to lower accuracy
+#####apriori defined groups
+model.phase1.team3<-  lmer(MASE1_w1~domain*teamS+(1|ResponseId), data=dat.phase1.academics)
+car::Anova(model.phase1.team3,type="III") #no interaction between domain and team size
+summ(model.phase1.team3, digits=4, center=T)
+emmeans(model.phase1.team3,pairwise ~teamS|domain, adjust = "none") #nonsig
+
+#### third, multidisciplinarity of the teams - just academics
+model.phase1.multidis.team<-  lmer(MASE1_w1~domain*is_multidisciplinary+(1|ResponseId), data=dat.phase1.academics)
+car::Anova(model.phase1.multidis.team,type="III") #interdisciplinary did not matter
+summ(model.phase1.multidis.team, digits=4, center=T)
+emmeans(model.phase1.multidis.team,pairwise ~is_multidisciplinary|domain, adjust = "none") #nonsig
+
+### Time-specific - 
+
+#### first, confidence
+model.long.phase1.conf<-  lmer(value.dif~domain*confidence*Month0+(1|ResponseId), data=subset(dat_long_phase1, isExpert.factor == 'Academic'))
+car::Anova(model.long.phase1.conf,type="III") #sig interaction between domain and confidence, also a marginal 3 way - domai x confidence x month
+summ(model.long.phase1.conf, digits=4, center=T) #the more confidence, the greater the error!
+emtrends(model.long.phase1.conf,specs=pairwise~domain*Month0,var="confidence") #confidence does  play a role for explicit bias (african american): high confidence LESS error, east asian bias - higher confidence means MORE error, ideology reps (high confidence lESS error), negative affect: higher confidence less error). But not for other domains.
+emtrends(model.long.phase1.conf,specs=pairwise~domain*Month0,var="confidence") 
+emtrends(model.long.phase1.conf,~Month0|domain,var="confidence", at=list(Month0=c(0,5,11))) #
+
+##### second, team type - just academics
+dat_long_phase1$teamS<-as.factor(ifelse(dat_long_phase1$team_size>=6,3,ifelse(dat_long_phase1$team_size<6&dat_long_phase1$team_size>1,2,ifelse(dat_long_phase1$team_size==1,1,NA))))
+
+#####just count
+model.long.phase1.team<-  lmer(value.dif~domain*team_size*Month0+(1|ResponseId), data=dat_long_phase1)
+car::Anova(model.long.phase1.team,type="III") #sig interaction between domain and team size, and domain and month
+summ(model.long.phase1.team, digits=4, center=T)
+emtrends(model.long.phase1.team,specs=pairwise~domain*Month0,var="team_size") #larger team size linked to less bias for east asian explicit bias, but not any other domain
+emtrends(model.long.phase1.team,~Month0|domain,var="team_size", at=list(Month0=c(0,5,11))) #
+
+#####apriori defined groups
+model.long.phase1.team3<-  lmer(value.dif~domain*teamS*Month0+(1|ResponseId), data=dat_long_phase1)
+car::Anova(model.long.phase1.team3,type="III") #sig interaction between domain and team size, and marginal main effect of team size
+summ(model.long.phase1.team3, digits=4, center=T) #marginal contrast between single vs. 3 ppl.
+emmeans(model.long.phase1.team3, pairwise~teamS|domain*Month0, adjust = "none",at=list(Month0=c(0,5,11))) #implicit and explicit asian bias - larger team is less inaaccurate (but note reversal for explicit african american bias.)
+
+#### third, multidisciplinarity of the teams - just academics
+model.long.phase1.multidis.team<-  lmer(value.dif~domain*is_multidisciplinary*Month0+(1|ResponseId), data=dat_long_phase1)
+car::Anova(model.long.phase1.multidis.team,type="III") #interdisciplinary matters for interaction.
+summ(model.long.phase1.multidis.team, digits=4, center=T)
+emmeans(model.long.phase1.multidis.team,pairwise ~is_multidisciplinary|domain*Month0, adjust = "none", at=list(Month0=c(0,5,11))) #for e asian bias, more interdisciplionary is better at M1,and M12, 
+
+##CONDITIONALS - where they right for wrong reasons?
+#### first, MASE
+model.phase1.covid<-  lmer(MASE1_w1~domain*MASE1_covid+(1|ResponseId), data=dat.phase1) #DOES NOT WORK - DATA IS MISSING!!!
+car::Anova(model.phase1.covid,type="III") #
+summ(model.phase1.covid, digits=4, center=T)
+emtrends(model.phase1.covid,specs=pairwise~domain,var="MASE1_covid") #
+
+#### next, absolute perc error
+model.phase1.long.covid<-  lmer(value.dif~Month0*MASE1_covid*domain+(1|ResponseId), data=dat_long_phase1) #
+car::Anova(model.phase1.long.covid,type="III") #significant domain & mase1:COVID interaction and 3 way interaction
+summ(model.phase1.long.covid, digits=4, center=T)
+emtrends(model.phase1.long.covid,specs=~domain,var="MASE1_covid") #
+test(emtrends(model.phase1.long.covid,~domain|Month0,var="MASE1_covid", at=list(Month0=c(0,5,11)))) #e no real difference here, except for explicit asian bias. more accurate scores were related to more bias
+interactions::interact_plot(model.phase1.long.covid,pred=Month0, modx=MASE1_covid,mod2=domain) #REALLY WEIRD STUFF... WILL TRY TO DO IT WITHOUT NESTING.
+
+model.phase1.long.covid.NOLME<-  lm(value.dif~Month0*MASE1_covid*domain, data=dat_long_phase1) #
+summary(model.phase1.long.covid.NOLME,type="III") #significant domain & mase1:COVID interaction and 3 way interaction
+
+
+
+
+
+##########################################################
+
+###sort teams by domain for absolute percentage error and download file
+###get top 20 teams  per domain for absolute percentage error
+
+MASE.t1<-dat.phase1.academics %>%
+arrange(domain,MASE1_w1) %>%group_by(domain) %>% dplyr::slice_head(n = 10) %>% select(team_name,MASE1_w1,domain)
+
+MAE.t1<-dat.phase1.academics %>%
+arrange(domain,mean_abs_error_w1) %>%group_by(domain) %>% 
+  dplyr::slice_head(n = 20) %>% select(team_name,mean_abs_error_w1,domain)
+
+MAPE.t1<-dat_long_phase1 %>%select(team_name,value.dif,domain,Month,value.dif) %>% pivot_wider(names_from=Month,values_from = value.dif,names_prefix = "m") %>% 
+  rowwise() %>% 
+  mutate(MAPE = mean(c_across(starts_with("m")),na.rm=T)) %>% 
+  ungroup() %>% arrange(domain,MAPE) %>%group_by(domain)%>%
+  dplyr::slice_head(n = 20) %>% select(team_name,MAPE,domain)
+
+t1.accuracy<-MASE.t1 %>% inner_join(MAPE.t1) %>% inner_join(MAE.t1)
+
+##PHASE 2
+
+#do by method (among experts now)
+#get ground truth markers (subset)
+objective2 <- filter(objective, Month >6 & Month < 13) #this only includes months 7 to 12
+overlapdat_long <- filter(dat_long, Month >6 & Month < 13) #this only includes months 7 to 12
+
+#without the naive benchmarks
+overlapdat_long %>% subset(phase == 2 & !is.na(Method.code)& Method.code!="Ground Truth" & Method.code!="Lay People" & Method.code!="Naive-linear" & Method.code!="Naive-rfw") %>% 
+   ggplot(aes(x = Month, y = value, colour = Method.code, fill=Method.code))+
+  geom_smooth(aes(x = Month, y = value, colour = Method.code, fill=Method.code),method = "loess") +  
+    facet_wrap(vars(domain), scales = "free", nrow = 3)+theme_minimal(base_size = 14) +
+  geom_smooth(data=objective2,se=F) + #here we add the ground truth markers without confidence band
+   theme(legend.position="bottom") +scale_color_d3()+scale_fill_d3()+ 
+  labs(colour = "Sample",fill="Sample", x="Time (in months)",y="Estimate (M +/- 95%CI)") 
+
+#analyze phase 2 method
+phase2_methods <- subset(overlapdat_long, phase == 2 & !is.na(Method.code)& Method.code!="Ground Truth" & Method.code!="Lay People" & Method.code!="Naive-linear" & Method.code!="Naive-rfw")
+
+phase2_methods_result <-lmer(MASE1_w2~Method.code +(1|ResponseId),data=phase2_methods)
+summ(phase2_methods_result, digits=3) #marginal difference of intuition/theory different from data at wave 2
+
+phase2_methods_anova <- car::Anova(phase2_methods_result,type="III")
+print(phase2_methods_anova)
+
+#Phases 1 and 2
+
+dat_long %>% subset(!is.na(Method.code)& Method.code!="Ground Truth"& Method.code!="Naive-linear"&Method.code!="Naive-rfw") %>% 
+   ggplot(aes(x = Month, y = value, colour = Method.code, fill=Method.code))+
+  geom_smooth(aes(x = Month, y = value, colour = Method.code, fill=Method.code),method = "loess") +  
+    facet_wrap(vars(domain), scales = "free", nrow = 3)+theme_minimal(base_size = 14) +
+  geom_smooth(data=objective,se=F) + #here we add the ground truth markers without confidence band
+   theme(legend.position="bottom") +scale_color_d3()+scale_fill_d3()+ 
+  labs(colour = "Sample",fill="Sample", x="Time (in months)",y="Estimate (M +/- 95%CI)")
+
+###look at the MASE scores for all domains (can be modified for sub-domains)
+#source: https://stackoverflow.com/a/27690626
+
+pd <- position_dodge(0.5) # move them .05 to the left and right
+
+#by method for phase 2
+dat %>% subset(phase == 2 & !is.na(isExpert.factor)& Method.code!="Ground Truth"& Method.code!="Naive-linear"&Method.code!="Naive-rfw") %>% 
+ ggplot(aes(x = domain, y = MASE1_w2, colour = Method.code, fill=Method.code))+
+ stat_summary(fun.data="mean_cl_boot",  position=pd)+  theme_minimal(base_size = 14) +geom_hline(yintercept =1, linetype='dashed', color='red', 14)+
+theme(legend.position="bottom") +scale_color_d3()+scale_fill_d3()+  
+  labs(colour = "Method",fill="Method", x="",y="MASE (M +/- 95%CI)") 
+
+#combine columns for MASE predictions for last 6 months of phase 1 and first 6 months of phase 2
+  
+dat$MASE1_mth7to12 <- ifelse(is.na(dat$MASE1_w2)==T,dat$MASE2_w1_lastmonths,dat$MASE1_w2)
+dat$phase<-factor(dat$phase)
+#this compares MASE for months 7 to 12 for phase 1 and 2
+dat %>% subset(isExpert.factor!= "Prolific Academic" & Method.code!="Ground Truth"& Method.code!="Naive-linear"&Method.code!="Naive-rfw") %>%  
+  ggplot(aes(x = domain, y = MASE1_mth7to12, colour = phase, fill=phase))+
+ stat_summary(fun.data="mean_cl_boot",  position=pd)+  theme_minimal(base_size = 14) +
+theme(legend.position="bottom") +scale_color_d3()+scale_fill_d3()+ geom_hline(yintercept =1, linetype='dashed', 14)+geom_hline(yintercept =1, linetype='dashed', color='red', 14)+
+  labs(colour = "Phase",fill="Phase", x="",y="MASE (M +/- 95%CI)") 
+
+  #this compares MASE for months 7 to 12 for phase 1 and 2
+dat %>% subset(isExpert.factor!= "Prolific Academic" & !is.na(revised)& Method.code!="Ground Truth"& Method.code!="Naive-linear"&Method.code!="Naive-rfw") %>%  
+  ggplot(aes(x = domain, y = MASE1_mth7to12, colour = updated, fill=updated))+
+ stat_summary(fun.data="mean_cl_boot",  position=pd)+  theme_minimal(base_size = 14) +
+theme(legend.position="bottom") +scale_color_d3()+scale_fill_d3()+ geom_hline(yintercept =1, linetype='dashed', color='red', 14)+
+  labs(colour = "",fill="", x="",y="MASE (M +/- 95%CI)") #those who did not update initially had lower inaccuracy than those who did update.
+
+
+dat %>% subset(phase == 2 & !is.na(isExpert.factor)& !is.na(revised)&Method.code!="Ground Truth"& Method.code!="Naive-linear"&Method.code!="Naive-rfw") %>% 
+ ggplot(aes(x = domain, y = MASE1_mth7to12, colour = updated , fill=updated ))+
+ stat_summary(fun.data="mean_cl_boot",  position=pd)+  theme_minimal(base_size = 14) +geom_hline(yintercept =1, linetype='dashed', color='red', 14)+
+theme(legend.position="bottom") +scale_color_d3()+scale_fill_d3()+  
+  labs(colour = "",fill="", x="",y="MASE (M +/- 95%CI)") 
+
+
+```
+
+```{r life satisfaction}
+
+#Phase 1
+
+lifesat <- dat_long %>% subset(domain == "lifesat" & phase == 1 & !is.na(isExpert.factor)) #note that this is only phase 1, ought to be adjusted to include update predictions for the new six months!!!
+
+lifesat1 <- lifesat %>% group_by(isExpert.factor, Month) %>% 
+  dplyr::summarise(
+  N = length(value),
+  mean = mean(value),
+  sd = sd(value),
+  se = sd / sqrt(N)
+)
+
+lifesat1
+
+Plot.ls <- ggplot(lifesat1, aes(x = Month, y = mean, colour = isExpert.factor)) + 
+  theme_minimal(base_size = 14) +
+  geom_smooth(method = "loess") + 
+  geom_point() +
+  scale_x_continuous(breaks=seq(1, 13, 3)) + 
+  scale_y_continuous(breaks=seq(5.8, 6.4, 0.1), limits = c(5.8, 6.4)) +
+  facet_wrap(vars(isExpert.factor), scales = "free", nrow = 3, ncol = 4) +
+  geom_errorbar(aes(ymin=mean-se, ymax=mean+se)) +
+  theme(legend.position="bottom") +
+  labs(title = "life satisfaction academic vs prolific") #+
+  #geom_text (data = textDif1, mapping = aes(x = -Inf, y = -Inf, label = label), hjust   = -0.1, vjust   = -0.5)
+
+Plot.ls
+
+########################################################################
+######################Igor update#######################################
+########################################################################
+
+# The errorbars overlapped, so use position_dodge to move them horizontally
+pd <- position_dodge(0.5) # move them .05 to the left and right
+
+ggplot(lifesat1, aes(x = Month, y = mean, colour = isExpert.factor, fill=isExpert.factor)) + 
+  theme_minimal(base_size = 14) +
+  geom_smooth(method = "loess",position=pd) + 
+  scale_x_continuous(breaks=seq(1, 12, 2)) + 
+  scale_y_continuous(breaks=seq(5.8, 6.4, 0.1), limits = c(5.8, 6.4)) +
+  geom_errorbar(aes(ymin=mean-se, ymax=mean+se), position=pd) + geom_point(position=pd)+
+  theme(legend.position="bottom") +scale_color_d3()+scale_fill_d3()+
+  labs(title = "Life Satisfaction",colour = "Sample",fill="Sample", x="Time (in months)",y="Estimate (M +/- 95%CI)") #+
+  #geom_text (data = textDif1, mapping = aes(x = -Inf, y = -Inf, label = label), hjust   = -0.1, vjust   = -0.5)
+
+
+lifesat %>% 
+ ggplot(aes(x = Month, y = value, colour = isExpert.factor, fill=isExpert.factor))+
+ stat_summary(fun.data="mean_cl_boot",  position=pd)+
+   geom_smooth(method = "loess",position=pd) +  theme_minimal(base_size = 14) +
+theme(legend.position="bottom") +scale_color_d3()+scale_fill_d3()+  scale_x_continuous(breaks=seq(1, 12, 2)) + 
+  labs(title = "Life Satisfaction",colour = "Sample",fill="Sample", x="Time (in months)",y="Estimate (M +/- 95%CI)") 
+  
+#boxplots 
+lifesat$Months<-as.factor(lifesat$Month)
+
+lifesat %>% 
+ ggplot(aes(x = Month, y = value))+
+   geom_boxplot(aes(x = Months, y = value, colour = isExpert.factor),  position=pd)+
+  geom_smooth(aes(x = Month, y = value, colour = isExpert.factor, fill=isExpert.factor),method = "loess",position=pd) +  theme_minimal(base_size = 14) +
+theme(legend.position="bottom") +scale_color_d3()+scale_fill_d3()+  #scale_x_continuous(breaks=seq(1, 12, 2)) + 
+  labs(title = "Life Satisfaction",colour = "Sample",fill="Sample", x="Time (in months)",y="Estimate (M +/- 95%CI)") 
+   
+#restrict y axis to region of interest - 4.5 to 7.5
+lifesat %>% 
+ ggplot(aes(x = Month, y = value))+
+   geom_boxplot(aes(x = Months, y = value, colour = isExpert.factor), position=position_dodge(.8))+
+  geom_smooth(aes(x = Month, y = value, colour = isExpert.factor, fill=isExpert.factor),method = "loess",position=pd) +  theme_minimal(base_size = 14) +
+theme(legend.position="bottom") +scale_color_d3()+scale_fill_d3()+ ylim(4.5,7.5)+ #scale_x_continuous(breaks=seq(1, 12, 2)) + 
+  labs(title = "Life Satisfaction",colour = "Sample",fill="Sample", x="Time (in months)",y="Estimate (M +/- 95%CI)") 
+
+#add objective data KEY PLOT FOR EACH DOMAIN
+
+lifesat %>% 
+ ggplot(aes(x = Month, y = value))+
+   geom_boxplot(aes(x = Months, y = value, colour = isExpert.factor), position=position_dodge(.8))+
+  geom_smooth(aes(x = Month, y = value, colour = isExpert.factor, fill=isExpert.factor),method = "loess",position=pd) +  theme_minimal(base_size = 14) +
+theme(legend.position="bottom") +scale_color_tron()+scale_fill_tron()+ ylim(5.5,7)+ 
+  labs(title = "Life Satisfaction",colour = "Sample",fill="Sample", x="Time (in months)",y="Estimate (M +/- 95%CI)") +
+  geom_segment(x = 0.7, xend=1.3, y=6.333665896, yend=6.333665896, color = "black", linetype = 2) + #here, you need to replace ys with the actual historical value for each data / x axis is set to bounds for each point to ensure no overlap
+  geom_segment(x = 1.7, xend=2.3, y=6.217446585, yend=6.217446585, color = "black", linetype = 2) +
+  geom_segment(x = 2.7, xend=3.3, y=6.304412691, yend=6.304412691, color = "black", linetype = 2) +
+  geom_segment(x = 3.7, xend=4.3, y=6.327005177, yend=6.327005177, color = "black", linetype = 2) +
+  geom_segment(x = 4.7, xend=5.3, y=6.336293833, yend=6.336293833, color = "black", linetype = 2) +
+  geom_segment(x = 5.7, xend=6.3, y=6.338430537, yend=6.338430537, color = "black", linetype = 2) +
+  geom_segment(x = 6.7, xend=7.3, y=6.331353975, yend=6.331353975, color = "black", linetype = 2) +
+  geom_segment(x = 7.7, xend=8.3, y=6.300137355, yend=6.300137355, color = "black", linetype = 2) +
+  geom_segment(x = 8.7, xend=9.3, y=6.348834431, yend=6.348834431, color = "black", linetype = 2) +
+  geom_segment(x = 9.7, xend=10.3, y=6.347219074, yend=6.347219074, color = "black", linetype = 2) +
+    geom_segment(x = 10.7, xend=11.3, y=6.330294051, yend=6.330294051, color = "black", linetype = 2) +
+    geom_segment(x = 11.7, xend=12.3, y=6.339913808, yend=6.339913808, color = "black", linetype = 2) 
+
+
+
+analysis.lifesat <-lmer(value~isExpert+(1|ResponseId),data=lifesat)
+
+anova.lifesat <- car::Anova(analysis.lifesat,type="III")
+
+##############################################################
+#Phase 1 and 2
+##############################################################
+
+lifesat_all <- dat_long %>% subset(domain == "lifesat" & !is.na(isExpert.factor)) 
+
+lifesat_all1 <- lifesat_all %>% group_by(phase, Month) %>% 
+  dplyr::summarise(
+  N = length(value),
+  mean = mean(value),
+  sd = sd(value),
+  se = sd / sqrt(N)
+)
+
+# The errorbars overlapped, so use position_dodge to move them horizontally
+pd <- position_dodge(0.5) # move them .05 to the left and right
+
+
+
+
+
+```
+
+```{r positive affect}
+
+posaffect <- dat_long %>% subset(domain == "posaffect" & phase == 1 & !is.na(isExpert.factor))
+
+posaffect1 <- posaffect %>% group_by(isExpert.factor, Month) %>% 
+  dplyr::summarise(
+  N = length(value),
+  mean = mean(value),
+  sd = sd(value),
+  se = sd / sqrt(N)
+)
+
+Plot <- ggplot(posaffect1, aes(x = Month, y = mean, colour = factor(isExpert.factor))) + 
+  theme_minimal(base_size = 14) +
+  geom_smooth(method = "loess") + 
+  geom_point() +
+  scale_x_continuous(breaks=seq(1, 13, 3)) + 
+  scale_y_continuous(breaks=seq(-1.15, -0.4, 0.1), limits = c(-1.15, -0.4)) +
+  facet_wrap(vars(isExpert.factor), scales = "free", nrow = 3, ncol = 4) +
+  geom_errorbar(aes(ymin=mean-se, ymax=mean+se)) +
+  theme(legend.position="bottom") +
+  labs(title = "positive affect academic vs prolific") #+
+  #geom_text (data = textDif1, mapping = aes(x = -Inf, y = -Inf, label = label), hjust   = -0.1, vjust   = -0.5)
+
+
+plot(Plot)
+
+analysis.posaffect <-lmer(value~isExpert+(1|ResponseId),data=posaffect)
+anova.posaffect <- car::Anova(analysis.posaffect,type="III")
+
+```
+
+```{r negative affect}
+
+negaffect <- dat_long %>% subset(domain == "negaffect" & phase == 1 & !is.na(isExpert.factor))
+
+negaffect1 <- negaffect %>% group_by(isExpert.factor, Month) %>% 
+  dplyr::summarise(
+  N = length(value),
+  mean = mean(value),
+  sd = sd(value),
+  se = sd / sqrt(N)
+)
+
+Plot <- ggplot(negaffect1, aes(x = Month, y = mean, colour = factor(isExpert.factor))) + 
+  theme_minimal(base_size = 14) +
+  geom_smooth(method = "loess") + 
+  geom_point() +
+  scale_x_continuous(breaks=seq(1, 13, 3)) + 
+  scale_y_continuous(breaks=seq(0.85, 1.25, 0.1), limits = c(0.85, 1.25)) +
+  facet_wrap(vars(isExpert.factor), scales = "free", nrow = 3, ncol = 4) +
+  geom_errorbar(aes(ymin=mean-se, ymax=mean+se)) +
+  theme(legend.position="bottom") +
+  labs(title = "negative affect academic vs prolific") #+
+  #geom_text (data = textDif1, mapping = aes(x = -Inf, y = -Inf, label = label), hjust   = -0.1, vjust   = -0.5)
+
+
+plot(Plot)
+
+analysis.negaffect <-lmer(value~isExpert+(1|ResponseId),data=negaffect)
+anova.negaffect <- car::Anova(analysis.negaffect,type="III")
+
+```
+
+```{r ideology - democrat}
+
+ideoldem <- dat_long %>% subset(domain == "ideoldem" & phase == 1 & !is.na(isExpert.factor))
+
+ideoldem1 <- ideoldem %>% group_by(isExpert.factor, Month) %>% 
+  dplyr::summarise(
+  N = length(value),
+  mean = mean(value),
+  sd = sd(value),
+  se = sd / sqrt(N)
+)
+
+Plot <- ggplot(ideoldem1, aes(x = Month, y = mean, colour = factor(isExpert.factor))) + 
+  theme_minimal(base_size = 14) +
+  geom_smooth(method = "loess") + 
+  geom_point() +
+  scale_x_continuous(breaks=seq(1, 13, 3)) + 
+  scale_y_continuous(breaks=seq(43, 47, 1), limits = c(43, 47)) +
+  facet_wrap(vars(isExpert.factor), scales = "free", nrow = 3, ncol = 4) +
+  geom_errorbar(aes(ymin=mean-se, ymax=mean+se)) +
+  theme(legend.position="bottom") +
+  labs(title = "ideology - democrat academic vs prolific") #+
+  #geom_text (data = textDif1, mapping = aes(x = -Inf, y = -Inf, label = label), hjust   = -0.1, vjust   = -0.5)
+
+
+plot(Plot)
+
+analysis.ideoldem <-lmer(value~isExpert+(1|ResponseId),data=ideoldem)
+anova.ideoldem <- car::Anova(analysis.ideoldem,type="III")
+
+```
+
+```{r ideology - republican}
+
+ideolrep <- dat_long %>% subset(domain == "ideolrep" & phase == 1 & !is.na(isExpert.factor))
+
+ideolrep1 <- ideolrep %>% group_by(isExpert.factor, Month) %>% 
+  dplyr::summarise(
+  N = length(value),
+  mean = mean(value),
+  sd = sd(value),
+  se = sd / sqrt(N)
+)
+
+Plot <- ggplot(ideolrep1, aes(x = Month, y = mean, colour = factor(isExpert.factor))) + 
+  theme_minimal(base_size = 14) +
+  geom_smooth(method = "loess") + 
+  geom_point() +
+  scale_x_continuous(breaks=seq(1, 13, 3)) + 
+  scale_y_continuous(breaks=seq(35, 39, 1), limits = c(34.5, 39)) +
+  facet_wrap(vars(isExpert.factor), scales = "free", nrow = 3, ncol = 4) +
+  geom_errorbar(aes(ymin=mean-se, ymax=mean+se)) +
+  theme(legend.position="bottom") +
+  labs(title = "ideology - republican academic vs prolific") #+
+  #geom_text (data = textDif1, mapping = aes(x = -Inf, y = -Inf, label = label), hjust   = -0.1, vjust   = -0.5)
+
+
+plot(Plot)
+
+analysis.ideolrep <-lmer(value~isExpert+(1|ResponseId),data=ideolrep)
+anova.ideolrep <- car::Anova(analysis.ideolrep,type="III")
+
+```
+
+```{r  polarization}
+
+polar <- dat_long %>% subset(domain == "polar" & phase == 1 & !is.na(isExpert.factor))
+
+polar1 <- polar %>% group_by(isExpert.factor, Month) %>% 
+  dplyr::summarise(
+  N = length(value),
+  mean = mean(value),
+  sd = sd(value),
+  se = sd / sqrt(N)
+)
+
+Plot <- ggplot(polar1, aes(x = Month, y = mean, colour = factor(isExpert.factor))) + 
+  theme_minimal(base_size = 14) +
+  geom_smooth(method = "loess") + 
+  geom_point() +
+  scale_x_continuous(breaks=seq(1, 13, 3)) + 
+  scale_y_continuous(breaks=seq(73, 85, 2), limits = c(73, 86)) +
+  facet_wrap(vars(isExpert.factor), scales = "free", nrow = 3, ncol = 4) +
+  geom_errorbar(aes(ymin=mean-se, ymax=mean+se)) +
+  theme(legend.position="bottom") +
+  labs(title = "polarization academic vs prolific") #+
+  #geom_text (data = textDif1, mapping = aes(x = -Inf, y = -Inf, label = label), hjust   = -0.1, vjust   = -0.5)
+
+
+plot(Plot)
+
+analysis.polar <-lmer(value~isExpert+(1|ResponseId),data=polar)
+anova.polar <- car::Anova(analysis.polar,type="III")
+
+```
+
+```{r explicit asian american}
+
+easian <- dat_long %>% subset(domain == "easian" & phase == 1 & !is.na(isExpert.factor))
+
+easian1 <- easian %>% group_by(isExpert.factor, Month) %>% 
+  dplyr::summarise(
+  N = length(value),
+  mean = mean(value),
+  sd = sd(value),
+  se = sd / sqrt(N)
+)
+
+Plot <- ggplot(easian1, aes(x = Month, y = mean, colour = factor(isExpert.factor))) + 
+  theme_minimal(base_size = 14) +
+  geom_smooth(method = "loess") + 
+  geom_point() +
+  scale_x_continuous(breaks=seq(1, 13, 3)) + 
+  scale_y_continuous(breaks=seq(0, 0.35, 0.07), limits = c(0, 0.35)) +
+  facet_wrap(vars(isExpert.factor), scales = "free", nrow = 3, ncol = 4) +
+  geom_errorbar(aes(ymin=mean-se, ymax=mean+se)) +
+  theme(legend.position="bottom") +
+  labs(title = "explicit Asian bias academic vs prolific") #+
+  #geom_text (data = textDif1, mapping = aes(x = -Inf, y = -Inf, label = label), hjust   = -0.1, vjust   = -0.5)
+
+
+plot(Plot)
+
+analysis.easian <-lmer(value~isExpert.factor+(1|ResponseId),data=easian)
+anova.easian <- car::Anova(analysis.easian,type="III")
+
+
+```
+
+```{r implicit asian american}
+
+iasian <- dat_long %>% subset(domain == "iasian" & phase == 1 & !is.na(isExpert.factor))
+
+iasian1 <- iasian %>% group_by(isExpert.factor, Month) %>% 
+  dplyr::summarise(
+  N = length(value),
+  mean = mean(value),
+  sd = sd(value),
+  se = sd / sqrt(N)
+)
+
+Plot <- ggplot(iasian1, aes(x = Month, y = mean, colour = isExpert.factor)) + 
+  theme_minimal(base_size = 14) +
+  geom_smooth(method = "loess") + 
+  geom_point() +
+  scale_x_continuous(breaks=seq(1, 13, 3)) + 
+  scale_y_continuous(breaks=seq(0.37, 0.43, 0.02), limits = c(0.37, 0.44)) +
+  facet_wrap(vars(isExpert.factor), scales = "free", nrow = 3, ncol = 4) +
+  geom_errorbar(aes(ymin=mean-se, ymax=mean+se)) +
+  theme(legend.position="bottom") +
+  labs(title = "implicit Asian bias academic vs prolific") #+
+  #geom_text (data = textDif1, mapping = aes(x = -Inf, y = -Inf, label = label), hjust   = -0.1, vjust   = -0.5)
+
+
+plot(Plot)
+
+analysis.iasian <-lmer(value~isExpert+(1|ResponseId),data=iasian)
+anova.iasian <- car::Anova(analysis.iasian,type="III")
+
+```
+
+
+```{r explicit african american}
+
+eafric <- dat_long %>% subset(domain == "eafric" & phase == 1 & !is.na(isExpert))
+eafric1 <- eafric %>% subset(!is.na(isExpert))
+
+eafric1 <- eafric1 %>% group_by(isExpert.factor, Month) %>% 
+  dplyr::summarise(
+  N = length(value),
+  mean = mean(value),
+  sd = sd(value),
+  se = sd / sqrt(N)
+)
+
+
+
+Plot <- ggplot(eafric1, aes(x = Month, y = mean, colour = isExpert.factor)) + 
+  theme_minimal(base_size = 14) +
+  geom_smooth(method = "loess") + 
+  geom_point() +
+  scale_x_continuous(breaks=seq(1, 13, 3)) + 
+  scale_y_continuous(breaks=seq(-0.20, 0.15, 0.07), limits = c(-0.2, 0.15)) +
+  facet_wrap(vars(isExpert.factor), scales = "free", nrow = 3, ncol = 4) +
+  geom_errorbar(aes(ymin=mean-se, ymax=mean+se)) +
+  theme(legend.position="bottom") +
+  labs(title = "explicit African bias academic vs prolific") #+
+  #geom_text (data = textDif1, mapping = aes(x = -Inf, y = -Inf, label = label), hjust   = -0.1, vjust   = -0.5)
+
+plot(Plot)
+
+analysis.eafric <-lmer(value~isExpert.factor+(1|ResponseId),data=eafric)
+anova.eafric <- car::Anova(analysis.eafric,type="III")
+
+
+```
+
+```{r implicit african american}
+
+iafric <- dat_long %>% subset(domain == "iafric" & phase == 1 & !is.na(isExpert.factor))
+
+iafric1 <- iafric %>% group_by(isExpert.factor, Month) %>% 
+  dplyr::summarise(
+  N = length(value),
+  mean = mean(value),
+  sd = sd(value),
+  se = sd / sqrt(N)
+)
+
+Plot <- ggplot(iafric1, aes(x = Month, y = mean, colour = factor(isExpert.factor))) + 
+  theme_minimal(base_size = 14) +
+  geom_smooth(method = "loess") + 
+  geom_point() +
+  scale_x_continuous(breaks=seq(1, 13, 3)) + 
+  scale_y_continuous(breaks=seq(0.29, 0.33, 0.01), limits = c(0.288, 0.33)) +
+  facet_wrap(vars(isExpert.factor), scales = "free", nrow = 3, ncol = 4) +
+  geom_errorbar(aes(ymin=mean-se, ymax=mean+se)) +
+  theme(legend.position="bottom") +
+  labs(title = "implicit African bias academic vs prolific") #+
+  #geom_text (data = textDif1, mapping = aes(x = -Inf, y = -Inf, label = label), hjust   = -0.1, vjust   = -0.5)
+
+
+plot(Plot)
+
+analysis.iafric <-lmer(value~isExpert+(1|ResponseId),data=iafric)
+anova.iafric <- car::Anova(analysis.iafric,type="III")
+
+```
+
+```{r explicit gender-career bias}
+
+egend <- dat_long %>% subset(domain == "egend" & phase == 1 & !is.na(isExpert.factor))
+
+egend1 <- egend %>% group_by(isExpert.factor, Month) %>% 
+  dplyr::summarise(
+  N = length(value),
+  mean = mean(value),
+  sd = sd(value),
+  se = sd / sqrt(N)
+)
+
+Plot <- ggplot(egend1, aes(x = Month, y = mean, colour = factor(isExpert.factor))) + 
+  theme_minimal(base_size = 14) +
+  geom_smooth(method = "loess") + 
+  geom_point() +
+  scale_x_continuous(breaks=seq(1, 13, 3)) + 
+  scale_y_continuous(breaks=seq(0.8, 1.2, 0.1), limits = c(0.78, 1.2)) +
+  facet_wrap(vars(isExpert.factor), scales = "free", nrow = 3, ncol = 4) +
+  geom_errorbar(aes(ymin=mean-se, ymax=mean+se)) +
+  theme(legend.position="bottom") +
+  labs(title = "explicit gender academic vs prolific") #+
+  #geom_text (data = textDif1, mapping = aes(x = -Inf, y = -Inf, label = label), hjust   = -0.1, vjust   = -0.5)
+
+
+plot(Plot)
+
+analysis.egend <-lmer(value~isExpert+(1|ResponseId),data=egend)
+anova.egend <- car::Anova(analysis.egend,type="III")
+
+```
+
+```{r implicit gender-career bias}
+
+igend <- dat_long %>% subset(domain == "igend" & phase == 2 & !is.na(isExpert.factor))
+
+igend1 <- igend %>% group_by(isExpert.factor, Month) %>% 
+  dplyr::summarise(
+  N = length(value),
+  mean = mean(value),
+  sd = sd(value),
+  se = sd / sqrt(N)
+)
+
+Plot <- ggplot(igend1, aes(x = Month, y = mean, colour = factor(isExpert.factor))) + 
+  theme_minimal(base_size = 14) +
+  geom_smooth(method = "loess") + 
+  geom_point() +
+  scale_x_continuous(breaks=seq(1, 13, 3)) + 
+  scale_y_continuous(breaks=seq(0.35, 0.4, 0.01), limits = c(0.35, 0.405)) +
+  facet_wrap(vars(isExpert.factor), scales = "free", nrow = 3, ncol = 4) +
+  geom_errorbar(aes(ymin=mean-se, ymax=mean+se)) +
+  theme(legend.position="bottom") +
+  labs(title = "implicit gender academic vs prolific") #+
+  #geom_text (data = textDif1, mapping = aes(x = -Inf, y = -Inf, label = label), hjust   = -0.1, vjust   = -0.5)
+
+
+plot(Plot)
+
+analysis.igend <-lmer(value~isExpert+(1|ResponseId),data=igend)
+anova.igend <- car::Anova(analysis.igend,type="III")
+
+```
+
+```{r differences by team size}
+
+# look at whether team multi-disciplinarity has any impact
+analysis.disc <-lmer(root_mean_sqr_error~is_multidisciplinary+(1|ResponseId),data=phase1_exp)
+anova.disc <- car::Anova(analysis.disc,type="III")
+
+# no effect of multi-disciplinarity
+
+# look at whether team size has an effect on RMSE
+analysis.teams <- lmer(root_mean_sqr_error~team_size.coded+(1|ResponseId), data = phase1_exp)
+anova.teams <- car::Anova(analysis.teams,type="III")
+
+# no effect of team size of RMSE
+
+# instead split into 2 groups: solo (team size = 1) and group (team size = 2+)
+phase1_exp$team_size.grouped <- ifelse(phase1_exp$team_size.coded > 1, 2, phase1_exp$team_size.coded)
+
+analysis.teams2 <- lmer(root_mean_sqr_error~factor(team_size.grouped)+(1|ResponseId), data = phase1_exp)
+anova.teams2 <- car::Anova(analysis.teams2,type="III")
+
+# Still no effect of team size
+
+# look at whether method used has an effect on RMSE
+analysis.method <- lmer(root_mean_sqr_error~Method.coded.factor+(1|ResponseId), data = phase1_exp)
+anova.teams <- car::Anova(analysis.teams,type="III")
+
+# no effect of method used
+
+```
+
+```{r - Team Updates}
+
+#Question: Did teams that updated predictions do better than those who did not?
+#only contains data from phase 2, teams that did vs did not update analyses (also includes firt time predictors)
+
+expert_dat <- filter(dat, isExpert == 1)
+
+  #using MASE1
+
+updated.analysis <-lmer(MASE1_w2~revised +(1|ResponseId),data=expert_dat)
+print(updated.analysis)
+
+anova.updated  <- car::Anova(updated.analysis,type="III")
+print(anova.updated)
+
+  #using MASE2
+
+updated.analysis2 <-lmer(MASE2_w2~revised+(1|ResponseId),data=expert_dat)
+print(updated.analysis2)
+
+anova.updated2  <- car::Anova(updated.analysis2,type="III")
+print(anova.updated2)
+
+
+#comparing predictions for months 7 to 12 from phase 1 and 2 to ground truth estimates
+
+
+
+overlapdat_long %>% subset(isExpert == 1 & !is.na(Method.code)& Method.code!="Ground Truth") %>% 
+   ggplot(aes(x = Month, y = value, colour = phase, fill=phase))+
+  geom_smooth(aes(x = Month, y = value, colour = phase, fill=phase),method = "loess") +  
+    facet_wrap(vars(domain), scales = "free", nrow = 3)+theme_minimal(base_size = 14) +
+  geom_smooth(data=objective2,se=F) + #here we add the ground truth markers without confidence band
+   theme(legend.position="bottom") +scale_color_d3()+scale_fill_d3()+ 
+  labs(colour = "Phase",fill="Phase", x="Time (in months)",y="Estimate (M +/- 95%CI)") 
+
+```
