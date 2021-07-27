@@ -617,9 +617,7 @@ dat_flag <- read.csv("participant_revisedSubmissions.csv", stringsAsFactors = FA
 
 dat_flag <- dat_flag %>% filter(Flag == 1)
 
-# test <- dat
-dat <- test
-  
+
 for (i in 1:nrow(dat_flag)) {
   temp <- dat_flag[i,]
   
@@ -1026,12 +1024,12 @@ for (i in 1:length(unique_teams_predicted_covid_death)) {
 
     dat_accuracy_covid <- dat_accuracy_covid %>% add_row(
       ResponseId = unique_teams_predicted_w1[i],
-      domain = domain_list_w1[n],
+      domain = domain_list_covid[n],
       mean_error_covid = outcome_covid[1],
-      root_mean_sqr_error_covid = outcome_w1[2],
-      mean_abs_error_covid = outcome_w1[3],
-      mean_percent_error_covid = outcome_w1[4],
-      mean_abs_percent_error_covid = outcome_w1[5],
+      root_mean_sqr_error_covid = outcome_covid[2],
+      mean_abs_error_covid = outcome_covid[3],
+      mean_percent_error_covid = outcome_covid[4],
+      mean_abs_percent_error_covid = outcome_covid[5],
       MASE1_covid = computeMASE(dat_temp_2_covid$value, objective_data[37:40], objective_data[41:52], 1),
       MASE2_covid = Metrics::mase(objective_data[41:52], vals_covid, step_size = 1)
                              )
@@ -1532,11 +1530,11 @@ for (i in 1:length(domains)) {
 
 ```{r output files}
 
-write.csv(dat, "Wave1+2data_2021-07-21.csv")
-write.csv(demographics_unique, "Wave1+2demographics_2021-07-21.csv")
+write.csv(dat, "Wave1+2data_2021-07-26.csv")
+write.csv(demographics_unique, "Wave1+2demographics_2021-07-26.csv")
 # write.csv(dat_long, "wave1+2data_long_2021-06-30.csv")
 # write.csv(dat_lay, "Wave1_Lay sample.csv")
 # write.csv(dat_hist, "historical_data_2021-05-19.csv")
-write.csv(dat_comp_1, "team_size_2021-07-21.csv")
+write.csv(dat_comp_1, "team_size_2021-07-26.csv")
 ```
 
