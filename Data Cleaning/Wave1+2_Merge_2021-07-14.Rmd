@@ -533,7 +533,7 @@ dat <- dat %>% left_join(dat_coded, by = c("phase", "team_name", "domain"))
 ```{r Import coded Counterfactuals}
 
 dat_counter <- read.csv("Counterfactuals_2020-09-23_Merged.csv", stringsAsFactors = FALSE)
-dat_counter <- dat_counter[ , c("team_name", "Issue", "Presence.Final", "COVID.Final", "Blame.Final")]
+dat_counter <- dat_counter[ , c("team_name", "Issue", "CounterFactual_Presence.Final", "COVID.Final", "Blame.Final")]
 
 dat_counter <- dat_counter %>% dplyr::rename(
   domain = Issue
@@ -652,8 +652,7 @@ dat_accuracy_w1 <- tibble(
   mean_abs_error_w1 = numeric(),
   mean_percent_error_w1 = numeric(),
   mean_abs_percent_error_w1 = numeric(),
-  MASE1_w1 = numeric(),
-  MASE2_w1 = numeric()
+  MASE1_w1 = numeric()
 )
 
 # For each team that submitted a prediction, filter dataset by team & domain
@@ -683,8 +682,7 @@ for (i in 1:length(unique_teams_predicted_w1)) {
       mean_abs_error_w1 = outcome_w1[3],
       mean_percent_error_w1 = outcome_w1[4],
       mean_abs_percent_error_w1 = outcome_w1[5],
-      MASE1_w1 = computeMASE(dat_temp_2_w1$value, objective_data[1:40], objective_data[41:52], 1),
-      MASE2_w1 = Metrics::mase(objective_data[41:52], vals_w1, step_size = 1)
+      MASE1_w1 = computeMASE(dat_temp_2_w1$value, objective_data[1:40], objective_data[41:52], 1)
                              )
 
   }
@@ -769,7 +767,6 @@ for (i in 1:length(domains)) {
     mean_percent_error_w1 = naive_acc_w1[4],
     mean_abs_percent_error_w1 = naive_acc_w1[5],
     MASE1_w1 = computeMASE(vals_w1, dat_hist[1:40, domains[i]], dat_hist[41:52, domains[i]], 1),
-    MASE2_w1 = Metrics::mase(objective_data, vals_w1, step_size = 1),
     Method.coded = 6,
     phase = 1
   )
@@ -840,7 +837,6 @@ for (i in 1:length(domains)) {
     mean_percent_error_w1 = pull(naive_acc.test[4]),
     mean_abs_percent_error_w1 = pull(naive_acc.test[5]),
     MASE1_w1 = computeMASE(naive_forecast.test, dat_hist[1:40, domains[i]], dat_hist[41:52, domains[i]], 1),
-    MASE2_w1 = Metrics::mase(objective_data, naive_forecast.test, step_size = 1),
     #mean_abs_scaled_error = pull(naive_acc.tib[2, 6]),
     Method.coded = 7,
     phase = 1
@@ -895,7 +891,6 @@ for (i in rows_ideol) {
     dat$mean_percent_error_w1[i] <- acc[4]
     dat$mean_abs_percent_error_w1[i] <- acc[5]
     dat$MASE1_w1[i] <- computeMASE(val_w1, dat_hist[1:40, domain], hist_w1, 1)
-    dat$MASE2_w1[i] = Metrics::mase(hist_w1, val_w1, step_size = 1) 
   }
     
   
@@ -985,8 +980,7 @@ dat_accuracy_covid <- tibble(
   mean_abs_error_covid = numeric(),
   mean_percent_error_covid = numeric(),
   mean_abs_percent_error_covid = numeric(),
-  MASE1_covid = numeric(),
-  MASE2_covid = numeric()
+  MASE1_covid = numeric()
 )
 
 # For each team that submitted a prediction, filter dataset by team & domain
@@ -1030,8 +1024,7 @@ for (i in 1:length(unique_teams_predicted_covid_death)) {
       mean_abs_error_covid = outcome_covid[3],
       mean_percent_error_covid = outcome_covid[4],
       mean_abs_percent_error_covid = outcome_covid[5],
-      MASE1_covid = computeMASE(dat_temp_2_covid$value, objective_data[37:40], objective_data[41:52], 1),
-      MASE2_covid = Metrics::mase(objective_data[41:52], vals_covid, step_size = 1)
+      MASE1_covid = computeMASE(dat_temp_2_covid$value, objective_data[37:40], objective_data[41:52], 1)
                              )
 
   }
@@ -1064,8 +1057,7 @@ dat_accuracy_w1_lastmonths <- tibble(
   mean_abs_error_w1_lastmonths = numeric(),
   mean_percent_error_w1_lastmonths = numeric(),
   mean_abs_percent_error_w1_lastmonths = numeric(),
-  MASE1_w1_lastmonths = numeric(),
-  MASE2_w1_lastmonths = numeric()
+  MASE1_w1_lastmonths = numeric()
 )
 
  
@@ -1110,8 +1102,7 @@ for (i in 1:length(unique_teams_predicted_w1)) {
       mean_abs_error_w1_lastmonths = outcome_w1_lastmonths[3],
       mean_percent_error_w1_lastmonths = outcome_w1_lastmonths[4],
       mean_abs_percent_error_w1_lastmonths = outcome_w1_lastmonths[5],
-      MASE1_w1_lastmonths = computeMASE(dat_temp_2_w1_lastmonths$value, objective_data_lastmonths[1:40], objective_data_lastmonths[47:52], 1),
-      MASE2_w1_lastmonths = Metrics::mase(objective_data_lastmonths[47:52], vals_w1_lastmonths, step_size = 1)
+      MASE1_w1_lastmonths = computeMASE(dat_temp_2_w1_lastmonths$value, objective_data_lastmonths[1:40], objective_data_lastmonths[47:52], 1)
                              )
 
  
@@ -1177,7 +1168,6 @@ for (i in rows_ideol) {
     dat$mean_percent_error_w1_lastmonths[i] <- acc_w1_lastmonths[4]
     dat$mean_abs_percent_error_w1_lastmonths[i] <- acc_w1_lastmonths[5]
     dat$MASE1_w1_lastmonths[i] <- computeMASE(val_w1_lastmonths , dat_hist[1:40, domain], hist_w1_lastmonths, 1)
-    dat$MASE2_w1_lastmonths[i] = Metrics::mase(hist_w1_lastmonths, val_w1_lastmonths , step_size = 1) 
   }
     
   
@@ -1219,8 +1209,7 @@ dat_accuracy_w2 <- tibble(
   mean_abs_error_w2 = numeric(),
   mean_percent_error_w2 = numeric(),
   mean_abs_percent_error_w2 = numeric(),
-  MASE1_w2 = numeric(),
-  MASE2_w2 = numeric()
+  MASE1_w2 = numeric()
 )
 
 # For each team that submitted a prediction, filter dataset by team & domain
@@ -1250,8 +1239,7 @@ for (i in 1:length(unique_teams_predicted_w2)) {
       mean_abs_error_w2 = outcome_w2[3],
       mean_percent_error_w2 = outcome_w2[4],
       mean_abs_percent_error_w2 = outcome_w2[5],
-      MASE1_w2 = computeMASE(dat_temp_2_w2$value, objective_data[1:46], objective_data[47:52], 1),
-      MASE2_w2 = Metrics::mase(objective_data[47:52], vals_w2, step_size = 1)
+      MASE1_w2 = computeMASE(dat_temp_2_w2$value, objective_data[1:46], objective_data[47:52], 1)
                              )
 
   }
@@ -1335,7 +1323,6 @@ for (i in 1:length(domains)) {
     mean_percent_error_w2 = naive_acc_w2[4],
     mean_abs_percent_error_w2 = naive_acc_w2[5],
     MASE1_w2 = computeMASE(vals_w2, dat_hist[1:46, domains[i]], dat_hist[47:52, domains[i]], 1),
-    MASE2_w2 = Metrics::mase(objective_data, vals_w2, step_size = 1),
     Method.coded = 6,
     phase = 2
   )
@@ -1390,7 +1377,6 @@ for (i in 1:length(domains)) {
     mean_percent_error_w2 = pull(naive_acc.test_w2[4]),
     mean_abs_percent_error_w2 = pull(naive_acc.test_w2[5]),
     MASE1_w2 = computeMASE(naive_forecast.test_w2, dat_hist[1:46, domains[i]], dat_hist[47:52, domains[i]], 1),
-    MASE2_w2 = Metrics::mase(objective_data, naive_forecast.test_w2, step_size = 1),
     #mean_abs_scaled_error = pull(naive_acc.tib[2, 6]),
     Method.coded = 7,
     phase = 2
@@ -1438,7 +1424,7 @@ for (i in rows_ideol) {
     dat$mean_percent_error_w2[i] <- acc_w2 [4]
     dat$mean_abs_percent_error_w2[i] <- acc[5]
     dat$MASE1_w2[i] <- computeMASE(val_w2 , dat_hist[1:46, domain], hist_w2, 1)
-    dat$MASE2_w2[i] = Metrics::mase(hist_w2, val_w2 , step_size = 1) 
+
   }
     
   
@@ -1493,6 +1479,16 @@ dat$compare_to_naive_rwf_w2 <- factor(dat$RMSE_cutoff_Naive_rwf_w2, levels = c(0
 
 ```
 
+```{r Convert NAs to 0s}
+
+# correct certain variables so that NA responses are properly treated as 0s
+
+dat$numpred[which(is.na(dat$numpred))] <- 0
+dat$team_size[which(is.na(dat$team_size))] <- 1
+dat$CounterFactual_Presence.Final[which(is.na(dat$CounterFactual_Presence.Final))] <- 0
+
+```
+
 
 ```{r Create Long data set with difference scores}
 ## Convert to Long + Calculate difference scores.
@@ -1530,11 +1526,11 @@ for (i in 1:length(domains)) {
 
 ```{r output files}
 
-write.csv(dat, "Wave1+2data_2021-07-26.csv")
-write.csv(demographics_unique, "Wave1+2demographics_2021-07-26.csv")
+write.csv(dat, "Wave1+2data.csv")
+write.csv(demographics_unique, "Wave1+2demographics.csv")
 # write.csv(dat_long, "wave1+2data_long_2021-06-30.csv")
 # write.csv(dat_lay, "Wave1_Lay sample.csv")
 # write.csv(dat_hist, "historical_data_2021-05-19.csv")
-write.csv(dat_comp_1, "team_size_2021-07-26.csv")
+write.csv(dat_comp_1, "team_size.csv")
 ```
 
