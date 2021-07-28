@@ -1,0 +1,8 @@
+```{r}
+
+dat <- read.csv("Wave1+2data.csv", stringsAsFactors = FALSE)
+
+demo <- <- read.csv("Wave1+2demographics.csv", stringsAsFactors = FALSE) 
+
+```
+

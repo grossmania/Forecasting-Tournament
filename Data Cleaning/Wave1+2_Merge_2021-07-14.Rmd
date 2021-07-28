@@ -1349,7 +1349,7 @@ for (i in 1:length(domains)) {
   objective_data <- domain_outcomes_w2[ , domains[i]]
   
   naive_forecast_w2 <- naive(prediction_basis, h = 6)
-  naive_forecast.tib_w2 <- as_tibble(naive_forecast)
+  naive_forecast.tib_w2 <- as_tibble(naive_forecast_w2)
   
   naive_forecast.test_w2 <- pull(naive_forecast.tib_w2[,1])
   time_series.test_w2 <- dat_hist[47:52, domains[i]]
@@ -1364,12 +1364,12 @@ for (i in 1:length(domains)) {
     
     domain = domains[i],
     Method = "Naive - rwf",
-    Month.7 = naive_forecast.test_w2[7],
-    Month.8 = naive_forecast.test_w2[8],
-    Month.9 = naive_forecast.test_w2[9],
-    Month.10 = naive_forecast.test_w2[10],
-    Month.11 = naive_forecast.test_w2[11],
-    Month.12 = naive_forecast.test_w2[12],
+    Month.7 = naive_forecast.test_w2[1],
+    Month.8 = naive_forecast.test_w2[2],
+    Month.9 = naive_forecast.test_w2[3],
+    Month.10 = naive_forecast.test_w2[4],
+    Month.11 = naive_forecast.test_w2[5],
+    Month.12 = naive_forecast.test_w2[6],
     
     mean_error_w2 = pull(naive_acc.test_w2[1]),
     root_mean_sqr_error_w2 = pull(naive_acc.test_w2[2]),
@@ -1486,6 +1486,7 @@ dat$compare_to_naive_rwf_w2 <- factor(dat$RMSE_cutoff_Naive_rwf_w2, levels = c(0
 dat$numpred[which(is.na(dat$numpred))] <- 0
 dat$team_size[which(is.na(dat$team_size))] <- 1
 dat$CounterFactual_Presence.Final[which(is.na(dat$CounterFactual_Presence.Final))] <- 0
+
 
 ```
 
