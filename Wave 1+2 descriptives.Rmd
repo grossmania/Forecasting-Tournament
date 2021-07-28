@@ -78,7 +78,7 @@ for (i in 1:length(domains)) {
 ```{r Import Data}
 
 # filters by completion time, so that prolific sample excludes predictions that took less than 50 seconds to make
-dat <- read.csv("Wave1+2data_2021-07-27.csv", stringsAsFactors = FALSE)
+dat <- read.csv("Wave1+2data.csv", stringsAsFactors = FALSE)
 
 # data set below does not filter lay sample by completion time
 # dat <- read.csv("Wave1+2data_coded_2021-05-18.csv", stringsAsFactors = FALSE)
@@ -236,7 +236,7 @@ write.csv(dat_long,"dat_long.csv")
 
 # contains demographics info from participants who responded to the survey. Team names have been corrected to match those in the dat_exp dataframe
 
-dat_demo <- read.csv("Wave1+2demographics_2021-07-19.csv", stringsAsFactors = FALSE)
+dat_demo <- read.csv("Wave1+2demographics.csv", stringsAsFactors = FALSE)
 
 # demo_1 - participant name
 # demo_2 - participant email
