@@ -428,9 +428,9 @@ pd <- position_dodge(0.7) # move them .07 to the left and right
 
 #do by method (among experts now)
 #get ground truth markers (subset)
-objective2<-as.data.frame(subset(dat_long,phase == 2 & !is.na(Method.code)& Method.code=="Ground Truth"))
+objective2<-as.data.frame(subset(dat_long,phase == 2 & !is.na(Method.code)& Method.code=="Ground Truth" & (Month >6&Month<13) ))
 
-dat_long %>% subset(phase == 2 & !is.na(Method.code)& Method.code!="Ground Truth") %>% 
+dat_long %>% subset(phase == 2 & !is.na(Method.code)& Method.code!="Ground Truth" & Month <13 & Month >6) %>% 
    ggplot(aes(x = Month, y = value, colour = Method.code, fill=Method.code))+
   geom_smooth(aes(x = Month, y = value, colour = Method.code, fill=Method.code),method = "loess") +  
     facet_wrap(vars(domain), scales = "free", nrow = 3)+theme_minimal(base_size = 14) +
@@ -439,11 +439,11 @@ dat_long %>% subset(phase == 2 & !is.na(Method.code)& Method.code!="Ground Truth
   labs(colour = "Sample",fill="Sample", x="Time (in months)",y="Estimate (M +/- 95%CI)") 
 
 #without the naive benchmarks
-dat_long %>% subset(phase == 1 & !is.na(Method.code)& Method.code!="Ground Truth"& Method.code!="Naive-linear"&Method.code!="Naive-rfw") %>% 
+dat_long %>% subset(phase == 2 & !is.na(Method.code)& Method.code!="Ground Truth"& Method.code!="Naive-linear"&Method.code!="Naive-rfw" & (Month >6&Month<13)) %>% 
    ggplot(aes(x = Month, y = value, colour = Method.code, fill=Method.code))+
   geom_smooth(aes(x = Month, y = value, colour = Method.code, fill=Method.code),method = "loess") +  
     facet_wrap(vars(domain), scales = "free", nrow = 3)+theme_minimal(base_size = 14) +
-  geom_smooth(data=objective,se=F) + #here we add the ground truth markers without confidence band
+  geom_smooth(data=objective2,se=F) + #here we add the ground truth markers without confidence band
    theme(legend.position="bottom") +scale_color_d3()+scale_fill_d3()+ 
   labs(colour = "Sample",fill="Sample", x="Time (in months)",y="Estimate (M +/- 95%CI)")
 
