@@ -70,9 +70,32 @@ arrange(domain,MASE1_w2) %>%group_by(domain) %>% select(team_name,domain,Month.7
 
 write.csv(t2.academ.sorted,"wave2.scores.csv")
 
+##IF WE WANT TO SORT AND GET TOP 20 or TOP 10
+
+#T1
+##########################################################
+
+###sort teams by domain for absolute percentage error and download file
+###get top 20 teams  per domain for absolute percentage error
+
+#MASE.t1<-dat.phase1.academics %>%
+#arrange(domain,MASE1_w1) %>%group_by(domain) %>% dplyr::slice_head(n = 10) %>% select(team_name,MASE1_w1,domain)
+
+#MAE.t1<-dat.phase1.academics %>%
+#arrange(domain,mean_abs_error_w1) %>%group_by(domain) %>% 
+#  dplyr::slice_head(n = 20) %>% select(team_name,mean_abs_error_w1,domain)
+
+#MAPE.t1<-dat_long_phase1 %>%select(team_name,value.dif,domain,Month,value.dif) %>% pivot_wider(names_from=Month,values_from = value.dif,names_prefix = "m") %>% 
+#  rowwise() %>% 
+#  mutate(MAPE = mean(c_across(starts_with("m")),na.rm=T)) %>% 
+#  ungroup() %>% arrange(domain,MAPE) %>%group_by(domain)%>%
+#  dplyr::slice_head(n = 20) %>% select(team_name,MAPE,domain)
+
+#t1.accuracy<-MASE.t1 %>% inner_join(MAPE.t1) %>% inner_join(MAE.t1)
+#############################################################
 ```
 
-# analyses across domains 
+# Phase 1 analyses 
 
 ```{r}
 
@@ -283,7 +306,7 @@ car::Anova(model.phase1.obexpert,type="III") #
 summ(model.phase1.obexpert, digits=4, center=T)
 emmeans(model.phase1.obexpert,pairwise ~objectivexpert|domain, adjust = "none") #
 
-#### six, number of predictors in the model
+#### six, number of predictors in the model NEED TO BE CORRECTED!
 model.phase1.predictors<-  lmer(MASE1_w1~numpred*domain+(1|ResponseId), data=phase1_exp)
 car::Anova(model.phase1.predictors,type="III") #npred matters!
 summ(model.phase1.predictors, digits=4, center=T)
@@ -298,17 +321,14 @@ emtrends(model.phase1.complex,specs=~domain,var="Method.complex") #
 sjPlot::plot_model(model.phase1.complex,type="int")
 
 ######################NO IDEA WHAT THIS IS....
-#### Eight, wounterfactual presense when reflecting on predictions
+#### Eight, counterfactuals (yes/no) when reflecting on predictions
 model.phase1.counterfac<-  lmer(MASE1_w1~domain*Presence.Final+(1|ResponseId), data=phase1_exp)
 car::Anova(model.phase1.counterfac,type="III") #interdisciplinary did not matter
 summ(model.phase1.counterfac, digits=4, center=T)
 emmeans(model.phase1.counterfac,pairwise ~Presence.Final|domain, adjust = "none") #nonsig
+
+
 ### Time-specific - 
-
-
-
-
-
 
 #### first, confidence
 model.long.phase1.conf<-  lmer(value.dif~domain*confidence*Month0+(1|ResponseId), data=subset(dat_long_phase1, isExpert.factor == 'Academic'))
@@ -354,7 +374,7 @@ car::Anova(model.loong.phase1.obexpert,type="III") #pubs play a role!
 summ(model.loong.phase1.obexpert, digits=4, center=T)
 emmeans(model.loong.phase1.obexpert,pairwise ~objectivexpert|domain, adjust = "none") #nonsig
 
-#### six, number of predictors in the model
+#### six, number of predictors in the model NEED TO BE CORRECTED!
 model.long.phase1.predictors<-  lmer(value.dif~numpred*domain*Month0+(1|ResponseId), data=dat_long_phase1)
 car::Anova(model.long.phase1.predictors,type="III") #npred matters!
 summ(model.long.phase1.predictors, digits=4, center=T)
@@ -400,27 +420,6 @@ interactions::interact_plot(model.phase1.long.covid,pred=Month0, modx=MASE1_covi
 
 
 
-
-
-##########################################################
-
-###sort teams by domain for absolute percentage error and download file
-###get top 20 teams  per domain for absolute percentage error
-
-MASE.t1<-dat.phase1.academics %>%
-arrange(domain,MASE1_w1) %>%group_by(domain) %>% dplyr::slice_head(n = 10) %>% select(team_name,MASE1_w1,domain)
-
-MAE.t1<-dat.phase1.academics %>%
-arrange(domain,mean_abs_error_w1) %>%group_by(domain) %>% 
-  dplyr::slice_head(n = 20) %>% select(team_name,mean_abs_error_w1,domain)
-
-MAPE.t1<-dat_long_phase1 %>%select(team_name,value.dif,domain,Month,value.dif) %>% pivot_wider(names_from=Month,values_from = value.dif,names_prefix = "m") %>% 
-  rowwise() %>% 
-  mutate(MAPE = mean(c_across(starts_with("m")),na.rm=T)) %>% 
-  ungroup() %>% arrange(domain,MAPE) %>%group_by(domain)%>%
-  dplyr::slice_head(n = 20) %>% select(team_name,MAPE,domain)
-
-t1.accuracy<-MASE.t1 %>% inner_join(MAPE.t1) %>% inner_join(MAE.t1)
 
 ##PHASE 2
 
