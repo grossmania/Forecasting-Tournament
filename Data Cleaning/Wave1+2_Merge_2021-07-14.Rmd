@@ -340,6 +340,9 @@ demographics_unique <- demographics_filtered[!duplicated(demographics_filtered$d
 # Import prolific sample predictions
 dat_lay <- read.csv("Lay_Sample_Filtered_2021-05-18.csv", stringsAsFactors = FALSE)
 
+# Remove rows flagged as outliers
+dat_lay <- filter(dat_lay, Error == 0)
+
 dat_lay <- filter(dat_lay, Final.OT == 0)
 dat_lay$Month.13 <- NA
 dat_lay$Month.14 <- NA
@@ -1487,6 +1490,14 @@ dat$numpred[which(is.na(dat$numpred))] <- 0
 dat$team_size[which(is.na(dat$team_size))] <- 1
 dat$CounterFactual_Presence.Final[which(is.na(dat$CounterFactual_Presence.Final))] <- 0
 
+
+```
+
+```{r Remove unnecessary columns}
+
+# Remove columns that were used during coding / review that are not required for analyses
+
+dat <- dat[, c(7, 10, 21:25, 27, 29:72, 77:89, 92:94, 100:111, 121, 126:138, )]
 
 ```
 

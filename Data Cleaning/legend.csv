@@ -1,0 +1,141 @@
+Column Name,Academic or Prolific,phase,Values,Description
+Duration..in.seconds.,Both,Both,seconds,Amount of time (in seconds) between start of and end of survey
+ResponseId,Both,Both,,"Unique identifier for each team's submissions, different by phase but shared by domains within each phase"
+team_name,Academic,Both,text,"unique team name for each team, shared across domains and phases"
+domain,Both,Both,"lifesat = life satisfaction
+negaffect = negative affect
+posaffect = positive affect
+polar = political polarization
+ideoldem = ideological preference - democrat
+ideolrep = ideological preference - republican
+iasian = implicit Asian-American bias
+easian = explicit Asian-American bias
+iafric = implicit African-American bias
+eafric = explicit African-American bias
+igend = implicit gender-career bias
+egend = explicit gender-career bias","Which domain (e.g. life satisfaction, polarization) the submission on this row is for. Values are short form equivalent of each domain"
+Month.1,Both,phase 1,Varies by domain,Prediction for month 1 (May 2020)
+Month.2,Both,phase 1,Varies by domain,Prediction for month 2 (June 2020)
+Month.3,Both,phase 1,Varies by domain,Prediction for month 3 (July 2020)
+Month.4,Both,phase 1,Varies by domain,Prediction for month 4 (August 2020)
+Month.5,Both,phase 1,Varies by domain,Prediction for month 5 (September 2020)
+Month.6,Both,phase 1,Varies by domain,Prediction for month 6 (October 2020)
+Month.7,Both,Both,Varies by domain,Prediction for month 7 (November 2020)
+Month.8,Both,Both,Varies by domain,Prediction for month 8 (December 2020)
+Month.9,Both,Both,Varies by domain,Prediction for month 9 (January 2021)
+Month.10,Both,Both,Varies by domain,Prediction for month 10 (February 2021)
+Month.11,Both,Both,Varies by domain,Prediction for month 11 (March 2021)
+Month.12,Both,Both,Varies by domain,Prediction for month 12 (April 2021)
+Month.13,Academic,phase 2,Varies by domain,Prediction for month 13 (May 2021)
+Month.14,Academic,phase 2,Varies by domain,Prediction for month 14 (June 2021)
+Month.15,Academic,phase 2,Varies by domain,Prediction for month 15 (July 2021)
+Month.16,Academic,phase 2,Varies by domain,Prediction for month 16 (August 2021)
+Month.17,Academic,phase 2,Varies by domain,Prediction for month 17 (September 2021)
+Month.18,Academic,phase 2,Varies by domain,Prediction for month 18 (October 2021)
+confidence,Both,Both,1 (Not at all) to 7(Extremely),confidence in forecast for a given domain
+subexpert,Academic,Both,1 (Strongly Disagree) to 7 (Strongly Agree,"To what extent do you agree with the following statement: ""My team has strong expertise on the research topic of Life Satisfaction""."
+pub,Academic,Both,"1 = Yes, 2 = No",Whether any team members have publications related to the predicted domain
+numpred,Both,Both,,Uncoded number of predictors participants considered in their forecast in addition to the data provided
+covidcondyn,Both,Both,"1 = Yes, 2 = No",Whether covid was considered as a conditional
+covidmeas,Both,Both,"1 = covid deaths, 2 = # of covid cases, 3 = Other. ","indicates how they considered covid in their forecast. Prolific sample are all coded as 2, as they were asked to predict covid cases regardless of whether they considered them in their predictions"
+covidest_1,Both,phase 1,,estimated covid deaths OR covid cases (depending on their choice for covidmeas variable above) for month 1.
+covidest_2,Both,phase 1,,estimated covid deaths OR covid cases (depending on their choice for covidmeas variable above) for month 10
+covidest_3,Both,phase 1,,estimated covid deaths OR covid cases (depending on their choice for covidmeas variable above) for month 11
+covidest_4,Both,phase 1,,estimated covid deaths OR covid cases (depending on their choice for covidmeas variable above) for month 12
+covidest_5,Both,phase 1,,estimated covid deaths OR covid cases (depending on their choice for covidmeas variable above) for month 2
+covidest_6,Both,phase 1,,estimated covid deaths OR covid cases (depending on their choice for covidmeas variable above) for month 3
+covidest_7,Both,phase 1,,estimated covid deaths OR covid cases (depending on their choice for covidmeas variable above) for month 4
+covidest_8,Both,phase 1,,estimated covid deaths OR covid cases (depending on their choice for covidmeas variable above) for month 5
+covidest_9,Both,phase 1,,estimated covid deaths OR covid cases (depending on their choice for covidmeas variable above) for month 6
+covidest_10,Both,phase 1,,estimated covid deaths OR covid cases (depending on their choice for covidmeas variable above) for month 7
+covidest_11,Both,phase 1,,estimated covid deaths OR covid cases (depending on their choice for covidmeas variable above) for month 8
+covidest_12,Both,phase 1,,estimated covid deaths OR covid cases (depending on their choice for covidmeas variable above) for month 9
+datatrain,Both,Both,"1 = Yes, 2 = No",Whether data provided for the predicted domain was used by the participant to inform their forecast
+counterfact,,,,
+counter_imp,,,,
+counter_yn,,,,
+othercounter,,,,
+othercountim,,,,
+Method,Both,Both,"Intuition/Theory, Data-Driven, Simulation,  Mixed, Naïve - rwf, Naïve - linear, Objective (Ground Truth)","Uncoded Factor sorting submission as either Intuition/Theory, Data-driven, or Mixed. Additionally contains values for ground truth and naïve forecasts that were generated."
+phase,Both,Both,"1 = phase 1, 2 = phase 2",Indicates whether submission is from phase 1 (May 2020) or phase 2 (November 2021)
+isExpert,Both,Both,"0 = Prolific participant, 1 = Academic participant",Indicates whether the partipant submitted their forecast through the academic or prolific survey
+revised,Academic,Both,"0 = Only submitted in one phase, 1 = prediction in both phase 1 & 2",Indicates whether or not the team has a matching submission in both phase 1 & 2 for the same domain
+team_size,Academic,Both,,Uncoded Number of team members who assisted in generating the forecast
+team_size.coded,Academic,Both,,"Number of team members who assisted in generating the forecast, based on number of unique demographic submissions for each team"
+is_multidisciplinary,Academic,Both,"0 = mono-discipline, 1= multi-disciplinary",Indicates whether the team is mono or multidisciplinary
+previous_tournament,Academic,Both,"0 = no prior experience, 1 = prior participation in tournament",Indicates whether one or more team members have participated in a forecasting tournament
+Method.coded,Both,Both,"Intuition/Theory (1)
+Data-Driven (2)
+ Hybrid (3)
+Prolific/Lay Person (4)
+ naïve - linear (5)
+ naïve - random walk (6)
+objective/ground truth (7)",Coded column indicating forecasting method used by participant 
+Method.complex,Both,Both,"Naïve (1), Moderate (2), or Complex (3)",Coded column that only applies to rows that were coded as Data-driven or Hybrid. 
+CounterFactual_Presence.Final,Academic,Both,"0 = no counterfactual(s) mentioned
+1 = one or more counterfactuals considered",Whether the participant considered any coutnerfactuals
+COVID.Final,Academic,Both,"0 = no mention of covid
+1 = covid mentioned
+2 = response to covid mentioned",Whether participants considered COVID as a counterfactual
+Age,Prolific,phase 1,,Participant age
+Sex,Prolific,phase 1,"1 = Male
+2 = Female
+3 = Prefer not to say",participant sex
+Genderident,Prolific,phase 1,"1 = Woman/Transwoman
+2 = Man/Transman
+3 = Gender queer/non-conforming
+4 = Prefer not to say
+5 = Non-binary",participant gender identity
+Education,Prolific,phase 1,"1 =  less than highschool
+2 =  highschool grad
+3 =  some college
+4 =  vocational/technical degree
+5 =  bachelor's
+6 =  masters'
+7 =  doctorate
+8 =  professional degree",level of education
+Ethnicity,Prolific,phase 1," 1-9 ranging from aboriginal/native, asian, black, white, middle eastern, hispanic, east indian, mixed race, other/not listed",Participant ethnicity
+Religion,Prolific,phase 1,"1-10 ranging from buddhist, christian - catholic, christian - protestant, christian - other, hindu, jewish, muslim, sikh, other, not religious",Participant's religion
+Religion_Other,Prolific,phase 1,written response,"open-ended response if they chose ""other"" to Religion question"
+Politics_1,Prolific,phase 1,1 = Progressive 7 = Conservative,Participant's political beliefs
+Country.of.Residence,Prolific,phase 1,,Open-ended response of country of residence
+Residential.Area,Prolific,phase 1,"1 = Urban,
+2 = Suburban
+3 = rural",type of residential area participant resides in
+Income,Prolific,phase 1,"1-8 from 0-15k, 15-25k, 25-35k, 35-50k, 50-75k, 75-100k,100-150k, 150k+",household income
+mean_error_w1,Both,phase 1,,Mean Error for phase 1 predictions (Months 1-12)
+root_mean_sqr_error_w1,Both,phase 1,,Root Mean Square Error for phase 1 predictions (Months 1-12)
+mean_abs_error_w1,Both,phase 1,,Mean Absolute Error for phase 1 predictions (Months 1-12)
+mean_percent_error_w1,Both,phase 1,,Mean Percent Error for phase 1 predictions (Months 1-12)
+mean_abs_percent_error_w1,Both,phase 1,,Mean Error for phase 1 predictions (Months 1-12)
+MASE1_w1,Both,phase 1,,MASE for phase 1 predictions (Months 1-12)
+RMSE_cutoff_Naive_linear,Both,phase 1,"0 = below cutoff
+1 = above cutoff",Whether prediction RMSE was above or below RMSE for Naïve linear model
+RMSE_cutoff_Naive_rwf,Both,phase 1,"0 = below cutoff
+1 = above cutoff",Whether prediction RMSE was above or below RMSE for Naïve random walk forecast
+compare_to_naive_linear,Both,phase 1,"""Below Naive linear"", ""Above Naive linear""",Factor equivalent of RMSE_cutoff_Naive_linear
+compare_to_naive_rwf,Both,phase 1,"Below Naive rwf, ""Above Naive rwf""",Factor equivalent of RMSE_cutoff_Naive_rwf
+mean_error_covid,Both,phase 1,,Mean Error for phase 1 COVID predictions (Months 1-12)
+root_mean_sqr_error_covid,Both,phase 1,,Root Mean Square Error for phase 1 COVID predictions (Months 1-12)
+mean_abs_error_covid,Both,phase 1,,Mean Absolute Error for phase 1 COVID predictions (Months 1-12)
+mean_percent_error_covid,Both,phase 1,,Mean Percent Error for phase 1 COVID predictions (Months 1-12)
+mean_abs_percent_error_covid,Both,phase 1,,Mean Error for phase 1 COVID predictions (Months 1-12)
+MASE1_covid,Both,phase 1,,MASE for phase 1 COVID predictions (Months 1-12)
+mean_error_w1_lastmonths,Both,phase 1,,Mean Error for phase 1 predictions (Months 7-12)
+root_mean_sqr_error_w1_lastmonths,Both,phase 1,,Root Mean Square Error for phase 1 predictions (Months 7-12)
+mean_abs_error_w1_lastmonths,Both,phase 1,,Mean Absolute Error for phase 1 predictions (Months 7-12)
+mean_percent_error_w1_lastmonths,Both,phase 1,,Mean Percent Error for phase 1 predictions (Months 7-12)
+mean_abs_percent_error_w1_lastmonths,Both,phase 1,,Mean Error for phase 1 predictions (Months 7-12)
+MASE1_w1_lastmonths,Both,phase 1,,MASE for phase 1 predictions (Months 7-12)
+mean_error_w2,Both,phase 2,,Mean Error for phase 2 predictions (Months 7-12)
+root_mean_sqr_error_w2,Both,phase 2,,Root Mean Square Error for phase 2 predictions (Months 7-12)
+mean_abs_error_w2,Both,phase 2,,Mean Absolute Error for phase 2 predictions (Months 7-12)
+mean_percent_error_w2,Both,phase 2,,Mean Percent Error for phase 2 predictions (Months 7-12)
+mean_abs_percent_error_w2,Both,phase 2,,Mean Error for phase 2 predictions (Months 7-12)
+MASE1_w2,Both,phase 2,,MASE for phase 2 predictions (Months 7-12)
+RMSE_cutoff_Naive_linear_w2,Both,phase 2,"0 = below cutoff
+1 = above cutoff",Whether prediction RMSE was above or below RMSE for Naïve linear model
+RMSE_cutoff_Naive_rwf_w2,Both,phase 2,"0 = below cutoff
+1 = above cutoff",Whether prediction RMSE was above or below RMSE for Naïve random walk forecast
+compare_to_naive_linear_w2,Both,phase 2,"""Below Naive linear"", ""Above Naive linear""",Factor equivalent of RMSE_cutoff_Naive_linear_w2
+compare_to_naive_rwf_w2,Both,phase 2,"Below Naive rwf, ""Above Naive rwf""",Factor equivalent of RMSE_cutoff_Naive_rwf_w2

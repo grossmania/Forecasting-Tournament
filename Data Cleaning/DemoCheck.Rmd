@@ -1,8 +1,23 @@
-```{r}
+```{r import files}
 
 dat <- read.csv("Wave1+2data.csv", stringsAsFactors = FALSE)
 
-demo <- <- read.csv("Wave1+2demographics.csv", stringsAsFactors = FALSE) 
+demo <- read.csv("Wave1+2demographics.csv", stringsAsFactors = FALSE) 
 
+```
+
+```{r }
+
+dat1 <- dat %>% filter(isExpert == 1)
+
+dat2 <- dat[, c("ResponseId", "team_name", "team_email", "team_size")]
+
+dat3 <- dat2[!duplicated(dat$team_name),]
+
+demo1 <- demo[, 20:37]
+
+dat_merge <- dat3 %>% full_join(demo1, by = c("team_name" = "teamname"))
+
+write.csv(dat_merge, "demo_check.csv")
 ```
 
