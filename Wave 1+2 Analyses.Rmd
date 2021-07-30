@@ -273,13 +273,13 @@ summ(model.phase1.conf, digits=4, center=T)
 emtrends(model.phase1.conf,specs=pairwise~domain,var="confidence") #confidence plays a role for ideology republicans - the more confident the LOWER the mase scores and for LIFE SATISFACTION - the MORE confident the MORE error
 
 ##### second, team type - just academics
-phase1_exp$teamS<-as.factor(ifelse(phase1_exp$team_size>=6,3,ifelse(phase1_exp$team_size<6&phase1_exp$team_size>1,2,ifelse(phase1_exp$team_size==1,1,NA))))
+phase1_exp$teamS<-as.factor(ifelse(phase1_exp$team_size.coded>=6,3,ifelse(phase1_exp$team_size.coded<6&phase1_exp$team_size.coded>1,2,ifelse(phase1_exp$team_size.coded==1,1,NA))))
 
 #####just count
-model.phase1.team<-  lmer(MASE1_w1~domain*team_size+(1|domain/ResponseId), data=phase1_exp)
+model.phase1.team<-  lmer(MASE1_w1~domain*team_size.coded+(1|domain/ResponseId), data=phase1_exp)
 car::Anova(model.phase1.team,type="III") #sig interaction between domain and team size
 summ(model.phase1.team, digits=4, center=T)
-emtrends(model.phase1.team,specs=pairwise~domain,var="team_size") #nothing
+emtrends(model.phase1.team,specs=pairwise~domain,var="team_size.coded") #nothing
 #####apriori defined groups
 model.phase1.team3<-  lmer(MASE1_w1~domain*teamS+(1|domain/ResponseId), data=phase1_exp)
 car::Anova(model.phase1.team3,type="III") #no interaction between domain and team size
@@ -335,14 +335,14 @@ emtrends(model.long.phase1.conf,specs=pairwise~domain,var="confidence") #confide
 emtrends(model.long.phase1.conf,~Month0|domain,var="confidence", at=list(Month0=c(0,5,11))) #
 
 ##### second, team type - just academics
-dat_long_phase1$teamS<-as.factor(ifelse(dat_long_phase1$team_size>=6,3,ifelse(dat_long_phase1$team_size<6&dat_long_phase1$team_size>1,2,ifelse(dat_long_phase1$team_size==1,1,NA))))
+dat_long_phase1$teamS<-as.factor(ifelse(dat_long_phase1$team_size.coded>=6,3,ifelse(dat_long_phase1$team_size.coded<6&dat_long_phase1$team_size.coded>1,2,ifelse(dat_long_phase1$team_size.coded==1,1,NA))))
 
 #####just count
-model.long.phase1.team<-  lmer(value.dif~domain*team_size*Month0+(1|domain/ResponseId), data=dat_long_phase1)
+model.long.phase1.team<-  lmer(value.dif~domain*team_size.coded*Month0+(1|domain/ResponseId), data=dat_long_phase1)
 car::Anova(model.long.phase1.team,type="III") #nothing
 summ(model.long.phase1.team, digits=4, center=T)
-emtrends(model.long.phase1.team,specs=pairwise~domain,var="team_size") #larger team size linked to less bias for east asian explicit bias, but not any other domain
-emtrends(model.long.phase1.team,~Month0|domain,var="team_size", at=list(Month0=c(0,5,11))) #
+emtrends(model.long.phase1.team,specs=pairwise~domain,var="team_size.coded") #larger team size linked to less bias for east asian explicit bias, but not any other domain
+emtrends(model.long.phase1.team,~Month0|domain,var="team_size.coded", at=list(Month0=c(0,5,11))) #
 
 #####apriori defined groups
 model.long.phase1.team3<-  lmer(value.dif~domain*teamS*Month0+(1|domain/ResponseId), data=dat_long_phase1)
@@ -604,13 +604,13 @@ summ(model.phase2.conf, digits=4, center=T)
 emtrends(model.phase2.conf,specs=pairwise~domain,var="confidence") #confidence plays a role for ideology republicans - the more confident the LOWER the mase scores and for LIFE SATISFACTION - the MORE confident the MORE error
 
 ##### second, team type - just academics
-phase2_exp$teamS<-as.factor(ifelse(phase2_exp$team_size>=6,3,ifelse(phase2_exp$team_size<6&phase2_exp$team_size>1,2,ifelse(phase2_exp$team_size==1,1,NA))))
+phase2_exp$teamS<-as.factor(ifelse(phase2_exp$team_size.coded>=6,3,ifelse(phase2_exp$team_size.coded<6&phase2_exp$team_size.coded>1,2,ifelse(phase2_exp$team_size.coded==1,1,NA))))
 
 #####just count
-model.phase2.team<-  lmer(MASE1_w1~domain*team_size+(1|domain/ResponseId), data=phase2_exp)
+model.phase2.team<-  lmer(MASE1_w1~domain*team_size.coded+(1|domain/ResponseId), data=phase2_exp)
 car::Anova(model.phase2.team,type="III") #sig interaction between domain and team size
 summ(model.phase2.team, digits=4, center=T)
-emtrends(model.phase2.team,specs=pairwise~domain,var="team_size") #nothing
+emtrends(model.phase2.team,specs=pairwise~domain,var="team_size.coded") #nothing
 #####apriori defined groups
 model.phase2.team3<-  lmer(MASE1_w1~domain*teamS+(1|domain/ResponseId), data=phase2_exp)
 car::Anova(model.phase2.team3,type="III") #no interaction between domain and team size
@@ -666,14 +666,14 @@ emtrends(model.long.phase2.conf,specs=pairwise~domain,var="confidence") #confide
 emtrends(model.long.phase2.conf,~Month0|domain,var="confidence", at=list(Month0=c(0,5,11))) #
 
 ##### second, team type - just academics
-dat_long_phase2$teamS<-as.factor(ifelse(dat_long_phase2$team_size>=6,3,ifelse(dat_long_phase2$team_size<6&dat_long_phase2$team_size>1,2,ifelse(dat_long_phase2$team_size==1,1,NA))))
+dat_long_phase2$teamS<-as.factor(ifelse(dat_long_phase2$team_size.coded>=6,3,ifelse(dat_long_phase2$team_size.coded<6&dat_long_phase2$team_size.coded>1,2,ifelse(dat_long_phase2$team_size.coded==1,1,NA))))
 
 #####just count
-model.long.phase2.team<-  lmer(value.dif~domain*team_size*Month0+(1|domain/ResponseId), data=dat_long_phase2)
+model.long.phase2.team<-  lmer(value.dif~domain*team_size.coded*Month0+(1|domain/ResponseId), data=dat_long_phase2)
 car::Anova(model.long.phase2.team,type="III") #nothing
 summ(model.long.phase2.team, digits=4, center=T)
-emtrends(model.long.phase2.team,specs=pairwise~domain,var="team_size") #larger team size linked to less bias for east asian explicit bias, but not any other domain
-emtrends(model.long.phase2.team,~Month0|domain,var="team_size", at=list(Month0=c(0,5,11))) #
+emtrends(model.long.phase2.team,specs=pairwise~domain,var="team_size.coded") #larger team size linked to less bias for east asian explicit bias, but not any other domain
+emtrends(model.long.phase2.team,~Month0|domain,var="team_size.coded", at=list(Month0=c(0,5,11))) #
 
 #####apriori defined groups
 model.long.phase2.team3<-  lmer(value.dif~domain*teamS*Month0+(1|domain/ResponseId), data=dat_long_phase2)
@@ -1329,9 +1329,9 @@ anova.teams <- car::Anova(analysis.teams,type="III")
 # no effect of team size of RMSE
 
 # instead split into 2 groups: solo (team size = 1) and group (team size = 2+)
-phase1_exp$team_size.grouped <- ifelse(phase1_exp$team_size.coded > 1, 2, phase1_exp$team_size.coded)
+phase1_exp$team_size.coded.grouped <- ifelse(phase1_exp$team_size.coded > 1, 2, phase1_exp$team_size.coded)
 
-analysis.teams2 <- lmer(root_mean_sqr_error~factor(team_size.grouped)+(1|ResponseId), data = phase1_exp)
+analysis.teams2 <- lmer(root_mean_sqr_error~factor(team_size.coded.grouped)+(1|ResponseId), data = phase1_exp)
 anova.teams2 <- car::Anova(analysis.teams2,type="III")
 
 # Still no effect of team size

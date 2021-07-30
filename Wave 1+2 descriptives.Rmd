@@ -213,7 +213,6 @@ for (i in 1:length(domains)) {
     dat_long[which(dat_long$domain == domains[i] & dat_long$Month == n), "value.dif" ] <- pct_change(histval, predval)
   }
   
-  
 }
 
 # create subsetted version that only includes
