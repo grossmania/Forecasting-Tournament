@@ -53,7 +53,7 @@ pct_change <- function(previous, new, as_decimal = FALSE) {
 ```
 
 ```{r setup working directory}
-# setwd("~/GitHub/Forecasting-Tournament") #igor's working directory
+ setwd("~/GitHub/Forecasting-Tournament") #igor's working directory
 ```
 
 ```{r historical data}
