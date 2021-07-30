@@ -203,7 +203,7 @@ dat_long$value.dif <- as.numeric(NA)
 for (i in 1:length(domains)) {
   
   # Retrieve row with correct historical value for the domain
-  hist <- dat[which(dat$domain == domains[i] & dat$Method == "Objective"), ]
+  hist <-  dat[which(dat$domain == domains[i] & dat$Method.coded == 5), ]
   
   for (n in 1:12) {
     # retrieve all rows from dat_long that match the domain + Month n and calculate the correct absolute percent difference
