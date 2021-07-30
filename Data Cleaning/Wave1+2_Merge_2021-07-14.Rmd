@@ -306,8 +306,8 @@ dat$team_name[agrep("TAPE-Measurement", dat$team_name)] <- "TAPE-Measurement"
 # The Well-Adjusted R squares renamed to The Well-Adjusted R Squares
 demographics$teamname[agrep("Well-Adjusted R squares", demographics$teamname)] <- "The Well-Adjusted R Squares"
 
-# forcasting-2020 to forecasting_2020
-dat$team_name[agrep("forcasting-2020", dat$team_name)] <- "forecasting_2020"
+# forcasting-2020 to polarization-2020CO as the team participated in both phases but submitted under a different name in phase 2
+dat$team_name[agrep("forcasting-2020", dat$team_name)] <- "polarization-2020CO"
 
 # heisenburg to Heisenburg
 dat$team_name[agrep("heisenburg", dat$team_name)] <- "Heisenburg"
@@ -375,6 +375,23 @@ dat_lay <- dat_lay %>% subset(time_upload > 50)
 
 
 ```
+
+```{r Fix gender identity}
+
+# all participants who answered 5 (Other) for gender identity wrote either male or female, indicating they misunderstood the question. 
+# correcting them to the gender they meant to pick instead of 5 (Other)
+
+man <- c("R_XUrm78C9eCR1cMp", "R_XUrm78C9eCR1cMp", "R_XUrm78C9eCR1cMp", "R_3fTeJdUBN9khFnW", "R_3fTeJdUBN9khFnW", "R_3hnDHNfKQZx5N91", "R_2a8noe3f9nc5sY5", "R_11cmNv7MMAki1RV", "R_29gDX6UOejZN86C")
+
+woman <- c("R_12omYtFZHzfrA6u", "R_12omYtFZHzfrA6u", "R_12omYtFZHzfrA6u", "R_2ckIhpbUFZ6DyYW") 
+
+
+dat_lay$Genderident[which(dat_lay$ResponseId %in% man)] <- 2
+dat_lay$Genderident[which(dat_lay$ResponseId %in% woman)] <- 1
+
+
+```
+
 
 
 ```{r import historical data}
@@ -507,7 +524,7 @@ dat_coded <- read.csv("Method_ComplexityCoding_Merged_2021-04-22.csv")
 # filter rows that were flagged
 dat_coded <- dat_coded %>% filter(is.na(OT.Flag))
 
-dat_coded <- dat_coded[ , c("phase", "team_name", "Issue", "Type.Final", "Complexity.Final")]
+dat_coded <- dat_coded[ , c("ResponseId", "phase", "Issue", "Type.Final", "Complexity.Final", "DataOnly")]
 
 dat_coded <- dat_coded %>% dplyr::rename(
   domain = Issue,
@@ -515,18 +532,18 @@ dat_coded <- dat_coded %>% dplyr::rename(
   Method.complex = Complexity.Final
 )
 
-# Implement same name changes that were previously corrected in dat
-dat_coded[which(dat_coded$team_name == "1859 revised"), "team_name"] <- "1859"
-dat_coded[which(dat_coded$team_name == "BlackSwanrevised"), "team_name"] <- "BlackSwan"
-dat_coded[which(dat_coded$team_name == "Compassionate Values`"), "team_name"] <- "Compassionate Values"
-dat_coded[which(dat_coded$team_name == "Mr Muddle "), "team_name"] <- "Mr Muddle"
-dat_coded[which(dat_coded$team_name == "platypus"), "team_name"] <- "Platypus"
-dat_coded[which(dat_coded$team_name == "R4VST9 - Revised"), "team_name"] <- "R4VST9"
-dat_coded[which(dat_coded$team_name == "heisenburg"), "team_name"] <- "Heisenburg"
-dat_coded[which(dat_coded$team_name == "PatrÃcia Arriaga"), "team_name"] <- "Patricia Arriaga"
+# # Implement same name changes that were previously corrected in dat
+# dat_coded[which(dat_coded$team_name == "1859 revised"), "team_name"] <- "1859"
+# dat_coded[which(dat_coded$team_name == "BlackSwanrevised"), "team_name"] <- "BlackSwan"
+# dat_coded[which(dat_coded$team_name == "Compassionate Values`"), "team_name"] <- "Compassionate Values"
+# dat_coded[which(dat_coded$team_name == "Mr Muddle "), "team_name"] <- "Mr Muddle"
+# dat_coded[which(dat_coded$team_name == "platypus"), "team_name"] <- "Platypus"
+# dat_coded[which(dat_coded$team_name == "R4VST9 - Revised"), "team_name"] <- "R4VST9"
+# dat_coded[which(dat_coded$team_name == "heisenburg"), "team_name"] <- "Heisenburg"
+# dat_coded[which(dat_coded$team_name == "PatrÃcia Arriaga"), "team_name"] <- "Patricia Arriaga"
 
 # merge with main data file
-dat <- dat %>% left_join(dat_coded, by = c("phase", "team_name", "domain"))
+dat <- dat %>% left_join(dat_coded, by = c("phase", "ResponseId", "domain"))
 
 
 
@@ -536,7 +553,7 @@ dat <- dat %>% left_join(dat_coded, by = c("phase", "team_name", "domain"))
 ```{r Import coded Counterfactuals}
 
 dat_counter <- read.csv("Counterfactuals_2020-09-23_Merged.csv", stringsAsFactors = FALSE)
-dat_counter <- dat_counter[ , c("team_name", "Issue", "CounterFactual_Presence.Final", "COVID.Final", "Blame.Final")]
+dat_counter <- dat_counter[ , c("ResponseId", "Issue", "CounterFactual_Presence.Final", "COVID.Final", "Blame.Final")]
 
 dat_counter <- dat_counter %>% dplyr::rename(
   domain = Issue
@@ -546,14 +563,14 @@ dat_counter$phase <- 1
 
 
 # Implement same name changes that were previously corrected in dat
-dat_counter[which(dat_counter$team_name == "1859 revised"), "team_name"] <- "1859"
-dat_counter[which(dat_counter$team_name == "BlackSwanrevised"), "team_name"] <- "BlackSwan"
-dat_counter[which(dat_counter$team_name == "Compassionate Values`"), "team_name"] <- "Compassionate Values"
-dat_counter[which(dat_counter$team_name == "Mr Muddle "), "team_name"] <- "Mr Muddle"
-dat_counter[which(dat_counter$team_name == "platypus"), "team_name"] <- "Platypus"
-dat_counter[which(dat_counter$team_name == "R4VST9 - Revised"), "team_name"] <- "R4VST9"
+# dat_counter[which(dat_counter$team_name == "1859 revised"), "team_name"] <- "1859"
+# dat_counter[which(dat_counter$team_name == "BlackSwanrevised"), "team_name"] <- "BlackSwan"
+# dat_counter[which(dat_counter$team_name == "Compassionate Values`"), "team_name"] <- "Compassionate Values"
+# dat_counter[which(dat_counter$team_name == "Mr Muddle "), "team_name"] <- "Mr Muddle"
+# dat_counter[which(dat_counter$team_name == "platypus"), "team_name"] <- "Platypus"
+# dat_counter[which(dat_counter$team_name == "R4VST9 - Revised"), "team_name"] <- "R4VST9"
 
-dat <- dat %>% left_join(dat_counter, by = c("phase", "team_name", "domain"))
+dat <- dat %>% left_join(dat_counter, by = c("phase", "ResponseId", "domain"))
 
 
 ```
@@ -1259,12 +1276,28 @@ dat <- dat %>% left_join(dat_accuracy_w2, by = c("phase" = "phase", "ResponseId"
 ```{r Make ResponseId consistent for all team submissions}
 
 # Ensure each unique team name has the same consistent ResponseId because some teams submitted forecasts across multiple submissions or phases
-unique_teams <- unique(dat$team_name)
+dat_phase1 <- dat %>% filter(dat$phase == 1 & dat$isExpert == 1)
 
-for (i in 1:length(unique_teams)) {
-  row_list <- which(dat$team_name == unique_teams[i])
-  dat$ResponseId[which(dat$team_name == unique_teams[i])] <- dat$ResponseId[row_list[1]]
+unique_teams1 <- unique(dat_phase1$team_name)
+
+for (i in 1:length(unique_teams1)) {
+  
+  row_list1 <- which(dat$team_name == unique_teams1[i] & dat$phase == 1)
+  dat$ResponseId[which(dat$team_name == unique_teams1[i]& dat$phase == 1)] <- dat$ResponseId[row_list1[1]]
+  
 }
+
+dat_phase2 <- dat %>% filter(dat$phase == 2 & dat$isExpert == 1)
+
+unique_teams2 <- unique(dat_phase2$team_name)
+
+for (i in 1:length(unique_teams2)) {
+  
+  row_list2 <- which(dat$team_name == unique_teams2[i] & dat$phase == 2)
+  dat$ResponseId[which(dat$team_name == unique_teams[i]& dat$phase == 2)] <- dat$ResponseId[row_list2[1]]
+  
+}
+
 
 ```
 
@@ -1488,6 +1521,8 @@ dat$compare_to_naive_rwf_w2 <- factor(dat$RMSE_cutoff_Naive_rwf_w2, levels = c(0
 
 dat$numpred[which(is.na(dat$numpred))] <- 0
 dat$team_size[which(is.na(dat$team_size))] <- 1
+dat$team_size.coded[which(is.na(dat$team_size.coded))] <- 1
+
 dat$CounterFactual_Presence.Final[which(is.na(dat$CounterFactual_Presence.Final))] <- 0
 
 
@@ -1497,12 +1532,12 @@ dat$CounterFactual_Presence.Final[which(is.na(dat$CounterFactual_Presence.Final)
 
 # Remove columns that were used during coding / review that are not required for analyses
 
-dat <- dat[, c(7, 10, 21:25, 27, 29:72, 77:89, 92:94, 100:111, 121, 126:138, )]
+dat <- dat[, c(7, 10, 21, 27, 29:49, 55:58, 60:71, 77:82, 92, 100:102, 104:112, 122, 127:128, 130, 132:138, 170:179, 181:202)]
 
 ```
 
 
-```{r Create Long data set with difference scores}
+```{r Create Long data set with difference scores, eval=FALSE, include=FALSE}
 ## Convert to Long + Calculate difference scores.
 
 dat$prediction_id <- seq(1, nrow(dat), 1)
@@ -1545,4 +1580,5 @@ write.csv(demographics_unique, "Wave1+2demographics.csv")
 # write.csv(dat_hist, "historical_data_2021-05-19.csv")
 write.csv(dat_comp_1, "team_size.csv")
 ```
+
 
