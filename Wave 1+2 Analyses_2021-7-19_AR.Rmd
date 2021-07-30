@@ -53,7 +53,7 @@ pct_change <- function(previous, new, as_decimal = FALSE) {
 ```
 
 ```{r setup working directory}
-setwd("~/GitHub/Forecasting-Tournament") #igor's working directory
+# setwd("~/GitHub/Forecasting-Tournament") #igor's working directory
 ```
 
 ```{r historical data}
@@ -201,7 +201,7 @@ dat_long$value.dif <- as.numeric(NA)
 for (i in 1:length(domains)) {
   
   # Retrieve row with correct historical value for the domain
-  hist <- dat[which(dat$domain == domains[i] & dat$Method == "Objective"), ]
+  hist <- dat[which(dat$domain == domains[i] & dat$Method.coded == 5), ]
   
   for (n in 1:12) {
     # retrieve all rows from dat_long that match the domain + Month n and calculate the correct absolute percent difference
@@ -214,8 +214,6 @@ for (i in 1:length(domains)) {
   
 }
 
-# create subsetted version that only includes
-# dat_long <- dat_long %>% subset(flag_lay_response == 0 | is.na(flag_lay_response))
 
 dat_long$Method.code[dat_long$Method.coded==1]<-"Intuition/Theory"
 dat_long$Method.code[dat_long$Method.coded==2]<-"Intuition/Theory"
