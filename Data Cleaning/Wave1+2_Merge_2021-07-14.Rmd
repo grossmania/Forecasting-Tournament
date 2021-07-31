@@ -1214,11 +1214,13 @@ domain_outcomes_w2 <- filter(domain_outcomes, Month > 6)
 dat_long <- pivot_longer(dat, cols = starts_with("Month"), names_to = "Month", names_prefix = "Month.")
 dat_long$Month <- as.numeric(dat_long$Month)
 
-dat_wave_1 <- filter(dat_long, phase == 2)
+# dat_wave_1 <- filter(dat_long, phase == 2)
+dat_wave_1 <- dat_long
 
 dat_predicted_w2 <- filter(dat_wave_1, Month > 6 & Month < 13)
 
 unique_teams_predicted_w2 <- unique(dat_predicted_w2$ResponseId)
+unique_teams_predicted_w2 <- unique_teams_predicted_w2[!is.na(unique_teams_predicted_w2)]
 
 # create data set that will be merged with dat, that contains additional columns for mean error, root mean square error, mean percent error, mean absolute error, mean absolute percent error and the two types of mean absolute scaled error that are being calculated (#1 uses function declared on line 34, #2 uses Metrics::mase function)
 dat_accuracy_w2 <- tibble(
@@ -1229,7 +1231,8 @@ dat_accuracy_w2 <- tibble(
   mean_abs_error_w2 = numeric(),
   mean_percent_error_w2 = numeric(),
   mean_abs_percent_error_w2 = numeric(),
-  MASE1_w2 = numeric()
+  MASE1_w2 = numeric(),
+  phase = numeric()
 )
 
 # For each team that submitted a prediction, filter dataset by team & domain
@@ -1259,13 +1262,12 @@ for (i in 1:length(unique_teams_predicted_w2)) {
       mean_abs_error_w2 = outcome_w2[3],
       mean_percent_error_w2 = outcome_w2[4],
       mean_abs_percent_error_w2 = outcome_w2[5],
-      MASE1_w2 = computeMASE(dat_temp_2_w2$value, objective_data[1:46], objective_data[47:52], 1)
+      MASE1_w2 = computeMASE(dat_temp_2_w2$value, objective_data[1:46], objective_data[47:52], 1),
+      phase = dat_temp_1_w2$phase[1]
                              )
 
   }
 }
-
-dat_accuracy_w2$phase <- 2
 
 # merge dat_accuracy with dat by matching response ID, phase, and domain
 dat <- dat %>% left_join(dat_accuracy_w2, by = c("phase" = "phase", "ResponseId" = "ResponseId_w2", "domain" = "domain_w2"))
@@ -1535,6 +1537,19 @@ dat$CounterFactual_Presence.Final[which(is.na(dat$CounterFactual_Presence.Final)
 dat <- dat[, c(7, 10, 21, 27, 29:49, 55:58, 60:71, 77:82, 92, 100:102, 104:112, 122, 127:128, 130, 132:138, 170:179, 181:202)]
 
 ```
+
+```{r TournamentStart column}
+
+# Add column indicating whether team started in May 2020 or October 2020
+
+dat$TournamentStart[dat$phase == 1 | (dat$phase == 2 & dat$revised == 1)] <- "May"
+dat$TournamentStart[dat$phase == 2 & dat$revised == 0] <- "November"
+
+# Add column indicating whether the forecast is a new one or an updated one
+dat$ForecastisUpdated <- ifelse(dat$phase == 2 & dat$ revised == 1, 1, 0)
+
+```
+
 
 
 ```{r Create Long data set with difference scores, eval=FALSE, include=FALSE}
