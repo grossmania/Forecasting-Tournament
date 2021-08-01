@@ -1432,7 +1432,7 @@ for (i in 1:length(domains)) {
 # As a result, we are recalculating accuracy scores, ignoring forecasts submitted for Jan 2011 so that both ground truth and predictions contain 11 data points to calculate MASE
 
 # get list of relevant rows that submitted predictions for ideology domains
-rows_ideol <- which((dat$domain == "ideoldem" | dat$domain == "ideolrep") & dat$phase == 2)
+rows_ideol <- which((dat$domain == "ideoldem" | dat$domain == "ideolrep"))
 
 # for each relevant row,
 for (i in rows_ideol) {
@@ -1534,7 +1534,7 @@ dat$CounterFactual_Presence.Final[which(is.na(dat$CounterFactual_Presence.Final)
 
 # Remove columns that were used during coding / review that are not required for analyses
 
-dat <- dat[, c(7, 10, 21, 27, 29:49, 55:58, 60:71, 77:82, 92, 100:102, 104:112, 122, 127:128, 130, 132:138, 170:179, 181:202)]
+dat <- dat[, c(7, 10, 21, 27, 29:49, 55:58, 60:71, 77:82, 92, 100:102, 104:112, 122, 127:128, 130, 132:138, 165, 169:179, 181:202)]
 
 ```
 
