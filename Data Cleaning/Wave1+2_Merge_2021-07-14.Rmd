@@ -63,6 +63,9 @@ computeMASE <- function(forecast,train,test,period){
 
 ```
 
+```{r setup working directory}
+setwd("~/GitHub/Forecasting-Tournament/Data Cleaning") #igor's working directory
+```
 
 ```{r Import Wave 1 + 2 Data & Clean column names}
 
@@ -521,7 +524,7 @@ dat <- dat %>% left_join(dat_size, by = c("team_name"))
 
 dat_coded <- read.csv("Method_ComplexityCoding_Merged_2021-04-22.csv")
 
-# filter rows that were flagged
+# filter rows that were flagged - no DON"T FILTER (IGOR!!! ONLY IF ITS EVIDENT IT IS A MISTAKE)
 dat_coded <- dat_coded %>% filter(is.na(OT.Flag))
 
 dat_coded <- dat_coded[ , c("ResponseId", "phase", "Issue", "Type.Final", "Complexity.Final", "DataOnly")]
@@ -544,8 +547,6 @@ dat_coded <- dat_coded %>% dplyr::rename(
 
 # merge with main data file
 dat <- dat %>% left_join(dat_coded, by = c("phase", "ResponseId", "domain"))
-
-
 
 
 ```
@@ -1546,7 +1547,8 @@ dat$TournamentStart[dat$phase == 1 | (dat$phase == 2 & dat$revised == 1)] <- "Ma
 dat$TournamentStart[dat$phase == 2 & dat$revised == 0] <- "November"
 
 # Add column indicating whether the forecast is a new one or an updated one
-dat$ForecastisUpdated <- ifelse(dat$phase == 2 & dat$ revised == 1, 1, 0)
+dat$ForecastisUpdated[dat$phase == 2 & dat$revised == 1] <- "Updated in Nov"
+dat$ForecastisUpdated[dat$phase == 2 & dat$revised == 0] <- "Novel Forecast in November"
 
 ```
 
@@ -1584,9 +1586,9 @@ for (i in 1:length(domains)) {
 
 ```
 
-
-
 ```{r output files}
+
+setwd("~/GitHub/Forecasting-Tournament") #change directory to save int he general space
 
 write.csv(dat, "Wave1+2data.csv")
 write.csv(demographics_unique, "Wave1+2demographics.csv")

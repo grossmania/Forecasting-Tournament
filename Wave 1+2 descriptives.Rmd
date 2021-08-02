@@ -148,7 +148,7 @@ dat$Method.code[dat$Method.coded==7]<-"Naive-rfw"
 dat$Method.code[dat$isExpert==0]<-"Lay People"
 
 
-# Method.complex - ONLY PHASE 1, coded 1-3 scale indicating whether the Data-driven or Mixed method used is simple (e.g. regression to the mean), moderate (e.g. auto-regression w time lag, univariate time series), or complex (e.g. ARIMA, dynamic econometric model)
+# Method.complex - ONLY PHASE 1, coded 1-3 scale indicating whether the Data-driven or Mixed method used is simple (e.g., regression to the mean), moderate (e.g., auto-regression w time lag, univariate time series), or complex (e.g., ARIMA, dynamic econometric model)
 
 dat$Method.complex.factor <- factor(dat$Method.complex, levels = c(1:3), labels = c("simple", "moderate", "complex"))
 
