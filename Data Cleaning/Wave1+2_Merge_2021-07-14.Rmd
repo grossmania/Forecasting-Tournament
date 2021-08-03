@@ -64,7 +64,7 @@ computeMASE <- function(forecast,train,test,period){
 ```
 
 ```{r setup working directory}
-setwd("~/GitHub/Forecasting-Tournament/Data Cleaning") #igor's working directory
+ setwd("~/GitHub/Forecasting-Tournament/Data Cleaning") #igor's working directory
 ```
 
 ```{r Import Wave 1 + 2 Data & Clean column names}
@@ -525,10 +525,12 @@ dat <- dat %>% left_join(dat_size, by = c("team_name"))
 dat_coded <- read.csv("Method_ComplexityCoding_Merged_2021-04-22.csv")
 
 # filter rows that were flagged - no DON"T FILTER (IGOR!!! ONLY IF ITS EVIDENT IT IS A MISTAKE)
-dat_coded <- dat_coded %>% filter(is.na(OT.Flag))
+# dat_coded <- dat_coded %>% filter(is.na(OT.Flag))
 
-dat_coded <- dat_coded[ , c("ResponseId", "phase", "Issue", "Type.Final", "Complexity.Final", "DataOnly")]
+# trim data frame to only relevant rows to include in merged file
+dat_coded <- dat_coded[ , c("team_name", "phase", "Issue", "Type.Final", "Complexity.Final", "DataOnly")]
 
+# rename columns 
 dat_coded <- dat_coded %>% dplyr::rename(
   domain = Issue,
   Method.coded = Type.Final,
@@ -536,17 +538,17 @@ dat_coded <- dat_coded %>% dplyr::rename(
 )
 
 # # Implement same name changes that were previously corrected in dat
-# dat_coded[which(dat_coded$team_name == "1859 revised"), "team_name"] <- "1859"
-# dat_coded[which(dat_coded$team_name == "BlackSwanrevised"), "team_name"] <- "BlackSwan"
+dat_coded[which(dat_coded$team_name == "1859 revised"), "team_name"] <- "1859"
+dat_coded[which(dat_coded$team_name == "BlackSwanrevised"), "team_name"] <- "BlackSwan"
 # dat_coded[which(dat_coded$team_name == "Compassionate Values`"), "team_name"] <- "Compassionate Values"
-# dat_coded[which(dat_coded$team_name == "Mr Muddle "), "team_name"] <- "Mr Muddle"
-# dat_coded[which(dat_coded$team_name == "platypus"), "team_name"] <- "Platypus"
-# dat_coded[which(dat_coded$team_name == "R4VST9 - Revised"), "team_name"] <- "R4VST9"
-# dat_coded[which(dat_coded$team_name == "heisenburg"), "team_name"] <- "Heisenburg"
-# dat_coded[which(dat_coded$team_name == "PatrÃcia Arriaga"), "team_name"] <- "Patricia Arriaga"
+dat_coded[which(dat_coded$team_name == "Mr Muddle "), "team_name"] <- "Mr Muddle"
+dat_coded[which(dat_coded$team_name == "platypus"), "team_name"] <- "Platypus"
+dat_coded[which(dat_coded$team_name == "R4VST9 - Revised"), "team_name"] <- "R4VST9"
+dat_coded[which(dat_coded$team_name == "heisenburg"), "team_name"] <- "Heisenburg"
+dat_coded[which(dat_coded$team_name == "PatrÃ­cia Arriaga"), "team_name"] <- "Patricia Arriaga"
 
 # merge with main data file
-dat <- dat %>% left_join(dat_coded, by = c("phase", "ResponseId", "domain"))
+dat <- dat %>% left_join(dat_coded, by = c("phase", "team_name", "domain"))
 
 
 ```
@@ -1588,7 +1590,7 @@ for (i in 1:length(domains)) {
 
 ```{r output files}
 
-setwd("~/GitHub/Forecasting-Tournament") #change directory to save int he general space
+setwd("~/GitHub/Forecasting-Tournament") #change directory to save in the general space
 
 write.csv(dat, "Wave1+2data.csv")
 write.csv(demographics_unique, "Wave1+2demographics.csv")
