@@ -1,0 +1,93 @@
+---
+title: "Fix ResponseId"
+author: "Oliver Twardus"
+date: "04/08/2021"
+output: html_document
+---
+
+```{r purpose}
+
+# an error was made when originally creating the coding files that were sent to coders. Although the correct information/submissions were matched by team name, the ResponseIds were inconsistent.
+# To address this, 
+
+```
+
+
+```{r import files}
+
+# main dataset that contains the correct ResponseIds
+dat1 <- read.csv("Wave1Forecasts-Cleaned_2021-05-17.csv", stringsAsFactors = FALSE)
+
+dat1[which(dat1$team_name == "1859 revised"), "team_name"] <- "1859"
+dat1[which(dat1$team_name == "BlackSwanrevised"), "team_name"] <- "BlackSwan"
+dat1[which(dat1$team_name == "Mr Muddle "), "team_name"] <- "Mr Muddle"
+dat1[which(dat1$team_name == "platypus"), "team_name"] <- "Platypus"
+dat1[which(dat1$team_name == "R4VST9 - Revised"), "team_name"] <- "R4VST9"
+dat1[which(dat1$team_name == "PatrÃ­cia Arriaga"), "team_name"] <- "Patricia Arriaga"
+dat1[which(dat1$team_name == "heisenburg"), "team_name"] <- "Heisenburg"
+
+
+
+dat2 <- read.csv("Wave2Forecasts-Cleaned_2021-05-17.csv", stringsAsFactors = FALSE)
+
+dat2[which(dat2$team_name == "Compassionate Values`"), "team_name"] <- "Compassionate Values"
+dat2[which(dat2$team_name == "forcasting-2020"), "team_name"] <- "polarization-2020CO"
+dat2[which(dat2$team_name == "TAPE-Measurement (Twitter Affect and Project-implicit Empirical-Measurement)"), "team_name"] <- "TAPE-Measurement"
+dat2[which(dat2$team_name == "TAPE-Measurement (Twitter Affect and Project-Implicit Empirical Measurement)"), "team_name"] <- "TAPE-Measurement"
+dat2[which(dat2$team_name == "heisenburg"), "team_name"] <- "Heisenburg"
+
+
+methods <- read.csv("Method_ComplexityCoding_Merged_2021-04-22.csv", stringsAsFactors = FALSE)
+
+# correct typos and differences in team_names between submissions
+methods[which(methods$team_name == "forecasting_2020"), "team_name"] <- "polarization-2020CO"
+methods[which(methods$team_name == "1859 revised"), "team_name"] <- "1859"
+methods[which(methods$team_name == "BlackSwanrevised"), "team_name"] <- "BlackSwan"
+methods[which(methods$team_name == "Compassionate Values`"), "team_name"] <- "Compassionate Values"
+methods[which(methods$team_name == "Mr Muddle "), "team_name"] <- "Mr Muddle"
+methods[which(methods$team_name == "platypus"), "team_name"] <- "Platypus"
+methods[which(methods$team_name == "R4VST9 - Revised"), "team_name"] <- "R4VST9"
+methods[which(methods$team_name == "heisenburg"), "team_name"] <- "Heisenburg"
+methods[which(methods$team_name == "PatrÃ­cia Arriaga"), "team_name"] <- "Patricia Arriaga"
+
+
+# dat3 <- dat %>% filter(phase == 1 & isExpert == 0)
+
+methods1 <- methods %>% filter(phase == 1 & isExpert == 1)
+methods2 <- methods %>% filter(phase == 2 & isExpert == 1)
+methods3 <- methods %>% filter(phase == 1 & isExpert == 0)
+
+
+# remove duplicate forecasts for teams that provided revisions
+
+methods2 <- methods2[!duplicated(methods2[, c(1, 4, 5)], fromLast = TRUE),]
+
+```
+
+```{r fix methods+complexity file}
+# methods_join <- methods2 %>% left_join(dat2, by = c("phase", "isExpert","Issue" = "domain", "team_name"))
+
+for (i in 1:nrow(methods1)) {
+  tname <- methods1$team_name[i]
+  realId <- dat1$ResponseId[which(dat1$team_name == tname )]
+  methods1$ResponseId[i] <- realId[1]
+}
+
+
+for (i in 1:nrow(methods2)) {
+  realId <- dat2$ResponseId[which(dat2$team_name == methods2$team_name[i])]
+  methods2$ResponseId[i] <- realId[1]
+}
+
+
+dat_final <- methods1 %>% plyr::rbind.fill(methods2, methods3)
+
+dat_final <- dat_final %>% dplyr::rename(
+  domain = Issue,
+)
+
+write.csv(dat_final, "Method+ComplexityCoding_fixed.csv")
+
+```
+
+
