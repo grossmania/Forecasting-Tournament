@@ -53,7 +53,6 @@ phase2_exp <-filter(phase2, isExpert == 1& !is.na(Method.code))
 
 
 ```{r create subsets for separate visualizations}
-
 #####download of phase 1 and 2 files########################
 t1.academ.sorted<-phase1_exp %>%
 arrange(domain,MASE1_w1) %>%group_by(domain) %>% select(team_name,domain,Month.1:Month.12,mean_abs_error_w1,MASE1_w1,Method.code)
@@ -82,8 +81,25 @@ t2.academ.sorted<-academic_only %>%filter(!(phase == 1 & revised == 1)) %>%
 arrange(domain,MASE1_w2) %>%group_by(domain) %>% select(team_name,domain,Month.7:Month.12,mean_abs_error_w2,MASE1_w2,Method.code)
 
 write.csv(t2.academ.sorted,"wave2.scores.csv")
+```
 
-##IF WE WANT TO SORT AND GET TOP 5 
+
+```{r visualize top performers}
+
+pd <- position_dodge(0.7) # move them .07 to the left and right
+labels<-c(
+  eafric = "Exp. Af-Am. Bias",
+  easian = "Exp. As-Am. Bias",
+  egend = "Exp. Gender Bias",
+  iafric = "Imp. Af-Am. Bias",
+  iasian = "Imp. As.-Am. Bias",
+  ideoldem = "Democrats",
+  ideolrep ="Republicans",
+  igend = "Imp. Gender Bias",
+  lifesat = "Life Satisfaction",
+  negaffect = "Negative Affect",
+  polar = "Polit. Polarization",
+  posaffect = "Positive Affect")
 
 #T1
 ##########################################################
@@ -92,11 +108,43 @@ write.csv(t2.academ.sorted,"wave2.scores.csv")
 ###get top 20 teams  per domain for absolute percentage error
 
 top.5.MASE.t1<-phase1 %>% filter(isExpert.factor == 'Academic')  %>%
-arrange(domain,MASE1_w1) %>%group_by(domain) %>% dplyr::slice_head(n = 5) %>% select(team_name,MASE1_w1,domain,team_size.coded,is_multidisciplinary,previous_tournament,Method.code,confidence,subexpert,numpred,Method.complex,team_expertise)
+arrange(domain,MASE1_w1) %>%group_by(domain) %>% dplyr::slice_head(n = 5) %>% select(team_name,MASE1_w1,domain,team_size.coded,discipline,previous_tournament.coded,Method.code,model,theory,numpred,parameters,Method.complex,team_expertise)
 
-  
-top.5.MASE.t2<-academic_only %>%filter(!(phase == 1 & revised == 1)) %>%   
-arrange(domain,MASE1_w2) %>%group_by(domain) %>% dplyr::slice_head(n = 5) %>% select(team_name,MASE1_w2,domain,team_size.coded,is_multidisciplinary,previous_tournament,Method.code,confidence,subexpert,numpred,Method.complex,team_expertise)
+top.5.MASE.t1 %>%  ggplot(aes(x=domain, y=MASE1_w1, colour=Method.code)) +  
+geom_point(size=3, position=pd, alpha = .7) + scale_x_discrete(labels=labels, name="")+geom_hline(yintercept =1, linetype='dashed', color='red', 14)+theme(legend.position="top")+scale_colour_aaas(name="Approach")
+
+top.5.MASE.t1 %>%  ggplot(aes(x=domain, y=MASE1_w1, colour=discipline)) +  
+geom_point(size=3, position=pd, alpha = .7) + scale_x_discrete(labels=labels, name="")+geom_hline(yintercept =1, linetype='dashed', color='red', 14)+theme(legend.position="top")+scale_colour_d3(name="Field")
+
+top.5.MASE.t1 %>%  ggplot(aes(x=domain, y=MASE1_w1, colour=as.factor(previous_tournament.coded))) +  
+geom_point(size=3, position=pd, alpha = .7) + scale_x_discrete(labels=labels, name="")+geom_hline(yintercept =1, linetype='dashed', color='red', 14)+theme(legend.position="top")+scale_colour_d3(name="Prior Forecasting Experience")
+
+
+
+proportions(xtabs( ~ Method.code,top.5.MASE.t1))*100 #in total
+proportions(xtabs( ~ domain+Method.code,top.5.MASE.t1),"domain")*100 #by domain
+
+
+proportions(xtabs( ~ discipline,top.5.MASE.t1))*100 #in total
+proportions(xtabs( ~ domain+discipline,top.5.MASE.t1),"domain")*100 #by domain
+
+
+proportions(xtabs( ~ previous_tournament.coded,top.5.MASE.t1))*100 #in total
+proportions(xtabs( ~ previous_tournament.coded,phase1 %>% filter(isExpert.factor == 'Academic') ))*100 #baserate of prior experience to compare to top 5
+proportions(xtabs( ~ domain+previous_tournament.coded,top.5.MASE.t1),"domain")*100 #by domain
+
+
+phase1 %>% filter(isExpert.factor == 'Academic')  %>%
+arrange(domain,MASE1_w1) %>%group_by(domain) %>% dplyr::slice_head(n = 10) %>% select(team_name,MASE1_w1,domain,team_size.coded,discipline,previous_tournament.coded,Method.code,model,theory,numpred,parameters,Method.complex,team_expertise)%>%
+  ggplot(aes(x = domain, y = team_size.coded))+
+stat_summary(fun.data="mean_cl_boot",  position=pd)+theme_minimal(base_size = 14) +
+theme(legend.position="bottom") +scale_x_discrete(labels=labels, name="")+
+labs(colour = "Approach",fill="Approach", x="",y="Size of Top 10 Teams (M +/- 95%CI)")
+ 
+
+
+Viewtop.5.MASE.t2<-academic_only %>%filter(!(phase == 1 & revised == 1)) %>%   
+arrange(domain,MASE1_w2) %>%group_by(domain) %>% dplyr::slice_head(n = 5) %>% select(team_name,MASE1_w2,domain,team_size.coded,discipline,is_multidisciplinary,previous_tournament.coded,Method.code,model,theory,numpred,parameters,Method.complex,team_expertise)
   
 proportions(xtabs( ~ domain+Method.code,top.5.MASE.t2),"domain")*100
 
@@ -114,24 +162,12 @@ proportions(xtabs( ~ domain+Method.code,top.5.MASE.t2),"domain")*100
 #############################################################
 ```
 
+
 # Phase 1 analyses 
 
 ```{r PHASE 1}
 
-pd <- position_dodge(0.7) # move them .07 to the left and right
-labels<-c(
-  eafric = "Exp. Af-Am. Bias",
-  easian = "Exp. As-Am. Bias",
-  egend = "Exp. Gender Bias",
-  iafric = "Imp. Af-Am. Bias",
-  iasian = "Imp. As.-Am. Bias",
-  ideoldem = "Democrats",
-  ideolrep ="Republicans",
-  igend = "Imp. Gender Bias",
-  lifesat = "Life Satisfaction",
-  negaffect = "Negative Affect",
-  polar = "Polit. Polarization",
-  posaffect = "Positive Affect")
+
 #do by method (among experts now)
 #get ground truth markers (subset)
 dat_long$Month0<-dat_long$Month-1

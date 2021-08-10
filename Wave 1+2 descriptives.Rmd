@@ -179,8 +179,17 @@ dat$Income.factor <- factor(dat$Income, levels = c(1:8), labels = c("Under $15,0
 # Residential Area
 dat$Residential.Area.factor <- factor(dat$Residential.Area, levels = c(1:3), labels = c("Urban", "Suburban", "Rural"))
 
-# Whether the team is multi-disciplinary (1) or mono (0)
-dat$multi_dis.factor <- factor(dat$is_multidisciplinary, levels = c(0, 1), labels = c("Single domain expertise", "Multi domain expertise"))
+# get factor scores for team discipline coded
+dat$discipline[dat$team_discipline.coded==1]<-"Behavioral Sciences"
+dat$discipline[dat$team_discipline.coded==2]<-"Social Sciences"
+dat$discipline[dat$team_discipline.coded==3]<-"Data/Computer Science"
+dat$discipline[dat$team_discipline.coded==4]<-"Multi-disciplinary"
+dat$discipline[dat$team_discipline.coded==5]<-"Other"
+
+  
+  # Whether the team is multi-disciplinary (1) or mono (0)
+dat$multi_dis.factor <- if(dat$team_discipline.coded==4,"Multi domain expertise", "Single domain expertise")
+
 
 write.csv(dat,"dat_for_analyses.csv")
 
