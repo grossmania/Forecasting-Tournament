@@ -56,23 +56,34 @@ phase2_exp <-filter(phase2, isExpert == 1& !is.na(Method.code))
 
 #####download of phase 1 and 2 files########################
 t1.academ.sorted<-phase1_exp %>%
-arrange(domain,MASE1_w1) %>%group_by(domain) %>% select(team_name,domain,Month.1:Month.12,mean_abs_error_w1,MASE1_w1)
+arrange(domain,MASE1_w1) %>%group_by(domain) %>% select(team_name,domain,Month.1:Month.12,mean_abs_error_w1,MASE1_w1,Method.code)
 
-t1.nonacadem.av.sorted<-phase1 %>% filter(isExpert.factor == 'Prolific') %>% select(team_name,domain,Month.1:Month.12,mean_abs_error_w1,MASE1_w1) %>% 
+t1.nonacadem.av.sorted<-phase1 %>% filter(isExpert.factor == 'Prolific') %>% select(team_name,domain,Month.1:Month.12,mean_abs_error_w1,MASE1_w1,Method.code) %>% 
   group_by(domain) %>% summarise(across(where(is.numeric), mean)) %>% arrange(domain,MASE1_w1) %>% mutate(team_name="average non-academic")
 
-t1.nonacadem.av.sorted<-phase1 %>% filter(isExpert.factor == 'Prolific') %>% select(team_name,domain,Month.1:Month.12,mean_abs_error_w1,MASE1_w1) %>% 
+t1.nonacadem.median.sorted<-phase1 %>% filter(isExpert.factor == 'Prolific') %>% select(team_name,domain,Month.1:Month.12,mean_abs_error_w1,MASE1_w1,,Method.code) %>% 
   group_by(domain) %>% summarise(across(where(is.numeric), median)) %>% arrange(domain,MASE1_w1) %>% mutate(team_name="median non-academic")
 
-t1.scores<-rbind(t1.academ.sorted,t1.nonacadem.av.sorted)
+t1.nonacadem.best.sorted<-phase1 %>% filter(isExpert.factor == 'Prolific') %>% select(team_name,domain,Month.1:Month.12,mean_abs_error_w1,MASE1_w1,Method.code) %>% 
+  group_by(domain) %>% summarise(across(where(is.numeric), min)) %>% arrange(domain,MASE1_w1) %>% mutate(team_name="top non-academic")
+
+t1.academ.best.sorted<-phase1 %>% filter(isExpert.factor == 'Academic') %>% select(team_name,domain,Month.1:Month.12,mean_abs_error_w1,MASE1_w1,Method.code) %>% 
+  group_by(domain) %>% summarise(across(where(is.numeric), min)) %>% arrange(domain,MASE1_w1) %>% mutate(team_name="top academic")
+
+t1.top.scores<-rbind(t1.academ.best.sorted,t1.nonacadem.best.sorted)%>% arrange(domain,MASE1_w1)
+#so, only for life satisfaction and polarization, best academic was better than best non-academic. For all other domains, non-academics were in fact better (but note that the sample of non-academic was larger)
+
+#what is the percentage of academics and lay people, respectively, who were below 1 on MASE?
+
+t1.scores<-rbind(t1.academ.sorted,t1.nonacadem.median.sorted)
 write.csv(t1.scores,"wave1.scores.csv")
 
 t2.academ.sorted<-academic_only %>%filter(!(phase == 1 & revised == 1)) %>% 
-arrange(domain,MASE1_w2) %>%group_by(domain) %>% select(team_name,domain,Month.7:Month.12,mean_abs_error_w2,MASE1_w2)
+arrange(domain,MASE1_w2) %>%group_by(domain) %>% select(team_name,domain,Month.7:Month.12,mean_abs_error_w2,MASE1_w2,Method.code)
 
 write.csv(t2.academ.sorted,"wave2.scores.csv")
 
-##IF WE WANT TO SORT AND GET TOP 20 or TOP 10
+##IF WE WANT TO SORT AND GET TOP 5 
 
 #T1
 ##########################################################
@@ -80,8 +91,14 @@ write.csv(t2.academ.sorted,"wave2.scores.csv")
 ###sort teams by domain for absolute percentage error and download file
 ###get top 20 teams  per domain for absolute percentage error
 
-#MASE.t1<-dat.phase1.academics %>%
-#arrange(domain,MASE1_w1) %>%group_by(domain) %>% dplyr::slice_head(n = 10) %>% select(team_name,MASE1_w1,domain)
+top.5.MASE.t1<-phase1 %>% filter(isExpert.factor == 'Academic')  %>%
+arrange(domain,MASE1_w1) %>%group_by(domain) %>% dplyr::slice_head(n = 5) %>% select(team_name,MASE1_w1,domain,team_size.coded,is_multidisciplinary,previous_tournament,Method.code,confidence,subexpert,numpred,Method.complex,team_expertise)
+
+  
+top.5.MASE.t2<-academic_only %>%filter(!(phase == 1 & revised == 1)) %>%   
+arrange(domain,MASE1_w2) %>%group_by(domain) %>% dplyr::slice_head(n = 5) %>% select(team_name,MASE1_w2,domain,team_size.coded,is_multidisciplinary,previous_tournament,Method.code,confidence,subexpert,numpred,Method.complex,team_expertise)
+  
+proportions(xtabs( ~ domain+Method.code,top.5.MASE.t2),"domain")*100
 
 #MAE.t1<-dat.phase1.academics %>%
 #arrange(domain,mean_abs_error_w1) %>%group_by(domain) %>% 
