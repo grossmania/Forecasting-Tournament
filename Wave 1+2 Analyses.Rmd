@@ -119,20 +119,15 @@ geom_point(size=3, position=pd, alpha = .7) + scale_x_discrete(labels=labels, na
 top.5.MASE.t1 %>%  ggplot(aes(x=domain, y=MASE1_w1, colour=as.factor(previous_tournament.coded))) +  
 geom_point(size=3, position=pd, alpha = .7) + scale_x_discrete(labels=labels, name="")+geom_hline(yintercept =1, linetype='dashed', color='red', 14)+theme(legend.position="top")+scale_colour_d3(name="Prior Forecasting Experience")
 
-
-
 proportions(xtabs( ~ Method.code,top.5.MASE.t1))*100 #in total
 proportions(xtabs( ~ domain+Method.code,top.5.MASE.t1),"domain")*100 #by domain
-
 
 proportions(xtabs( ~ discipline,top.5.MASE.t1))*100 #in total
 proportions(xtabs( ~ domain+discipline,top.5.MASE.t1),"domain")*100 #by domain
 
-
 proportions(xtabs( ~ previous_tournament.coded,top.5.MASE.t1))*100 #in total
 proportions(xtabs( ~ previous_tournament.coded,phase1 %>% filter(isExpert.factor == 'Academic') ))*100 #baserate of prior experience to compare to top 5
 proportions(xtabs( ~ domain+previous_tournament.coded,top.5.MASE.t1),"domain")*100 #by domain
-
 
 phase1 %>% filter(isExpert.factor == 'Academic')  %>%
 arrange(domain,MASE1_w1) %>%group_by(domain) %>% dplyr::slice_head(n = 10) %>% select(team_name,MASE1_w1,domain,team_size.coded,discipline,previous_tournament.coded,Method.code,model,theory,numpred,parameters,Method.complex,team_expertise)%>%
@@ -141,12 +136,67 @@ stat_summary(fun.data="mean_cl_boot",  position=pd)+theme_minimal(base_size = 14
 theme(legend.position="bottom") +scale_x_discrete(labels=labels, name="")+
 labs(colour = "Approach",fill="Approach", x="",y="Size of Top 10 Teams (M +/- 95%CI)")
  
+phase1 %>% filter(isExpert.factor == 'Academic')  %>%
+arrange(domain,MASE1_w1) %>%group_by(domain) %>% dplyr::slice_head(n = 10) %>% select(team_name,MASE1_w1,domain,team_size.coded,discipline,previous_tournament.coded,Method.code,model,theory,numpred,parameters,Method.complex,team_expertise)%>%
+  ggplot(aes(x = domain, y = Method.complex))+
+stat_summary(fun.data="mean_cl_boot",  position=pd)+theme_minimal(base_size = 14) +
+theme(legend.position="bottom") +scale_x_discrete(labels=labels, name="")+
+labs(colour = "Approach",fill="Approach", x="",y="Model complexity (M +/- 95%CI)")
+
+phase1 %>% filter(isExpert.factor == 'Academic')  %>%
+arrange(domain,MASE1_w1) %>%group_by(domain) %>% dplyr::slice_head(n = 5) %>% select(team_name,MASE1_w1,domain,team_size.coded,discipline,previous_tournament.coded,Method.code,model,theory,numpred,parameters,Method.complex,team_expertise)%>%
+  ggplot(aes(x = domain, y = Method.complex))+
+stat_summary(fun.data="mean_cl_boot",  position=pd)+theme_minimal(base_size = 14) +
+theme(legend.position="bottom") +scale_x_discrete(labels=labels, name="")+
+labs(colour = "Approach",fill="Approach", x="",y="Model complexity (M +/- 95%CI)")
+
+##comparison to lay people
+
+proportions(xtabs( ~ compare_to_naive_linear+isExpert.factor,phase1),"isExpert.factor")*100 #
+proportions(xtabs( ~ compare_to_naive_rwf+isExpert.factor,phase1),"isExpert.factor")*100 #
+
+phase1$MASE1_cut<-ifelse(phase1$MASE1_w1<1,"Below Naive",ifelse(phase1$MASE1_w1>1,"Above Naive",NA))
+
+proportions(xtabs( ~ MASE1_cut+isExpert.factor,phase1),"isExpert.factor")*100 #in total
+
+proportions(xtabs( ~ MASE1_cut+Method.code,phase1),"Method.code")*100
 
 
-Viewtop.5.MASE.t2<-academic_only %>%filter(!(phase == 1 & revised == 1)) %>%   
-arrange(domain,MASE1_w2) %>%group_by(domain) %>% dplyr::slice_head(n = 5) %>% select(team_name,MASE1_w2,domain,team_size.coded,discipline,is_multidisciplinary,previous_tournament.coded,Method.code,model,theory,numpred,parameters,Method.complex,team_expertise)
+#who won?
+top.1.MASE.t1<-phase1 %>% filter(isExpert.factor == 'Academic')  %>%
+arrange(domain,MASE1_w1) %>%group_by(domain) %>% dplyr::slice_head(n = 1) %>% select(team_name,MASE1_w1,domain,team_size.coded,discipline,previous_tournament.coded,Method.code,model,theory,numpred,parameters,Method.complex,team_expertise)
+
+
+
+##PHASE 2
+
+#who won?
+top.1.MASE.t2<-academic_only %>%
+  arrange(domain,MASE1_w2) %>%group_by(domain) %>% dplyr::slice_head(n = 1) %>% select(team_name,MASE1_w2,domain,team_size.coded,discipline,previous_tournament.coded,Method.code,model,theory,numpred,parameters,Method.complex,team_expertise,revised,phase)
   
-proportions(xtabs( ~ domain+Method.code,top.5.MASE.t2),"domain")*100
+top.5.MASE.t2<-academic_only %>%
+  arrange(domain,MASE1_w2) %>%group_by(domain) %>% dplyr::slice_head(n = 5) %>% select(team_name,MASE1_w2,compare_to_naive_linear,compare_to_naive_rwf,domain,team_size.coded,discipline,previous_tournament.coded,Method.code,model,theory,numpred,parameters,Method.complex,team_expertise,revised,phase)
+  
+
+top.5.MASE.t2 %>%  ggplot(aes(x=domain, y=MASE1_w2, colour=Method.code)) +  
+geom_point(size=3, position=pd, alpha = .7) + scale_x_discrete(labels=labels, name="")+geom_hline(yintercept =1, linetype='dashed', color='red', 14)+theme(legend.position="top")+scale_colour_aaas(name="Approach")
+
+top.5.MASE.t2 %>%  ggplot(aes(x=domain, y=MASE1_w2, colour=discipline)) +  
+geom_point(size=3, position=pd, alpha = .7) + scale_x_discrete(labels=labels, name="")+geom_hline(yintercept =1, linetype='dashed', color='red', 14)+theme(legend.position="top")+scale_colour_d3(name="Field")
+
+top.5.MASE.t2 %>%  ggplot(aes(x=domain, y=MASE1_w2, colour=as.factor(previous_tournament.coded))) +  
+geom_point(size=3, position=pd, alpha = .7) + scale_x_discrete(labels=labels, name="")+geom_hline(yintercept =1, linetype='dashed', color='red', 14)+theme(legend.position="top")+scale_colour_d3(name="Prior Forecasting Experience")
+
+proportions(xtabs( ~ Method.code,top.5.MASE.t2))*100 #in total
+proportions(xtabs( ~ domain+Method.code,top.5.MASE.t2),"domain")*100 #by domain
+
+proportions(xtabs( ~ discipline,top.5.MASE.t1))*100 #in total
+proportions(xtabs( ~ domain+discipline,top.5.MASE.t1),"domain")*100 #by domain
+
+proportions(xtabs( ~ previous_tournament.coded,top.5.MASE.t1))*100 #in total
+proportions(xtabs( ~ previous_tournament.coded,phase1 %>% filter(isExpert.factor == 'Academic') ))*100 #baserate of prior experience to compare to top 5
+proportions(xtabs( ~ domain+previous_tournament.coded,top.5.MASE.t1),"domain")*100 #by domain
+
 
 #MAE.t1<-dat.phase1.academics %>%
 #arrange(domain,mean_abs_error_w1) %>%group_by(domain) %>% 
