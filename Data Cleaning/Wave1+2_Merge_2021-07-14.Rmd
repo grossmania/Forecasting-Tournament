@@ -550,7 +550,7 @@ for (i in 1:nrow(dat_comp_2)) {
 
 dat_size <- read.csv("team_descriptives_2021-04-22.csv", stringsAsFactors = FALSE)
 
-dat <- dat %>% left_join(dat_size, by = c("team_name", "ResponseId"))
+dat <- dat %>% left_join(dat_size, by = c("team_name"))
 
 
 
