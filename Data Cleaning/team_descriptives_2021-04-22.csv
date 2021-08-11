@@ -1,115 +1,121 @@
-team_name,team_size,is_multidisciplinary,previous_tournament
-1859,1,0,0
-4 chimps with a dart,4,1,0
-5casters,5,0,0
-A Woman Scientist,1,0,0
-AbCdEfG,1,0,0
-Abracadabra,3,0,0
-adamman,1,0,0
-Average Joes,3,1,0
-BlackSwan,1,0,0
-blue duiker,1,0,0
-Bluebirds,2,0,0
-Bordeaux,1,0,0
-Broken Mirror Neurons,2,0,1
-BRTWN,5,0,1
-CarrNCUSA,1,0,0
-CheeseCake,1,0,0
-Comet,1,0,0
-Compassionate Values,1,0,0
-CoronaSky,1,0,0
-CPMY,1,0,0
-C-Team,2,0,0
-Cynical Belief in the Inexorable Crush of the Wheel,1,0,0
-datamodelers,2,0,0
-Dog's Sense,1,0,
-Dragon,1,0,1
-DrT,1,0,1
-Duckling Power,1,0,0
-Dutch East India Company,2,0,0
-Erebuni,2,0,0
-fearfulastra,1,0,0
-FMTeam,2,0,1
-Forecasting Team 1,1,0,0
-ForecastSnorecast,1,0,0
-ForeverJung90,7,0,0
-FrostNova,1,0,0
-Goldensaber,1,0,0
-Haku,1,0,0
-Heather Shimmer,5,1,1
-Heisenburg,1,,
-HHH,1,0,0
-Hi5,1,0,0
-HSCNAC,1,0,0
-Imielin,1,0,0
-IPZ_predi,2,0,0
-Junesix,1,0,0
-King Octopus,1,0,0
-Korrigan,1,0,0
-Lady in Black,1,0,1
-Little Bear,1,0,0
-LoneGradStudent,1,0,0
-LongerSquigglyLines,2,0,0
-Lotus,1,0,0
-md2000,1,0,0
-Me Myself and I,1,,
-meebe,1,,
-MLTS,2,0,1
-MORDEAUX Team,3,0,0
-Motivation & Emotion,3,1,0
-Mr Muddle,1,0,0
-ms607,1,0,0
-Nigel Mantou Lou,1,0,0
-Northstar,1,0,0
-Not a fortune teller,1,0,0
-NotGreatWithNamesTeam,1,,
-Nurni Flowenol,1,0,0
-NYHC,1,0,0
-Old Chickens,1,0,0
-Otto,1,0,1
-Platypus,1,0,0
-Patricia Arriaga,1,0,1
-Polarization Disciples,2,0,0
-polarization-2020CO,1,,
-Pythia,2,0,0
-R4VST9,2,0,1
-Renegade,1,0,0
-RTTMT,1,,
-savvy time traveler,1,0,0
-scaled-humanity,1,0,0
-SCREEN Team,4,0,0
-Seaside,1,,
-Skuld Forecasting Systems,1,0,0
-Sociology,1,0,1
-Spartacus,1,,
-Star Trek,1,0,0
-StatFore,1,0,0
-TAPE-Measurement,2,1,0
-Team Apple,1,0,0
-Team Blue Skies,4,0,0
-Team CCS,3,0,1
-Team Funemployed,4,0,0
-Team IPA,1,0,0
-Team Social Psychological Skill,2,0,0
-Team Supreme Ignorance,1,0,0
-Team29,1,0,0
-Team42,1,0,1
-teamGreenLake,3,0,1
-TeamKL,1,0,0
-That Well-being Researcher,1,0,0
-The Bingo Jingoists,1,0,0
-The Causal Lab,1,0,0
-The Forecasting Four,4,0,0
-The Frugal Few,3,0,1
-The Nowcast,2,1,0
-The Oracles of Delphi,3,0,0
-The Star,1,0,0
-The Well-Adjusted R Squares,3,0,0
-TheMets,1,0,0
-Tosbik,1,0,1
-Turing Tesla Solutions,1,0,0
-UhZettHa,1,0,0
-Waterloo Purple Jackets,3,1,0
-WeGen,1,0,0
-Woodstock,1,0,0
-WQXZ,2,0,0
+ResponseId,team_name,team_size.coded,team_discipline.coded,team_discipline.missingdat,previous_tournament.coded,previous_tournament.missingdat
+R_2D7zcSqrVUj0sRy,1859,1,2,2,0,0
+R_C9NX7uA8BLUDd2p,4 chimps with a dart,4,4,4,0,0
+R_1C8bivLs27HqufB,5casters,5,4,4,0,0
+R_3rTfOKhM5Oxh2Qr,A Woman Scientist,1,1,1,0,0
+R_3D5hhCqsvLNisbo,ab,1,2,2,0,0
+R_22zcoRoZJMzIfgj,AbCdEfG,1,2,2,0,0
+R_2bWyfocCOaKkcNN,Abracadabra,3,4,4,0,0
+R_1hy99223yt0IGha,adamman,1,2,2,0,0
+R_2ZZyRqUPQ41Rcxl,AhamBrahamasmi,1,1,1,0,0
+R_2xRiOHuu4tmQ3k1,Average Joes,3,1,1,0,0
+R_37QXf00ixlpprj3,BlackSwan,1,2,2,0,0
+R_cD94fLrgJK1053j,blue duiker,1,2,2,0,0
+R_3oLLtQSJrtOKHZu,Bluebirds,2,4,4,0,0
+R_8GHjs56dMRoZxmx,Bordeaux,1,3,3,0,0
+R_2tM97nv8vKVkiWV,Broken Mirror Neurons,2,4,4,1,1
+R_1hHgqlFAgXCR12p,BRTWN,5,4,4,1,1
+R_3MFIxk2p3fJmFfz,CantabRoyal,1,2,2,0,0
+R_1MSUHSwe1zPiuOQ,CarrNCUSA,1,2,2,0,0
+R_sRueTBbGYDURxcd,Cascade Institute,1,2,2,0,0
+R_XhWt0WhYksIvwI1,CheeseCake,1,2,2,0,0
+R_8v4jsmqWvaaOyul,Comet,1,3,3,0,0
+R_1gu2I9N9y2P5XYo,Compassionate Values,1,1,1,0,0
+R_24wV0QtBhicWuqE,CoronaSky,1,2,2,0,0
+R_x9FtYCJkK9ml853,CPMY,1,1,1,0,0
+R_22JuVmmGmu5qWDO,C-Team,2,2,2,1,1
+R_1E6tnVIZxJQDW8X,Cynical Belief in the Inexorable Crush of the Wheel,1,2,2,0,0
+R_3EKiOQhREqjGKbs,datamodelers,2,1,1,0,0
+R_1gSdkjbKq3WwAUh,Dog's Sense,1,3,3,0,0
+R_0cTB0KDG2PrYysN,Dragon,1,2,2,0,0
+R_1gw4q8OGemNDYMb,DrT,1,2,2,0,0
+R_2tOPX9BWjIhaOf7,Duckling Power,1,2,2,0,0
+R_2wnnHdKyTWVMPQC,Dutch East India Company,2,2,,1,
+R_1E9Vmltguj3p3XY,Erebuni,2,4,4,0,0
+R_5mXcGasI1QWezgl,fearfulastra,1,3,3,0,0
+R_1KrKirHTAtmQWfG,FMTeam,2,4,4,1,1
+R_3Opn01NyerOFmAe,Forecasting Team 1,1,2,2,0,0
+R_2EEjmCJXfoudK6K,ForecastSnorecast,1,2,2,0,0
+R_0c5ro6cmDAEkigF,ForeverJung90,7,2,2,0,0
+R_2RWFd9H3z37Yqmb,Foxtrot,1,1,1,0,0
+R_2yloCPIMJyg71Mp,FrostNova,1,1,1,0,0
+R_1jJ4bv4NOSxgrke,Goldensaber,1,2,2,0,0
+R_3fYLuMJqqxpujqn,Haifa_Team,1,1,1,0,0
+R_3je47BZiW0vsXxb,Haku,1,2,2,0,0
+R_12L9npXg1YbCpY7,Heather Shimmer,4,4,4,1,1
+R_3JEIbGiTk6KLvTk,Heisenburg,1,3,3,0,0
+R_2y9FAXYABygvgUh,HHH,1,3,3,0,0
+R_274pH65DB58wOKa,Hi5,1,1,1,0,0
+R_2ONDFMm1XxxTKei,HSCNAC,1,2,2,0,0
+R_1hBj0OFNl0kStor,Imielin,1,1,1,0,0
+R_2sYluFkPNTpZKzL,IPZ_predi,2,2,2,0,0
+R_2QEsKcVwjBbb3Lr,Junesix,1,2,2,0,0
+R_ZDzzja7ctGRI0Df,King Octopus,1,2,2,0,0
+R_3m7AEUY4kJUOy2p,Korrigan,1,2,2,0,0
+R_3iyQQpwt0SLeyLG,Lady in Black,1,2,2,0,0
+R_2WB8J6PdmAAQGbM,Little Bear,1,1,1,0,0
+R_2rq0ErDq5x0v39Y,LoneGradStudent,1,2,2,0,0
+R_2aqnCmMqeKGKVmb,LongerSquigglyLines,2,3,,1,
+R_1r6qK3o2dVgJtdY,Lotus,1,2,2,0,0
+R_2tr58oLYN0VNmIZ,md2000,1,2,2,0,0
+R_s85wbapOnaPy9rz,Me Myself and I,1,2,2,0,0
+R_1mjZatLwm6h4rGR,meebe,1,2,2,0,0
+R_3G7H7ETfkJCYd3T,MLTS,2,3,3,1,1
+R_ZlWXYoDU53yJZst,MORDEAUX Team,3,4,4,0,0
+R_3PKXuOvhlYlsMEQ,Motivation & Emotion,3,4,4,0,0
+R_1C41iSRHRcK8H7i,Mr Muddle,1,1,1,0,0
+R_1IgsGFMZYhVCPXU,ms607,1,1,1,0,0
+R_1ozQu5NIlLBJiI7,Nigel Mantou Lou,1,2,2,0,0
+R_3ht1EyIr80cL8Wu,Northstar,1,2,2,0,0
+R_2atXh38sPudPrH4,Not a fortune teller,1,1,1,0,0
+R_xyX2gsbAcFlJDt7,NotGreatWithNamesTeam,1,3,3,0,0
+R_3j7K6Ger5hGCVIr,Nurni Flowenol,1,2,2,0,0
+R_rdz4BJNvZVJ9lF7,NYHC,1,2,2,0,0
+R_3nJlV17e4so1J8U,Old Chickens,1,2,2,0,0
+R_3HFwKuXAJpxzJib,Otto,1,2,2,0,0
+R_3QP87teUhx0shwJ,Patricia Arriaga,1,1,1,0,0
+R_1cUmnrLL3pNI6X1,Platypus,1,1,1,0,0
+R_12r2krWZSlklXM1,Polarization Disciples,2,2,2,1,1
+R_3lzeKBOZqIExUsr,polarization-2020CO,1,1,1,0,0
+R_2BglXfLOaClrfZX,Pythia,2,2,2,0,0
+R_WASIBllES8jF0t3,R4VST9,2,1,1,1,1
+R_28Opd7wWaGxLfce,Renegade,1,1,1,0,0
+R_3sig6taL2uqG5wp,RTTMT,1,4,4,0,0
+R_2Yt4TCEY9eEvpNP,savvy time traveler,1,2,2,0,0
+R_2DTQwz3x0AgTDZl,scaled-humanity,1,3,3,0,0
+R_1mpWg38aa9BMatM,SCREEN Team,4,1,1,0,0
+R_DAEDt5Ai3qF481z,Seaside,1,2,2,0,0
+R_2wpETv2fShVR2Zx,Skuld Forecasting Systems,1,4,4,0,0
+R_2tLue9TWKlCrv64,Sociology,1,2,2,0,0
+R_1feG7nZChYPoRsc,Spartacus,1,,,,
+R_26nZCQL0w6rXYgO,Star Trek,1,1,1,0,0
+R_2QYQjgqRTZ5OsT9,StatFore,1,3,3,0,0
+R_3DbvIeb2mKWx0H1,TAPE-Measurement,1,2,2,0,0
+R_1lxIIRF6NepoJvF,Team Apple,1,1,1,0,0
+R_9sHHInSMm0RWjh7,Team Blue Skies,4,4,,0,
+R_25Kj6SQwGx3G7Ci,Team CCS,3,4,4,1,1
+R_2ZKRjwRKzN67eJY,Team Funemployed,4,4,4,0,0
+R_3h4M6Ubf92rf31g,Team IPA,1,2,2,0,0
+R_2vcVJFShhkDIrqz,Team Social Psychological Skill,2,2,,0,
+R_3D0iEIsVGa2GAyh,Team Supreme Ignorance,1,3,3,0,0
+R_3xSl0TOpZc67Tpv,Team29,1,3,3,0,0
+R_1qdMLd8uvn2UqtG,Team42,1,4,4,0,0
+R_PStmFDcQJH3bOkp,teamGreenLake,3,4,4,1,1
+R_1I71SVFA41n6gY1,TeamKL,1,2,2,0,0
+R_SPgJ5k2KWZeCtuF,That Well-being Researcher,1,1,1,0,0
+R_27CEbbkAySDDU6g,The Bingo Jingoists,1,3,3,0,0
+R_xrBZgorqiPvWEvf,The Causal Lab,1,1,1,0,0
+R_26gVPADEgjZU0WR,The Forecasting Four,4,1,1,0,0
+R_RVrlMjMv0dfTgl3,The Frugal Few,3,4,4,1,1
+R_WBbdNjHbVRZjNuh,The Nowcast,2,2,2,0,0
+R_9vigM8FXwIj8SQh,The Oracles of Delphi,3,4,4,0,0
+R_3kgDlG1MSCp7LTK,The Star,1,1,1,0,0
+R_1gnp5eVythPBWYM,The Well-Adjusted R Squares,3,2,,0,
+R_2UgadrXE2OiyQIB,TheMets,1,1,1,0,0
+R_3GeUUZmieHau8Rz,Tosbik,1,2,2,0,0
+R_2WCOi1uh4qS2VYm,Turing Tesla Solutions,2,4,4,0,0
+R_2XpNNLfMXeMPoGu,UhZettHa,1,1,1,0,0
+R_1oaRGDe9cvpFKUI,Waterloo Purple Jackets,4,4,4,1,1
+R_1eOzg1yvQRxoVr0,WeGen,1,1,1,0,0
+R_3L72c3NrNGsOve2,Woodstock,1,1,1,0,0
+R_1GxdcirtZvLpqZC,WQXZ,2,3,,1,

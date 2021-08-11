@@ -78,6 +78,9 @@ wave1 <- wave1 %>% dplyr::rename(
   domain = Issue
 )
 
+
+
+
 # add blank columns for additional 6 months of forecasts done in wave2
 wave1$Month.13 <- NA
 wave1$Month.14 <- NA
@@ -227,6 +230,13 @@ dat[which(dat$team_name == "The Causal Lab"), "covidmeas"] <- NA
 
 dat[which(dat$team_name == "scaled-humanity"), "covidcondyn"] <- 0
 dat[which(dat$team_name == "scaled-humanity"), "covidmeas"] <- NA
+
+# Identified a typo for covidest as well: team ms607, domain implicit asian american bias.
+# participant's estimate for total # of covid deaths for months 10-12 jumps from 77,000 to 775,000 then back down to 78,000.
+# estimates provided from same team & months negative & positive affect were 77,000 to 77,500 to 78,000
+# changing covidest for asian american bias to match those for affect.
+
+dat[which(dat$team_name == "ms607" & dat$domain == "iasian" & dat$phase == 1), "covidest_11"] <- 77500
 
 # Breakdown of "Other" response for covidmeas
 
@@ -540,7 +550,7 @@ for (i in 1:nrow(dat_comp_2)) {
 
 dat_size <- read.csv("team_descriptives_2021-04-22.csv", stringsAsFactors = FALSE)
 
-dat <- dat %>% left_join(dat_size, by = c("team_name"))
+dat <- dat %>% left_join(dat_size, by = c("team_name", "ResponseId"))
 
 
 
@@ -590,8 +600,6 @@ dat_temp <- dat
 #update duplicate column names
 
 dat <- dat %>% dplyr::rename(
-  team_size = team_size.x,
-  team_size.coded = team_size.y,
   flag_lay_response = Final.OT
 
 )
@@ -634,8 +642,7 @@ dat_coded <- dat_coded %>% dplyr::rename(
 
 ```{r Merge academic + prolific methods coded and join to main data set}
 
-# dat <- dat %>% left_join(dat_coded, by = c("phase", "ResponseId", "domain"))
-dat.t <- dat %>% left_join(dat_coded, by = c("phase", "ResponseId", "domain"))
+dat <- dat %>% left_join(dat_coded, by = c("phase", "ResponseId", "domain"))
 
 
 ```
@@ -653,23 +660,26 @@ dat_counter <- dat_counter %>% dplyr::rename(
 dat_counter$phase <- 1
 
 
-# Implement same name changes that were previously corrected in dat
-dat_counter[which(dat_counter$team_name == "1859 revised"), "team_name"] <- "1859"
-dat_counter[which(dat_counter$team_name == "BlackSwanrevised"), "team_name"] <- "BlackSwan"
-# dat_counter[which(dat_counter$team_name == "Compassionate Values`"), "team_name"] <- "Compassionate Values"
-dat_counter[which(dat_counter$team_name == "Mr Muddle "), "team_name"] <- "Mr Muddle"
-dat_counter[which(dat_counter$team_name == "platypus"), "team_name"] <- "Platypus"
-dat_counter[which(dat_counter$team_name == "R4VST9 - Revised"), "team_name"] <- "R4VST9"
-
-dat <- dat %>% left_join(dat_counter, by = c("phase", "ResponseId", "domain"))
+# # Implement same name changes that were previously corrected in dat
+# dat_counter[which(dat_counter$team_name == "1859 revised"), "team_name"] <- "1859"
+# dat_counter[which(dat_counter$team_name == "BlackSwanrevised"), "team_name"] <- "BlackSwan"
+# # dat_counter[which(dat_counter$team_name == "Compassionate Values`"), "team_name"] <- "Compassionate Values"
+# dat_counter[which(dat_counter$team_name == "Mr Muddle "), "team_name"] <- "Mr Muddle"
+# dat_counter[which(dat_counter$team_name == "platypus"), "team_name"] <- "Platypus"
+# dat_counter[which(dat_counter$team_name == "R4VST9 - Revised"), "team_name"] <- "R4VST9"
+# 
+# dat <- dat %>% left_join(dat_counter, by = c("phase", "ResponseId", "domain"))
 
 
 ```
 
+```{r remove participants who indicated they wished to withdraw}
 
+# Remove row for team that indicated they wished to withdraw their submission
+remove_row <- which(dat$team_name == "Turing Tesla Solutions" & dat$domain == "eafric")
+dat <- dat[-remove_row,]
 
-
-
+```
 
 
 
@@ -1079,7 +1089,7 @@ for (i in 1:length(unique_teams_predicted_covid_death)) {
     outcome_covid <- forecast::accuracy(dat_temp_2_covid$value, outcome_covid)
 
     dat_accuracy_covid <- dat_accuracy_covid %>% add_row(
-      ResponseId = unique_teams_predicted_w1[i],
+      ResponseId = unique_teams_predicted_covid_death[i],
       domain = domain_list_covid[n],
       mean_error_covid = outcome_covid[1],
       root_mean_sqr_error_covid = outcome_covid[2],
@@ -1502,7 +1512,7 @@ for (i in 1:length(domains)) {
   cutoff2_w2 <- dat$root_mean_sqr_error_w2[which(dat$domain == domains[i] & dat$Method %in% "Naive - rwf" & dat$phase == 2)]
 
  
-  list_val_w2 <- which(dat$phase == 2 & dat$domain == domains[i] & !dat$Method %in% c("Naive - rwf", "Naive - linear", "Objective"))
+  list_val_w2 <- which(dat$domain == domains[i] & !dat$Method %in% c("Naive - rwf", "Naive - linear", "Objective"))
 
                       
   for (n in 1:length(list_val_w2)) {
@@ -1541,7 +1551,7 @@ dat$numpred[which(is.na(dat$numpred))] <- 0
 dat$team_size[which(is.na(dat$team_size))] <- 1
 dat$team_size.coded[which(is.na(dat$team_size.coded))] <- 1
 
-dat$CounterFactual_Presence.Final[which(is.na(dat$CounterFactual_Presence.Final))] <- 0
+# dat$CounterFactual_Presence.Final[which(is.na(dat$CounterFactual_Presence.Final))] <- 0
 
 
 ```
@@ -1550,7 +1560,7 @@ dat$CounterFactual_Presence.Final[which(is.na(dat$CounterFactual_Presence.Final)
 
 # Remove columns that were used during coding / review that are not required for analyses
 
-dat <- dat[, c(7, 10, 21, 27, 29:49, 55:58, 60:71, 77:82, 92, 100:106, 116, 121:122, 124:132, 164:202)]
+dat <- dat[, c(7, 10, 21, 27, 29:57, 59:71, 77:82, 89, 92, 100:109, 119, 124:135, 166:202)]
 
 ```
 
@@ -1567,50 +1577,16 @@ dat$ForecastisUpdated[dat$phase == 2 & dat$revised == 0] <- "Novel Forecast in N
 
 ```
 
-
-
-```{r Create Long data set with difference scores, eval=FALSE, include=FALSE}
-## Convert to Long + Calculate difference scores.
-
-dat$prediction_id <- seq(1, nrow(dat), 1)
-
-# move all predicted values to a single column
-dat_long <- pivot_longer(dat, cols = starts_with("Month"), names_to = "Month", names_prefix = "Month.")
-dat_long$Month <- as.numeric(dat_long$Month)
-
-# exclude rows without values in the "value" column
-dat_long <- filter(dat_long, !is.na(value))
-
-
-# add column to store difference values as % change predicted from baseline
-dat_long$value.dif <- as.numeric(NA)
-
-# for each of the 12 domains, get pre
-for (i in 1:length(domains)) {
-  
-  hist <- dat[which(dat$domain == domains[i] & dat$Method == "Objective" & dat$phase == 2), ]
-  
-  for (n in 1:6) {
-    dat_long[which(dat_long$domain == domains[i] & dat_long$Month == n), "value.dif" ] <- dat_long[which(dat_long$domain == domains[i] & dat_long$Month == n), "value" ] - hist[1, paste0("Month.", n)]
-  }
-  
-  
-}
-
-
-
-```
-
 ```{r output files}
 
 setwd("~/GitHub/Forecasting-Tournament") #change directory to save in the general space
 
 write.csv(dat, "Wave1+2data.csv")
-write.csv(demographics_unique, "Wave1+2demographics.csv")
+# write.csv(demographics_unique, "Wave1+2demographics.csv")
 # write.csv(dat_long, "wave1+2data_long_2021-06-30.csv")
 # write.csv(dat_lay, "Wave1_Lay sample.csv")
 # write.csv(dat_hist, "historical_data_2021-05-19.csv")
-write.csv(dat_comp_1, "team_size.csv")
+# write.csv(dat_comp_1, "team_size.csv")
 ```
 
 

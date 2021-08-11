@@ -12,10 +12,9 @@ output: html_document
 
 ```
 
+```{r import main dat files}
 
-```{r import files}
-
-# main dataset that contains the correct ResponseIds
+# main dataset that contains the correct ResponseIds for wave 1
 dat1 <- read.csv("Wave1Forecasts-Cleaned_2021-05-17.csv", stringsAsFactors = FALSE)
 
 dat1[which(dat1$team_name == "1859 revised"), "team_name"] <- "1859"
@@ -27,7 +26,7 @@ dat1[which(dat1$team_name == "PatrÃ­cia Arriaga"), "team_name"] <- "Patricia A
 dat1[which(dat1$team_name == "heisenburg"), "team_name"] <- "Heisenburg"
 
 
-
+# main dataset that contains the correct ResponseIds for wave 2
 dat2 <- read.csv("Wave2Forecasts-Cleaned_2021-05-17.csv", stringsAsFactors = FALSE)
 
 dat2[which(dat2$team_name == "Compassionate Values`"), "team_name"] <- "Compassionate Values"
@@ -35,6 +34,13 @@ dat2[which(dat2$team_name == "forcasting-2020"), "team_name"] <- "polarization-2
 dat2[which(dat2$team_name == "TAPE-Measurement (Twitter Affect and Project-implicit Empirical-Measurement)"), "team_name"] <- "TAPE-Measurement"
 dat2[which(dat2$team_name == "TAPE-Measurement (Twitter Affect and Project-Implicit Empirical Measurement)"), "team_name"] <- "TAPE-Measurement"
 dat2[which(dat2$team_name == "heisenburg"), "team_name"] <- "Heisenburg"
+
+```
+
+
+```{r import method+complexity files}
+
+
 
 
 methods <- read.csv("Method_ComplexityCoding_Merged_2021-04-22.csv", stringsAsFactors = FALSE)
@@ -90,4 +96,7 @@ write.csv(dat_final, "Method+ComplexityCoding_fixed.csv")
 
 ```
 
+```{r import counterfactual files}
+
+```
 
