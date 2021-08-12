@@ -1,0 +1,25 @@
+```{r Add Team demographics to Descriptive file}
+
+library(readxl)
+
+descriptives <- read.csv("team_descriptives_2021-04-22.csv", stringsAsFactors = FALSE)
+
+demo_check <- read_xlsx("demo_check.xlsx", sheet = 1)
+
+demo_group <- demo_check %>% 
+  group_by(team_name) %>% 
+  summarize(
+    team_gender = (sum(gender != 1) / team_size) * 100,
+    team_education = (sum(education2 != 4) / team_size) * 100,
+    team_Age = mean(age),
+    non_US = (sum(country != "United States") / team_size) * 100
+  )
+
+demo_group <- demo_group %>% filter(!duplicated(team_name))
+
+
+descriptives <- descriptives %>% left_join(demo_group, by = "team_name")
+
+write.csv(descriptives, "team_descriptives_updated.csv")
+```
+
