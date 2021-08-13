@@ -255,29 +255,29 @@ theme(legend.position="bottom") +scale_x_discrete(labels=labels, name="")+
 labs(colour = "Approach",fill="Approach", x="",y="Model complexity (M +/- 95%CI)") #same as for top 10
 
 
-phase1 %>% filter(isExpert.factor == 'Academic')  %>%
-arrange(domain,MASE1_w1) %>%group_by(domain) %>% dplyr::slice_head(n = 10) %>% select(team_name,MASE1_w1,domain,team_size.coded,discipline,previous_tournament.coded,Method.code,model,theory,numpred,parameters,Method.complex,team_expertise,team_gender,team_education,team_Age,non_US )%>%
+academic_only  %>%
+arrange(domain,MASE1_w2) %>%group_by(domain) %>% dplyr::slice_head(n = 10) %>% select(team_name,MASE1_w2,domain,team_size.coded,discipline,previous_tournament.coded,Method.code,model,theory,numpred,parameters,Method.complex,team_expertise,team_gender,team_education,team_Age,non_US )%>%
   ggplot(aes(x = domain, y = team_gender))+
 stat_summary(fun.data="mean_cl_boot",  position=pd)+theme_minimal(base_size = 14) +
 theme(legend.position="bottom") +scale_x_discrete(labels=labels, name="")+
 labs(colour = "Approach",fill="Approach", x="",y="% Female per Team (M +/- 95%CI)")
 
-phase1 %>% filter(isExpert.factor == 'Academic')  %>%
-arrange(domain,MASE1_w1) %>%group_by(domain) %>% dplyr::slice_head(n = 10) %>% select(team_name,MASE1_w1,domain,team_size.coded,discipline,previous_tournament.coded,Method.code,model,theory,numpred,parameters,Method.complex,team_expertise,team_gender,team_education,team_Age,non_US )%>%
+academic_only  %>%
+arrange(domain,MASE1_w2) %>%group_by(domain) %>% dplyr::slice_head(n = 10) %>% select(team_name,MASE1_w2,domain,team_size.coded,discipline,previous_tournament.coded,Method.code,model,theory,numpred,parameters,Method.complex,team_expertise,team_gender,team_education,team_Age,non_US )%>%
   ggplot(aes(x = domain, y = team_education))+
 stat_summary(fun.data="mean_cl_boot",  position=pd)+theme_minimal(base_size = 14) +
 theme(legend.position="bottom") +scale_x_discrete(labels=labels, name="")+
-labs(colour = "Approach",fill="Approach", x="",y=" (M +/- 95%CI)")
+labs(colour = "Approach",fill="Approach", x="",y="% Non_PHD per Team (M +/- 95%CI)")
 
-phase1 %>% filter(isExpert.factor == 'Academic')  %>%
-arrange(domain,MASE1_w1) %>%group_by(domain) %>% dplyr::slice_head(n = 10) %>% select(team_name,MASE1_w1,domain,team_size.coded,discipline,previous_tournament.coded,Method.code,model,theory,numpred,parameters,Method.complex,team_expertise,team_gender,team_education,team_Age,non_US )%>%
+academic_only  %>%
+arrange(domain,MASE1_w2) %>%group_by(domain) %>% dplyr::slice_head(n = 10) %>% select(team_name,MASE1_w2,domain,team_size.coded,discipline,previous_tournament.coded,Method.code,model,theory,numpred,parameters,Method.complex,team_expertise,team_gender,team_education,team_Age,non_US )%>%
   ggplot(aes(x = domain, y = team_Age))+
 stat_summary(fun.data="mean_cl_boot",  position=pd)+theme_minimal(base_size = 14) +
 theme(legend.position="bottom") +scale_x_discrete(labels=labels, name="")+
 labs(colour = "Approach",fill="Approach", x="",y="% Average Team Age (M +/- 95%CI)")
 
-phase1 %>% filter(isExpert.factor == 'Academic')  %>%
-arrange(domain,MASE1_w1) %>%group_by(domain) %>% dplyr::slice_head(n = 10) %>% select(team_name,MASE1_w1,domain,team_size.coded,discipline,previous_tournament.coded,Method.code,model,theory,numpred,parameters,Method.complex,team_expertise,team_gender,team_education,team_Age,non_US )%>%
+academic_only  %>%
+arrange(domain,MASE1_w2) %>%group_by(domain) %>% dplyr::slice_head(n = 10) %>% select(team_name,MASE1_w2,domain,team_size.coded,discipline,previous_tournament.coded,Method.code,model,theory,numpred,parameters,Method.complex,team_expertise,team_gender,team_education,team_Age,non_US )%>%
   ggplot(aes(x = domain, y = non_US))+
 stat_summary(fun.data="mean_cl_boot",  position=pd)+theme_minimal(base_size = 14) +
 theme(legend.position="bottom") +scale_x_discrete(labels=labels, name="")+
@@ -286,20 +286,11 @@ labs(colour = "Approach",fill="Approach", x="",y="% Non-US per Team (M +/- 95%CI
 
 
 ##comparison by method among academics
-proportions(xtabs( ~ compare_to_naive_linear_w2+Method.code,academic_only),"Method.code")*100 #
-chisq.test(xtabs( ~ compare_to_naive_linear_w2+Method.code,academic_only))
+proportions(xtabs( ~ compare_to_naive_rwf_MASE_w2+Method.code,academic_only),"Method.code")*100 #
+chisq.test(xtabs( ~ compare_to_naive_rwf_MASE_w2+Method.code,subset(academic_only, compare_to_naive_rwf_MASE_w2!="Equal to Naive rwf"))) #exclude equal as it is negligible and screws up calculation
 
-proportions(xtabs( ~ compare_to_naive_rwf_w2+Method.code,academic_only),"Method.code")*100 #
-chisq.test(xtabs( ~ compare_to_naive_rwf_w2+Method.code,academic_only))
-
-proportions(xtabs( ~ compare_to_naive_linear_w2+domain,academic_only),"domain")*100 #
-
-proportions(xtabs( ~ compare_to_naive_rwf_w2+domain,academic_only),"domain")*100 #
-
-
-
-chisq.test(xtabs( ~ compare_to_naive_rwf_w2+Method.code,academic_only))
-
+proportions(xtabs( ~ compare_to_naive_linear_MASE_w2+Method.code,academic_only),"Method.code")*100 #
+chisq.test(xtabs( ~ compare_to_naive_linear_MASE_w2+Method.code,academic_only))
 
 #############################################################
 ```
