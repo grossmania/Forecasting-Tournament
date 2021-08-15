@@ -98,5 +98,54 @@ write.csv(dat_final, "Method+ComplexityCoding_fixed.csv")
 
 ```{r import counterfactual files}
 
+dat_counter <- read.csv("counterfactuals_final.csv", stringsAsFactors = FALSE)
+
+dat_counter[which(dat_counter$team_name == "forecasting_2020"), "team_name"] <- "polarization-2020CO"
+dat_counter[which(dat_counter$team_name == "1859 revised"), "team_name"] <- "1859"
+dat_counter[which(dat_counter$team_name == "BlackSwanrevised"), "team_name"] <- "BlackSwan"
+dat_counter[which(dat_counter$team_name == "Mr Muddle "), "team_name"] <- "Mr Muddle"
+dat_counter[which(dat_counter$team_name == "platypus"), "team_name"] <- "Platypus"
+dat_counter[which(dat_counter$team_name == "R4VST9 - Revised"), "team_name"] <- "R4VST9"
+dat_counter[which(dat_counter$team_name == "PatrÃ­cia Arriaga"), "team_name"] <- "Patricia Arriaga"
+dat_counter[which(dat_counter$team_name == "heisenburg"), "team_name"] <- "Heisenburg"
+
+
+
+
+# dat3 <- dat %>% filter(phase == 1 & isExpert == 0)
+
+dat_counter1 <- dat_counter %>% filter(phase == 1)
+dat_counter2 <- dat_counter %>% filter(phase == 2)
+
+
+
+# remove duplicate forecasts for teams that provided revisions
+
+dat_counter2 <- dat_counter2[!duplicated(dat_counter2[, c(3, 4, 5)], fromLast = TRUE),]
+```
+
+```{r fix counterfactual file}
+
+for (i in 1:nrow(dat_counter1)) {
+  tname <- dat_counter1$team_name[i]
+  realId <- dat1$ResponseId[which(dat1$team_name == tname )]
+  dat_counter1$ResponseId[i] <- realId[1]
+}
+
+
+for (i in 1:nrow(dat_counter2)) {
+  realId <- dat2$ResponseId[which(dat2$team_name == dat_counter2$team_name[i])]
+  dat_counter2$ResponseId[i] <- realId[1]
+}
+
+
+dat_final <- dat_counter1 %>% plyr::rbind.fill(dat_counter2)
+
+dat_final <- dat_final %>% dplyr::rename(
+  domain = Issue,
+)
+
+write.csv(dat_final, "Counterfactuals_fixed.csv")
+
 ```
 

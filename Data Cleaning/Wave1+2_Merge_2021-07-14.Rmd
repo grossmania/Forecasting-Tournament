@@ -650,15 +650,10 @@ dat <- dat %>% left_join(dat_coded, by = c("phase", "ResponseId", "domain"))
 
 ```{r Import coded Counterfactuals}
 
-dat_counter <- read.csv("Counterfactuals_2020-09-23_Merged.csv", stringsAsFactors = FALSE)
-dat_counter <- dat_counter[ , c("ResponseId", "Issue", "CounterFactual_Presence.Final", "COVID.Final", "Blame.Final")]
+dat_counter <- read.csv("Counterfactuals_fixed.csv", stringsAsFactors = FALSE)
+dat_counter <- dat_counter[ , c("phase", "team_name", "ResponseId", "domain", "CounterFactual_Presence_Final", "COVID.Final", "Onus.Final")]
 
-dat_counter <- dat_counter %>% dplyr::rename(
-  domain = Issue
-)
-
-dat_counter$phase <- 1
-
+dat <- dat %>% left_join(dat_counter, by = c("phase", "ResponseId", "team_name", "domain"))
 
 # # Implement same name changes that were previously corrected in dat
 # dat_counter[which(dat_counter$team_name == "1859 revised"), "team_name"] <- "1859"
@@ -672,6 +667,17 @@ dat_counter$phase <- 1
 
 
 ```
+
+```{r Import revised submission justifications for phase 2}
+
+dat_justification <- read.csv("review_justification_merged.csv", stringsAsFactors = FALSE)
+dat_justification <- dat_justification[, c("ResponseId", "team_name", "domain", "dataReceived_Final", "theoreticalInsight_Final", "externalEvent_Final")]
+dat_justification$phase <- 2
+
+dat <- dat %>% left_join(dat_justification, by = c("ResponseId", "team_name", "domain", "phase"))
+
+```
+
 
 ```{r remove participants who indicated they wished to withdraw}
 
