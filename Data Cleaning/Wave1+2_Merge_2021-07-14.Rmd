@@ -651,7 +651,7 @@ dat <- dat %>% left_join(dat_coded, by = c("phase", "ResponseId", "domain"))
 ```{r Import coded Counterfactuals}
 
 dat_counter <- read.csv("Counterfactuals_fixed.csv", stringsAsFactors = FALSE)
-dat_counter <- dat_counter[ , c("phase", "team_name", "ResponseId", "domain", "CounterFactual_Presence_Final", "COVID.Final", "Onus.Final")]
+dat_counter <- dat_counter[ , c("phase", "team_name", "ResponseId", "domain", "CounterFactual_Presence_Final", "COVID.Final", "Onus.Final", "counterNum")]
 
 dat <- dat %>% left_join(dat_counter, by = c("phase", "ResponseId", "team_name", "domain"))
 
@@ -1678,27 +1678,30 @@ dat$team_size.coded[which(is.na(dat$team_size.coded))] <- 1
 # Remove columns that were used during coding / review that are not required for analyses
 
 # dat <- dat[, c(7, 10, 21, 27, 29:57, 59:71, 77:82, 89, 92, 100:109, 119, 124:135, 166:202)]
-dat <- dat[, c("Duration..in.seconds.", "ResponseId", "phase", "team_name", "domain", "Month.1", "Month.2", "Month.3", "Month.4",
-               "Month.5", "Month.6", "Month.7", "Month.8", "Month.9", "Month.10", "Month.11", "Month.12", "Month.13", "Month.14",
-               "Month.15", "Month.16", "Month.17", "Month.18", "confidence", "subexpert", "pub", "basis", "basis_5_TEXT", "model",
-               "theory", "parameters" , "numpred", "covidcondyn", "covidmeas", "covidmeas_6_TEXT", "coviddesc", "covidest_1",
-               "covidest_2", "covidest_3", "covidest_4", "covidest_5", "covidest_6", "covidest_7", "covidest_8", "covidest_9",
-               "covidest_10", "covidest_11", "covidest_12", "datatrain", "counterfact", "counter_imp", "counter_yn", "othercounter",
-               "othercountim", "Method", "isExpert", "ResponseId.old", "revised", "team_size", "team_expertise", "team_size.coded",
-               "team_discipline.coded", "team_discipline.missingdat", "previous_tournament.coded", "previous_tournament.missingdat",
-               "Age", "Sex", "Occupation", "Ethnicity", "Education", "Religion", "Religion_Other", "Politics_1",
-               "Country.of.Residence", "Residential.Area", "Income", "time_upload", "Method.coded", "Method.complex", "DataOnly",
-               "mean_error_w1", "root_mean_sqr_error_w1", "mean_abs_error_w1", "mean_percent_error_w1", "mean_abs_percent_error_w1",
-               "MASE1_w1", "RMSE_cutoff_Naive_linear", "RMSE_cutoff_Naive_rwf", "compare_to_naive_linear", "compare_to_naive_rwf",
-               "MASE_cutoff_Naive_linear", "MASE_cutoff_Naive_rwf", "compare_to_naive_linear_MASE", "compare_to_naive_rwf_MASE",
-               "time_spent",  "mean_error_covid",  "root_mean_sqr_error_covid", "mean_abs_error_covid", "mean_percent_error_covid",
-               "mean_abs_percent_error_covid", "MASE1_covid", "mean_error_w1_lastmonths", "root_mean_sqr_error_w1_lastmonths",
-               "mean_abs_error_w1_lastmonths", "mean_percent_error_w1_lastmonths", "mean_abs_percent_error_w1_lastmonths",
-               "MASE1_w1_lastmonths", "mean_error_w2", "root_mean_sqr_error_w2", "mean_abs_error_w2", "mean_percent_error_w2",
-               "mean_abs_percent_error_w2", "MASE1_w2", "RMSE_cutoff_Naive_linear_w2", "RMSE_cutoff_Naive_rwf_w2",
-               "compare_to_naive_linear_w2", "compare_to_naive_rwf_w2", "MASE_cutoff_Naive_linear_w2", "MASE_cutoff_Naive_rwf_w2",
-               "compare_to_naive_linear_MASE_w2", "compare_to_naive_rwf_MASE_w2", "team_gender", "team_education", "team_Age",
-               "non_US"    
+dat_final <- dat[, c("Duration..in.seconds.", "ResponseId", "phase", "team_name", "domain", "Month.1", "Month.2", "Month.3",
+                     "Month.4", "Month.5", "Month.6", "Month.7", "Month.8", "Month.9", "Month.10", "Month.11", "Month.12",
+                     "Month.13", "Month.14", "Month.15", "Month.16", "Month.17", "Month.18", "confidence", "subexpert", "pub",
+                     "basis", "basis_5_TEXT", "model", "theory", "parameters" , "numpred", "covidcondyn", "covidmeas",
+                     "covidmeas_6_TEXT", "coviddesc", "covidest_1", "covidest_2", "covidest_3", "covidest_4", "covidest_5",
+                     "covidest_6", "covidest_7", "covidest_8", "covidest_9", "covidest_10", "covidest_11", "covidest_12",
+                     "datatrain", "counterfact", "counter_imp", "counter_yn", "othercounter", "othercountim", "Method", "isExpert",
+                     "ResponseId.old", "revised", "team_size", "team_expertise", "team_size.coded", "team_discipline.coded",
+                     "team_discipline.missingdat", "previous_tournament.coded", "previous_tournament.missingdat", "Age", "Sex",
+                     "Occupation", "Ethnicity", "Education", "Religion", "Religion_Other", "Politics_1", "Country.of.Residence",
+                     "Residential.Area", "Income", "time_upload", "Method.coded", "Method.complex", "DataOnly", "mean_error_w1",
+                     "root_mean_sqr_error_w1", "mean_abs_error_w1", "mean_percent_error_w1", "mean_abs_percent_error_w1", "MASE1_w1",
+                     "RMSE_cutoff_Naive_linear", "RMSE_cutoff_Naive_rwf", "compare_to_naive_linear", "compare_to_naive_rwf",
+                     "MASE_cutoff_Naive_linear", "MASE_cutoff_Naive_rwf", "compare_to_naive_linear_MASE",
+                     "compare_to_naive_rwf_MASE", "time_spent",  "mean_error_covid",  "root_mean_sqr_error_covid",
+                     "mean_abs_error_covid", "mean_percent_error_covid", "mean_abs_percent_error_covid", "MASE1_covid",
+                     "mean_error_w1_lastmonths", "root_mean_sqr_error_w1_lastmonths", "mean_abs_error_w1_lastmonths",
+                     "mean_percent_error_w1_lastmonths", "mean_abs_percent_error_w1_lastmonths", "MASE1_w1_lastmonths",
+                     "mean_error_w2", "root_mean_sqr_error_w2", "mean_abs_error_w2", "mean_percent_error_w2",
+                     "mean_abs_percent_error_w2", "MASE1_w2", "RMSE_cutoff_Naive_linear_w2", "RMSE_cutoff_Naive_rwf_w2",  
+                     "compare_to_naive_linear_w2", "compare_to_naive_rwf_w2", "MASE_cutoff_Naive_linear_w2",
+                     "MASE_cutoff_Naive_rwf_w2", "compare_to_naive_linear_MASE_w2", "compare_to_naive_rwf_MASE_w2", "team_gender",
+                     "team_education", "team_Age", "non_US", "CounterFactual_Presence_Final", "COVID.Final", "Onus.Final",
+                     "counterNum", "dataReceived_Final", "theoreticalInsight_Final", "externalEvent_Final"     
                
                
 )]
@@ -1709,12 +1712,12 @@ dat <- dat[, c("Duration..in.seconds.", "ResponseId", "phase", "team_name", "dom
 
 # Add column indicating whether team started in May 2020 or October 2020
 
-dat$TournamentStart[dat$phase == 1 | (dat$phase == 2 & dat$revised == 1)] <- "May"
-dat$TournamentStart[dat$phase == 2 & dat$revised == 0] <- "November"
+dat_final$TournamentStart[dat$phase == 1 | (dat$phase == 2 & dat$revised == 1)] <- "May"
+dat_final$TournamentStart[dat$phase == 2 & dat$revised == 0] <- "November"
 
 # Add column indicating whether the forecast is a new one or an updated one
-dat$ForecastisUpdated[dat$phase == 2 & dat$revised == 1] <- "Updated in Nov"
-dat$ForecastisUpdated[dat$phase == 2 & dat$revised == 0] <- "Novel Forecast in November"
+dat_final$ForecastisUpdated[dat$phase == 2 & dat$revised == 1] <- "Updated in Nov"
+dat_final$ForecastisUpdated[dat$phase == 2 & dat$revised == 0] <- "Novel Forecast in November"
 
 ```
 
@@ -1722,7 +1725,7 @@ dat$ForecastisUpdated[dat$phase == 2 & dat$revised == 0] <- "Novel Forecast in N
 
 setwd("~/GitHub/Forecasting-Tournament") #change directory to save in the general space
 
-write.csv(dat, "Wave1+2data.csv")
+write.csv(dat_final, "Wave1+2data.csv")
 # write.csv(demographics_unique, "Wave1+2demographics.csv")
 # write.csv(dat_long, "wave1+2data_long_2021-06-30.csv")
 # write.csv(dat_lay, "Wave1_Lay sample.csv")
