@@ -139,13 +139,53 @@ for (i in 1:nrow(dat_counter2)) {
 }
 
 
-dat_final <- dat_counter1 %>% plyr::rbind.fill(dat_counter2)
+dat_final1 <- dat_counter1 %>% plyr::rbind.fill(dat_counter2)
 
-dat_final <- dat_final %>% dplyr::rename(
+dat_final1 <- dat_final1 %>% dplyr::rename(
   domain = Issue,
 )
 
-write.csv(dat_final, "Counterfactuals_fixed.csv")
+write.csv(dat_final1, "Counterfactuals_fixed.csv")
+
+```
+
+```{r}
+# 
+# dat_param <- read.csv("NumParameters_merged.csv", stringsAsFactors = FALSE)
+# 
+# dat_param1 <- dat_param %>% filter(phase == 1)
+# dat_param2 <- dat_param %>% filter(phase == 2)
+# 
+# 
+# 
+# # remove duplicate forecasts for teams that provided revisions
+# 
+# dat_param2 <- dat_param2[!duplicated(dat_param2[, c(2, 3, 4)], fromLast = TRUE),]
+
+```
+
+```{r}
+
+# for (i in 1:nrow(dat_param1)) {
+#   if (!is.na(dat_param1$team_name[i])) {
+#     tname <- dat_param1$team_name[i]
+#     realId <- dat1$ResponseId[which(dat1$team_name == tname )]
+#     dat_param1$ResponseId[i] <- realId[1]
+#   }
+#   
+# }
+# 
+# 
+# for (i in 1:nrow(dat_param2)) {
+#   realId <- dat2$ResponseId[which(dat2$team_name == dat_param2$team_name[i])]
+#   dat_param2$ResponseId[i] <- realId[1]
+# }
+# 
+# 
+# dat_final2 <- dat_param1 %>% plyr::rbind.fill(dat_param2)
+# 
+# 
+# write.csv(dat_final2, "NumParameters_fixed.csv")
 
 ```
 

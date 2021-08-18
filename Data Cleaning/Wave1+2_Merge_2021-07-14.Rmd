@@ -678,6 +678,17 @@ dat <- dat %>% left_join(dat_justification, by = c("ResponseId", "team_name", "d
 
 ```
 
+```{r coded number of parameters}
+
+dat_param <- read.csv("NumParameters_2021-08-18.csv", stringsAsFactors = FALSE)
+
+dat_param <- dat_param[, c("ResponseId", "phase", "domain", "parameters_coded")]
+
+dat <- dat %>% left_join(dat_param, by = c("ResponseId", "phase", "domain"))
+
+
+```
+
 
 ```{r remove participants who indicated they wished to withdraw}
 
@@ -1673,6 +1684,7 @@ dat$team_size.coded[which(is.na(dat$team_size.coded))] <- 1
 
 ```
 
+
 ```{r Remove unnecessary columns}
 
 # Remove columns that were used during coding / review that are not required for analyses
@@ -1701,7 +1713,7 @@ dat_final <- dat[, c("Duration..in.seconds.", "ResponseId", "phase", "team_name"
                      "compare_to_naive_linear_w2", "compare_to_naive_rwf_w2", "MASE_cutoff_Naive_linear_w2",
                      "MASE_cutoff_Naive_rwf_w2", "compare_to_naive_linear_MASE_w2", "compare_to_naive_rwf_MASE_w2", "team_gender",
                      "team_education", "team_Age", "non_US", "CounterFactual_Presence_Final", "COVID.Final", "Onus.Final",
-                     "counterNum", "dataReceived_Final", "theoreticalInsight_Final", "externalEvent_Final"     
+                     "counterNum", "dataReceived_Final", "theoreticalInsight_Final", "externalEvent_Final", "parameters_coded"     
                
                
 )]
