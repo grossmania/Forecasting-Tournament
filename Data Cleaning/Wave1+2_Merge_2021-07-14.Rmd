@@ -680,7 +680,7 @@ dat <- dat %>% left_join(dat_justification, by = c("ResponseId", "team_name", "d
 
 ```{r coded number of parameters}
 
-dat_param <- read.csv("NumParameters_2021-08-18.csv", stringsAsFactors = FALSE)
+dat_param <- read.csv("NumParameters_final.csv", stringsAsFactors = FALSE)
 
 dat_param <- dat_param[, c("ResponseId", "phase", "domain", "parameters_coded")]
 
