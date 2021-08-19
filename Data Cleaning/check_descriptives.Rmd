@@ -1,0 +1,6 @@
+```{r }
+
+read.csv("Wave1+2data.csv")
+
+```
+
