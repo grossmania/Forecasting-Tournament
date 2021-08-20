@@ -252,6 +252,8 @@ dat[which(dat$team_name == "ms607" & dat$domain == "iasian" & dat$phase == 1), "
 # Own predictions of deaths and cases, not quantitative (?) - CoronaSky
 # Social policies in response to shutdown, life & job disruptions - Korrigan
 
+# 730
+
 ```
 
 
@@ -373,6 +375,7 @@ for (i in 1:length(unique_teams2)) {
   
 }
 
+# 728
 
 ```
 
@@ -416,7 +419,7 @@ dat_lay$time_upload <- dat_lay$up_Last.Click - dat_lay$up_First.Click
 # Check individual upload times for each prediction and exclude submissions that were uploaded in less than 50 seconds
 dat_lay <- dat_lay %>% subset(time_upload > 50)
 
-
+# 1469
 ```
 
 ```{r Fix gender identity}
@@ -432,7 +435,7 @@ woman <- c("R_12omYtFZHzfrA6u", "R_12omYtFZHzfrA6u", "R_12omYtFZHzfrA6u", "R_2ck
 dat_lay$Genderident[which(dat_lay$ResponseId %in% man)] <- 2
 dat_lay$Genderident[which(dat_lay$ResponseId %in% woman)] <- 1
 
-
+# 1469
 ```
 
 
@@ -481,7 +484,7 @@ dat_return <- unique(dat_return)
 
 dat$revised <- ifelse(dat$team_name %in% dat_return, 1, 0)
 
-
+# 728
 ```
 
 ```{r team composition info}
@@ -543,6 +546,7 @@ for (i in 1:nrow(dat_comp_2)) {
   dat$team_size[rows] <- dat_comp_2$team_members_1[i]
   dat$team_expertise[rows] <- dat_comp_2$team_expertise[i]
 }
+# 728
 
 ```
 
@@ -553,7 +557,7 @@ dat_size <- read.csv("team_descriptives_updated.csv", stringsAsFactors = FALSE)
 dat <- dat %>% left_join(dat_size, by = c("team_name"))
 
 
-
+# 728
 
 ```
 
@@ -604,6 +608,8 @@ dat <- dat %>% dplyr::rename(
 
 )
 
+# 728 + 1469 = 2197
+
 ```
 
 ```{r Import coded Method types}
@@ -644,7 +650,7 @@ dat_coded <- dat_coded %>% dplyr::rename(
 
 dat <- dat %>% left_join(dat_coded, by = c("phase", "ResponseId", "domain"))
 
-
+# 2197
 ```
 
 
@@ -686,6 +692,7 @@ dat_param <- dat_param[, c("ResponseId", "phase", "domain", "parameters_coded")]
 
 dat <- dat %>% left_join(dat_param, by = c("ResponseId", "phase", "domain"))
 
+# 2197
 
 ```
 
@@ -695,6 +702,8 @@ dat <- dat %>% left_join(dat_param, by = c("ResponseId", "phase", "domain"))
 # Remove row for team that indicated they wished to withdraw their submission
 remove_row <- which(dat$team_name == "Turing Tesla Solutions" & dat$domain == "eafric")
 dat <- dat[-remove_row,]
+
+# 2196
 
 ```
 
@@ -713,6 +722,7 @@ for (i in 1:nrow(dat_flag)) {
   dat <- dat[which(dat$ResponseId != temp$ResponseId[1]), ]
   
 }
+
 
 ```
 
