@@ -674,10 +674,10 @@ dat <- dat %>% left_join(dat_counter, by = c("phase", "ResponseId", "team_name",
 
 ```
 
-```{r Import revised submission justifications for phase 2, eval=FALSE, include=FALSE}
+```{r Import revised submission justifications for phase 2}
 
-dat_justification <- read.csv("review_justification_merged.csv", stringsAsFactors = FALSE)
-dat_justification <- dat_justification[, c("ResponseId", "team_name", "domain", "dataReceived_Final", "theoreticalInsight_Final", "externalEvent_Final")]
+dat_justification <- read.csv("review_justificationV2.csv", stringsAsFactors = FALSE)
+dat_justification <- dat_justification[, c("ResponseId", "team_name", "domain", "justification_dataReceived", "justification_theoreticalInsight", "justification_externalEvent")]
 dat_justification$phase <- 2
 
 dat <- dat %>% left_join(dat_justification, by = c("ResponseId", "team_name", "domain", "phase"))
@@ -1700,34 +1700,6 @@ dat$team_size.coded[which(is.na(dat$team_size.coded))] <- 1
 # Remove columns that were used during coding / review that are not required for analyses
 
 # dat <- dat[, c(7, 10, 21, 27, 29:57, 59:71, 77:82, 89, 92, 100:109, 119, 124:135, 166:202)]
-# dat_final <- dat[, c("Duration..in.seconds.", "ResponseId", "phase", "team_name", "domain", "Month.1", "Month.2", "Month.3",
-#                      "Month.4", "Month.5", "Month.6", "Month.7", "Month.8", "Month.9", "Month.10", "Month.11", "Month.12",
-#                      "Month.13", "Month.14", "Month.15", "Month.16", "Month.17", "Month.18", "confidence", "subexpert", "pub",
-#                      "basis", "basis_5_TEXT", "model", "theory", "parameters" , "numpred", "covidcondyn", "covidmeas",
-#                      "covidmeas_6_TEXT", "coviddesc", "covidest_1", "covidest_2", "covidest_3", "covidest_4", "covidest_5",
-#                      "covidest_6", "covidest_7", "covidest_8", "covidest_9", "covidest_10", "covidest_11", "covidest_12",
-#                      "datatrain", "counterfact", "counter_imp", "counter_yn", "othercounter", "othercountim", "Method", "isExpert",
-#                      "ResponseId.old", "revised", "team_size", "team_expertise", "team_size.coded", "team_discipline.coded",
-#                      "team_discipline.missingdat", "previous_tournament.coded", "previous_tournament.missingdat", "Age", "Sex",
-#                      "Occupation", "Ethnicity", "Education", "Religion", "Religion_Other", "Politics_1", "Country.of.Residence",
-#                      "Residential.Area", "Income", "time_upload", "Method.coded", "Method.complex", "DataOnly", "mean_error_w1",
-#                      "root_mean_sqr_error_w1", "mean_abs_error_w1", "mean_percent_error_w1", "mean_abs_percent_error_w1", "MASE1_w1",
-#                      "RMSE_cutoff_Naive_linear", "RMSE_cutoff_Naive_rwf", "compare_to_naive_linear", "compare_to_naive_rwf",
-#                      "MASE_cutoff_Naive_linear", "MASE_cutoff_Naive_rwf", "compare_to_naive_linear_MASE",
-#                      "compare_to_naive_rwf_MASE", "time_spent",  "mean_error_covid",  "root_mean_sqr_error_covid",
-#                      "mean_abs_error_covid", "mean_percent_error_covid", "mean_abs_percent_error_covid", "MASE1_covid",
-#                      "mean_error_w1_lastmonths", "root_mean_sqr_error_w1_lastmonths", "mean_abs_error_w1_lastmonths",
-#                      "mean_percent_error_w1_lastmonths", "mean_abs_percent_error_w1_lastmonths", "MASE1_w1_lastmonths",
-#                      "mean_error_w2", "root_mean_sqr_error_w2", "mean_abs_error_w2", "mean_percent_error_w2",
-#                      "mean_abs_percent_error_w2", "MASE1_w2", "RMSE_cutoff_Naive_linear_w2", "RMSE_cutoff_Naive_rwf_w2",  
-#                      "compare_to_naive_linear_w2", "compare_to_naive_rwf_w2", "MASE_cutoff_Naive_linear_w2",
-#                      "MASE_cutoff_Naive_rwf_w2", "compare_to_naive_linear_MASE_w2", "compare_to_naive_rwf_MASE_w2", "team_gender",
-#                      "team_education", "team_Age", "non_US", "CounterFactual_Presence_Final", "COVID.Final", "Onus.Final",
-#                      "counterNum", "dataReceived_Final", "theoreticalInsight_Final", "externalEvent_Final", "parameters_coded"     
-#                
-#                
-# )]
-
 dat_final <- dat[, c("Duration..in.seconds.", "ResponseId", "phase", "team_name", "domain", "Month.1", "Month.2", "Month.3",
                      "Month.4", "Month.5", "Month.6", "Month.7", "Month.8", "Month.9", "Month.10", "Month.11", "Month.12",
                      "Month.13", "Month.14", "Month.15", "Month.16", "Month.17", "Month.18", "confidence", "subexpert", "pub",
@@ -1737,6 +1709,7 @@ dat_final <- dat[, c("Duration..in.seconds.", "ResponseId", "phase", "team_name"
                      "datatrain", "counterfact", "counter_imp", "counter_yn", "othercounter", "othercountim", "Method", "isExpert",
                      "ResponseId.old", "revised", "team_size", "team_expertise", "team_size.coded", "team_discipline.coded",
                      "team_discipline.missingdat", "previous_tournament.coded", "previous_tournament.missingdat", "Age", "Sex",
+                     "Genderident", "Genderident_5_TEXT",
                      "Occupation", "Ethnicity", "Education", "Religion", "Religion_Other", "Politics_1", "Country.of.Residence",
                      "Residential.Area", "Income", "time_upload", "Method.coded", "Method.complex", "DataOnly", "mean_error_w1",
                      "root_mean_sqr_error_w1", "mean_abs_error_w1", "mean_percent_error_w1", "mean_abs_percent_error_w1", "MASE1_w1",
@@ -1747,13 +1720,14 @@ dat_final <- dat[, c("Duration..in.seconds.", "ResponseId", "phase", "team_name"
                      "mean_error_w1_lastmonths", "root_mean_sqr_error_w1_lastmonths", "mean_abs_error_w1_lastmonths",
                      "mean_percent_error_w1_lastmonths", "mean_abs_percent_error_w1_lastmonths", "MASE1_w1_lastmonths",
                      "mean_error_w2", "root_mean_sqr_error_w2", "mean_abs_error_w2", "mean_percent_error_w2",
-                     "mean_abs_percent_error_w2", "MASE1_w2", "RMSE_cutoff_Naive_linear_w2", "RMSE_cutoff_Naive_rwf_w2",  
+                     "mean_abs_percent_error_w2", "MASE1_w2", "RMSE_cutoff_Naive_linear_w2", "RMSE_cutoff_Naive_rwf_w2",
                      "compare_to_naive_linear_w2", "compare_to_naive_rwf_w2", "MASE_cutoff_Naive_linear_w2",
                      "MASE_cutoff_Naive_rwf_w2", "compare_to_naive_linear_MASE_w2", "compare_to_naive_rwf_MASE_w2", "team_gender",
                      "team_education", "team_Age", "non_US", "CounterFactual_Presence_Final", "COVID.Final", "Onus.Final",
-                     "counterNum", "parameters_coded"     
-               
-               
+                     "counterNum", "justification_dataReceived", "justification_theoreticalInsight", "justification_externalEvent",
+                     "parameters_coded" 
+
+
 )]
 
 ```
