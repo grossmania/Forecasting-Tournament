@@ -188,8 +188,8 @@ dat$discipline[dat$team_discipline.coded==5]<-"Other"
 
   
   # Whether the team is multi-disciplinary (1) or mono (0)
-dat$multi_dis.factor <- if(dat$team_discipline.coded==4,"Multi domain expertise", "Single domain expertise")
-
+dat$multi_dis.factor <- ifelse(dat$team_discipline.coded==4,"Multi domain expertise", "Single domain expertise")
+#IMPORTANT: one team - Spartacus - does not have any demographics, and hene NA for discipline!
 
 write.csv(dat,"dat_for_analyses.csv")
 
@@ -294,7 +294,7 @@ num_forecast <- dat %>% group_by(phase, isExpert.factor) %>%
 )
 
 print(num_forecast)
-
+#NAs are rows of objective markers and predictions of naive models.
 
 # Number of teams per phase
 team_num <- academic_only %>% group_by(phase) %>% 
@@ -302,34 +302,33 @@ team_num <- academic_only %>% group_by(phase) %>%
   numberOfTeams = length(unique(team_name))
 )
 
+print(team_num)
 # Number of teams total
 team_num_total <- length(unique(academic_only$team_name))
-
-# 121 teams total, 86 teams participated during phase 1 (88th team is NA because I didn't filter out lay sample and 87th team indicated their predictions were for another country), 72 during phase 2 
+print(team_num_total)
+# 120 teams total, 86 teams participated during phase 1 (88th team is NA because I didn't filter out lay sample and 87th team indicated their predictions were for another country), 72 during phase 2 
 
 # Filter so that only one row per team is retained
 unique_teams <- academic_only[!duplicated(academic_only$team_name),]
 
-
 describe(unique_teams$team_size.coded)
 
-#    vars   n mean   sd median trimmed mad min max range skew kurtosis   se
-# X1    1 105 1.66 1.16      1     1.4   0   1   7     6 2.04     4.32 0.11
+#unique_teams$team_size.coded 
+#       n  missing distinct     Info     Mean      Gmd 
+#     120        0        6    0.654    1.583   0.9289 
 
-# team size ranged from 1-7, n = 100, Md = 1, M = 1.67
-# 1 was the most common team size (65%)
+#lowest : 1 2 3 4 5, highest: 2 3 4 5 7
+                                              
+#Value          1     2     3     4     5     7
+#Frequency     84    17     9     7     2     1
+#Proportion 0.700 0.142 0.075 0.058 0.017 0.008
+# 1 was the most common team size (70%)
 
 # Summarize spread of teams size (does not exclude NAs)
-as.data.frame(table(unique_teams$team_size.coded))
+prop.table(table(unique_teams$team_size.coded))
 
-#   team_size.coded  N               Percent
-# 1         1 70 0.5737704918032786594
-# 2         2 16 0.1311475409836065642
-# 3         3 10 0.0819672131147540922
-# 4         4  5 0.0409836065573770461
-# 5         5  3 0.0245901639344262291
-# 6         7  1 0.0081967213114754103
-# 7        NA 17 0.1393442622950819554
+#1           2           3           4           5           7 
+#0.700000000 0.141666667 0.075000000 0.058333333 0.016666667 0.008333333
 
 # Filter data set by project wave
 phase1_team <- filter(unique_teams, team_name %in% phase1$team_name)
@@ -337,16 +336,10 @@ phase1_team <- filter(unique_teams, team_name %in% phase1$team_name)
 
 # distribution of team size for phase 1
                     
-as.data.frame(table(phase1_team$team_size.coded))
+prop.table(table(phase1_team$team_size.coded))
 
-#   team_size.coded  N              Percent
-# 1         1 48 0.551724137931034475
-# 2         2 12 0.137931034482758619
-# 3         3  5 0.057471264367816091
-# 4         4  4 0.045977011494252873
-# 5         5  2 0.022988505747126436
-# 6         7  1 0.011494252873563218
-# 7        NA 15 0.172413793103448287
+#         1          2          3          4          5          7 
+#0.70930233 0.15116279 0.04651163 0.06976744 0.01162791 0.01162791 
 
 
 phase2_team <- filter(unique_teams, team_name %in% phase2$team_name)
@@ -362,39 +355,49 @@ as.data.frame(table(phase1_exp$RMSE_cutoff_Naive_linear.factor))
 #   RMSE_cutoff.factor     N 
 # 
 # 1 below cutoff          109 - 30%
-# 2 above cutoff         251  - 70%
+# 2 above cutoff         250  - 70%
 
 # 70% of predictions were above the RMSE cutoff
 
+# look at method used
+
+method <- academic_only %>% group_by(Method.coded) %>% 
+  dplyr::summarise(
+  N = length(Method.coded),
+  Percent = N / nrow(academic_only)
+)
+knitr::kable((method))
+
+  #|Method.code      |   N|   Percent|
+#|:----------------|---:|---------:|
+#|Data-Driven      | 365| 0.5027548|
+#|Hybrid           |  58| 0.0798898|
+#|Intuition/Theory | 303| 0.4173554|
+  
 # Per domain
 naive_RMSE_domain <- phase1_exp %>% group_by(domain, RMSE_cutoff_Naive_linear.factor) %>% 
-  dplyr::summarise(
-  N = length(RMSE_cutoff_Naive_linear.factor)
-)
+  dplyr::summarise(N = length(RMSE_cutoff_Naive_linear.factor)) %>% ungroup() %>% 
+  group_by(domain) %>% mutate(ptg = prop.table(N)*100) %>% ungroup() %>% 
+  arrange(by_group=RMSE_cutoff_Naive_linear.factor,desc(ptg))
+knitr::kable((naive_RMSE_domain))
 
-naive_RMSE_domain$Percent <- NA
-
-for (i in 1:nrow(naive_RMSE_domain)) {
-  filter <- filter(phase1_exp, domain == naive_RMSE_domain$domain[i])
-  naive_RMSE_domain$Percent[i] <- naive_RMSE_domain$N[i] / nrow(filter)
-}
-  
 # Implicit Asian bias, explicit African American, and positive affect were all 100% above the cutoff
-# More than 60% of predictions for implicit gender, ideology-republican, and ideology-democrat were below the cutoff
+# More than 50% of predictions for implicit gender, ideology-republican, and ideology-democrat were below the cutoff
 
 # look at multi-disciplinarity
 
-multidisciplinarity <- phase1_exp %>% group_by(is_multidisciplinary) %>% 
+multidisciplinarity <- phase1_exp %>% group_by(multi_dis.factor) %>% 
   dplyr::summarise(
-  N = length(is_multidisciplinary),
+  N = length(multi_dis.factor),
   Percent = N / nrow(phase1_exp)
 )
+knitr::kable((multidisciplinarity))
 
-#   is_multidisciplinary     N Percent
-#                 
-# 1                    0   301  0.836
-# 2                    1    20  0.0556
-# 3                   NA    39  0.108 
+#|multi_dis.factor        |   N|   Percent|
+#|:-----------------------|---:|---------:|
+#|Multi domain expertise  |  56| 0.1559889|
+#|Single domain expertise | 302| 0.8412256|
+#|NA                      |   1| 0.0027855|
 
 
 ```
@@ -404,17 +407,18 @@ multidisciplinarity <- phase1_exp %>% group_by(is_multidisciplinary) %>%
 # List of descriptives for prolific sample
 
 # filter sample to only include unflagged Prolific responses
-dat_lay_demo <- subset(dat, isExpert == 0 & flag_lay_response == 0)
+dat_lay_demo <- subset(dat, isExpert == 0)
 
 # time spent on upload task
-time_spent_desc_up <- describe(dat_lay_demo$time_upload)
-
+time_spent_desc_up <- psych::describe(dat_lay_demo$time_upload)
+print(time_spent_desc_up)
 #    vars    n   mean     sd median trimmed   mad min     max   range skew kurtosis   se
-# X1    1 2226 126.69 200.94   75.1   87.48 68.64   0 3434.49 3434.49 6.47    75.26 4.26
+# X1    1 1467 180.01 227.96 109.38  130.78 62.94 50.22 3434.49 3384.27 6.03    62.59 5.95
 
-age_stats <- describe(dat_lay_demo$Age)
+age_stats <- psych::describe(dat_lay_demo$Age)
+print(age_stats)
 #    vars    n  mean    sd median trimmed mad min max range skew kurtosis   se
-# X1    1 2200 29.94 10.18     28    28.5 8.9  18  78    60 1.33     1.95 0.22
+# X1    1 1389 30.55 10.68     28   29.03 10.38  18  78    60 1.27      1.6 0.29
 
 
 #Education
@@ -425,18 +429,10 @@ prolific_edu <- dat_lay_demo %>% group_by(education.factor) %>%
 )
 
 as.data.frame(table(dat_lay_demo$education.factor))
+prop.table(table(dat_lay_demo$education.factor))
 
-#   education.factor                 N Percent
-#   
-# 1 less than highschool             5 0.00340
-# 2 high school                    114 0.0776 
-# 3 some college                   341 0.232  
-# 4 Vocation or technical school    59 0.0401 
-# 5 Bachelor's                     582 0.396  
-# 6 Master's                       226 0.154  
-# 7 Doctorate                       24 0.0163 
-# 8 Professional degree             41 0.0279 
-# 9 NA                              78 0.0531
+#        less than highschool                  high school                 some college Vocation or technical school                   Bachelor's                     Master's                    Doctorate          Professional degree 
+#                 0.003599712                  0.082073434                  0.245500360                  0.042476602                  0.416846652                  0.162706983                  0.017278618                  0.029517639 
 
 # Ethnicity
 prolific_eth <- dat_lay_demo %>% group_by(Ethnicity.factor) %>% 
@@ -446,19 +442,10 @@ prolific_eth <- dat_lay_demo %>% group_by(Ethnicity.factor) %>%
 )
 
 as.data.frame(table(dat_lay_demo$Ethnicity.factor))
+prop.table(table(dat_lay_demo$Ethnicity.factor))
 
-#    Ethnicity.factor      N Percent
-#    
-#  1 Aboriginal/Native    10 0.00680
-#  2 Asian               237 0.161  
-#  3 Black               131 0.0891 
-#  4 White               828 0.563  
-#  5 Middle Eastern       10 0.00680
-#  6 Hispanic            103 0.0701 
-#  7 East Indian          11 0.00748
-#  8 Mixed Race           48 0.0327 
-#  9 Other/Not Listed     11 0.00748
-# 10 NA                   81 0.0551
+#Aboriginal/Native             Asian             Black             White    Middle Eastern          Hispanic       East Indian        Mixed Race  Other/Not Listed 
+#      0.007215007       0.170995671       0.094516595       0.595238095       0.007215007       0.074314574       0.007936508       0.034632035       0.007936508 
 
 # Religion
 prolific_rel <- dat_lay_demo %>% group_by(Religion.factor) %>% 
@@ -466,20 +453,21 @@ prolific_rel <- dat_lay_demo %>% group_by(Religion.factor) %>%
   N = length(Religion.factor),
   Percent =  N / nrow(dat_lay_demo)
 )
+knitr::kable((prolific_rel))
 
-#    Religion.factor            N  Percent
-#    
-#  1 Buddhist                  29 0.0197 
-#  2 Christian - Catholic     199 0.135  
-#  3 Christian - Protestant   214 0.146  
-#  4 Christian - Other        131 0.0891 
-#  5 Hindu                     27 0.0184 
-#  6 Jewish                    36 0.0245 
-#  7 Muslim                    57 0.0388 
-#  8 Sikh                       2 0.00136
-#  9 Other                     57 0.0388 
-# 10 Non-Religious            638 0.434  
-# 11 NA                        80 0.0544
+# |Religion.factor        |   N|   Percent|
+#|:----------------------|---:|---------:|
+#|Buddhist               |  29| 0.0197682|
+#|Christian - Catholic   | 197| 0.1342877|
+#|Christian - Protestant | 214| 0.1458759|
+#|Christian - Other      | 130| 0.0886162|
+#|Hindu                  |  27| 0.0184049|
+#|Jewish                 |  36| 0.0245399|
+#|Muslim                 |  57| 0.0388548|
+#|Sikh                   |   2| 0.0013633|
+#|Other                  |  57| 0.0388548|
+#|Non-Religious          | 638| 0.4349012|
+#|NA                     |  80| 0.0545331|
 
 
 # Politics
@@ -488,17 +476,18 @@ prolific_pol <- dat_lay_demo %>% group_by(Politics_1) %>%
   N = length(Politics_1),
   Percent =  N / nrow(dat_lay_demo)
 )
+knitr::kable((prolific_pol))
 
-#   Politics_1     N Percent
-# 
-# 1          1   343  0.233 
-# 2          2   313  0.213 
-# 3          3   192  0.131 
-# 4          4   300  0.204 
-# 5          5   128  0.0871
-# 6          6    84  0.0571
-# 7          7    32  0.0218
-# 8         NA    78  0.0531
+#| Politics_1|   N|   Percent|
+#|----------:|---:|---------:|
+#|          1| 343| 0.2338105|
+#|          2| 313| 0.2133606|
+#|          3| 192| 0.1308793|
+#|          4| 300| 0.2044990|
+#|          5| 126| 0.0858896|
+#|          6|  83| 0.0565781|
+#|          7|  32| 0.0218132|
+#|         NA|  78| 0.0531697|
 
 # Residential Area
 prolific_res <- dat_lay_demo %>% group_by(Residential.Area.factor) %>% 
@@ -506,13 +495,14 @@ prolific_res <- dat_lay_demo %>% group_by(Residential.Area.factor) %>%
   N = length(Residential.Area.factor),
   Percent =  N / nrow(dat_lay_demo)
 )
+knitr::kable((prolific_res))
 
-#   Residential.Area.factor     N Percent
-#   
-# 1 Urban                     452  0.307 
-# 2 Suburban                  791  0.538 
-# 3 Rural                     147  0.1   
-# 4 NA                         80  0.0544
+#|Residential.Area.factor |   N|   Percent|
+#|:-----------------------|---:|---------:|
+#|Urban                   | 449| 0.3060668|
+#|Suburban                | 791| 0.5391956|
+#|Rural                   | 147| 0.1002045|
+#|NA                      |  80| 0.0545331|
 
 # Income
 prolific_inc <- dat_lay_demo %>% group_by(Income.factor) %>% 
@@ -520,18 +510,19 @@ prolific_inc <- dat_lay_demo %>% group_by(Income.factor) %>%
   N = length(Income.factor),
   Percent =  N / nrow(dat_lay_demo)
 )
+knitr::kable((prolific_inc))
 
-#   Income.factor           N Percent
-# 
-# 1 Under $15,000          92  0.0626
-# 2 $15,001 - $25,000     106  0.0721
-# 3 $25,001 - $35,000     129  0.0878
-# 4 $35,001 - $50,000     179  0.122 
-# 5 $50,001 - $75,000     292  0.199 
-# 6 $75,001 - $100,000    227  0.154 
-# 7 $100,001 - $150,000   189  0.129 
-# 8 Over $150,000         165  0.112 
-# 9 NA                     91  0.0619
+# |Income.factor       |   N|   Percent|
+#|:-------------------|---:|---------:|
+#|Under $15,000       |  92| 0.0627130|
+#|$15,001 - $25,000   | 106| 0.0722563|
+#|$25,001 - $35,000   | 129| 0.0879346|
+#|$35,001 - $50,000   | 179| 0.1220177|
+#|$50,001 - $75,000   | 290| 0.1976823|
+#|$75,001 - $100,000  | 227| 0.1547376|
+#|$100,001 - $150,000 | 189| 0.1288344|
+#|Over $150,000       | 164| 0.1117928|
+#|NA                  |  91| 0.0620314|
 
 ```
 
