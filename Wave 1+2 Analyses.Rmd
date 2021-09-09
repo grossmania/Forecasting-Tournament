@@ -65,7 +65,7 @@ t1.academ.sorted$Domains[t1.academ.sorted$domain=="ideoldem"]<-"Ideological Pref
 t1.academ.sorted$Domains[t1.academ.sorted$domain=="ideolrep"]<-"Ideological Preferences for Republicans"
 t1.academ.sorted$Domains[t1.academ.sorted$domain=="lifesat"]<-"Life Satisfaction"
 t1.academ.sorted$Domains[t1.academ.sorted$domain=="negaffect"]<-"Negative Affect in Social Media"
-t1.academ.sorted$Domains[t1.academ.sorted$domain=="posaffect"]<-"Negative Affect in Social Media"
+t1.academ.sorted$Domains[t1.academ.sorted$domain=="posaffect"]<-"Positive Affect in Social Media"
 t1.academ.sorted$Domains[t1.academ.sorted$domain=="polar"]<-"Political Polarization"
 
 
@@ -101,7 +101,7 @@ t2.academ.sorted$Domains[t2.academ.sorted$domain=="ideoldem"]<-"Ideological Pref
 t2.academ.sorted$Domains[t2.academ.sorted$domain=="ideolrep"]<-"Ideological Preferences for Republicans"
 t2.academ.sorted$Domains[t2.academ.sorted$domain=="lifesat"]<-"Life Satisfaction"
 t2.academ.sorted$Domains[t2.academ.sorted$domain=="negaffect"]<-"Negative Affect in Social Media"
-t2.academ.sorted$Domains[t2.academ.sorted$domain=="posaffect"]<-"Negative Affect in Social Media"
+t2.academ.sorted$Domains[t2.academ.sorted$domain=="posaffect"]<-"Positive Affect in Social Media"
 t2.academ.sorted$Domains[t2.academ.sorted$domain=="polar"]<-"Political Polarization"
 
 write.csv(t2.academ.sorted,"wave2.scores.csv")
@@ -116,7 +116,7 @@ objective$Domains[objective$domain=="ideoldem"]<-"Ideological Preferences for De
 objective$Domains[objective$domain=="ideolrep"]<-"Ideological Preferences for Republicans"
 objective$Domains[objective$domain=="lifesat"]<-"Life Satisfaction"
 objective$Domains[objective$domain=="negaffect"]<-"Negative Affect in Social Media"
-objective$Domains[objective$domain=="posaffect"]<-"Negative Affect in Social Media"
+objective$Domains[objective$domain=="posaffect"]<-"Positive Affect in Social Media"
 objective$Domains[objective$domain=="polar"]<-"Political Polarization"
 ```
 
@@ -189,7 +189,8 @@ labels<-c(
 
 #who won?
 top.1.MASE.t1<-phase1 %>% filter(isExpert.factor == 'Academic')  %>%
-arrange(domain,MASE1_w1) %>%group_by(domain) %>% dplyr::slice_head(n = 1) %>% select(team_name,MASE1_w1,domain,team_size.coded,discipline,previous_tournament.coded,Method.code,model,theory,numpred,parameters,Method.complex,team_expertise)
+arrange(domain,MASE1_w1) %>%group_by(domain) %>% dplyr::slice_head(n = 1) %>% select(team_name,mean_abs_error_w1,MASE1_w1,Month.1:Month.12,domain,team_size.coded,discipline,previous_tournament.coded,Method.code,model,theory,numpred,parameters,Method.complex,team_expertise) %>% arrange(MASE1_w1)
+write.csv(top.1.MASE.t1,"top.t1.csv")
 
 #examine top 5
 top.5.MASE.t1<-phase1 %>% filter(isExpert.factor == 'Academic')  %>%
@@ -282,12 +283,9 @@ chisq.test(xtabs( ~ compare_to_naive_linear_MASE+Method.code,phase1_exp)) #just 
 
 #who won?
 top.1.MASE.t2<-academic_only  %>% filter(!(phase == 1 & revised == 1)) %>% 
-  arrange(domain,MASE1_w2) %>%group_by(domain) %>% dplyr::slice_head(n = 1) %>% select(team_name,mean_abs_percent_error_w2,MASE1_w2,domain,compare_to_naive_linear_MASE_w2,compare_to_naive_rwf_MASE_w2,team_size.coded,discipline,previous_tournament.coded,Method.code,model,theory,numpred,parameters,Method.complex,team_expertise,phase,revised)
+  arrange(domain,MASE1_w2) %>%group_by(domain) %>% dplyr::slice_head(n = 1) %>% select(domain,mean_abs_error_w2,MASE1_w2,team_name,mean_abs_percent_error_w2,compare_to_naive_linear_MASE_w2,compare_to_naive_rwf_MASE_w2,team_size.coded,discipline,previous_tournament.coded,Method.code,model,theory,numpred,parameters,Method.complex,team_expertise,phase,revised)
   
-
-#who won?
-top.1.MASE.t1<-phase1 %>% filter(isExpert.factor == 'Academic')  %>%
-arrange(domain,MASE1_w1) %>%group_by(domain) %>% dplyr::slice_head(n = 1) %>% select(team_name,mean_abs_percent_error_w1,MASE1_w1,domain,team_size.coded,discipline,previous_tournament.coded,Method.code,model,theory,numpred,parameters,Method.complex,team_expertise)
+write.csv(top.1.MASE.t2,"top.t2.csv")
 
 
 
@@ -488,7 +486,36 @@ phase1 %>% ggplot(aes(x = domain, y = MASE1_w1,colour = Method.code, fill=Method
    theme(legend.position="bottom") +scale_color_d3()+scale_fill_d3()+ylim(0,NA)+facet_wrap(~domain, nrow=3, scale="free")+
   labs(colour = "Sample",fill="Sample", x="",y="MASE (M +/- 95%CI)")
 
+##try to estimate overall fixed effects across domains
 
+model.phase1.total<-  lmer(MASE1_w1~Method.code+(1|ResponseId), data=phase1)
+car::Anova(model.phase1.total,type="III") #no interaction, so just look at main effects
+
+summ(model.phase1.total, digits=4)
+emmeans(model.phase1.total,trt.vs.ctrl ~Method.code, adjust = "none") #no difference, a trend of data being better than lay people
+
+data.phase1.MASE.total<-as.data.frame(emmeans(model.phase1.total,pairwise ~Method.code, adjust = "none")$emmeans)
+data.phase1.MASE.total %>% 
+ ggplot(aes(x = Method.code, y = emmean, colour = Method.code, fill=Method.code))+
+ geom_pointrange(aes(ymin=lower.CL, ymax=upper.CL), position=pd)+  theme_minimal(base_size = 14) +geom_hline(yintercept =1, linetype='dashed', color='red', 14)+
+theme(legend.position="bottom") +scale_color_d3()+scale_fill_d3()+  
+  labs(colour = "",fill="", x="",y="MASE (M +/- 95%CI)") 
+
+##with naive benchmarks
+dat$ResponseId[dat$Method.code=="Naive-linear"]<-"Naive\nLinear Regression"
+dat$ResponseId[dat$Method.code=="Naive-rfw"]<-"Naive\nRandom Walk"
+dat$Method.code[dat$Method.code=="Naive-linear"]<-"Naive\nLinear Regression"
+dat$Method.code[dat$Method.code=="Naive-rfw"]<-"Naive\nRandom Walk"
+model.phase1.naive<-  lmer(MASE1_w1~Method.code+(1|ResponseId), data=filter(dat,Method.code=="Naive\nLinear Regression"|Method.code=="Naive\nRandom Walk"))
+
+data.phase1.MASE.naive<-as.data.frame(emmeans(model.phase1.naive,pairwise ~Method.code, adjust = "none")$emmeans)
+
+data.phase1.MASE.total.w.naive<-rbind(data.phase1.MASE.total,data.phase1.MASE.naive)
+data.phase1.MASE.total.w.naive %>% 
+ ggplot(aes(x = Method.code, y = emmean, colour = Method.code, fill=Method.code))+
+ geom_pointrange(aes(ymin=lower.CL, ymax=upper.CL), position=pd)+  theme_minimal(base_size = 14) +geom_hline(yintercept =1, linetype='dashed', color='red', 14)+
+theme(legend.position="none") +scale_color_d3()+scale_fill_d3()+  
+  labs(colour = "",fill="", x="",y="MASE (M +/- 95%CI)") 
 
 ## EXAMINE ONLY ACADEMICS, USING CONTRAST OF THEORY vs. DATA.HYBRID
 phase1_exp$method.contrast<-ifelse(phase1_exp$Method.code=='Intuition/Theory',0,1)
@@ -960,6 +987,39 @@ theme(legend.position="bottom") +scale_color_d3()+scale_fill_d3()+
 emmeans(model.phase2,trt.vs.ctrl ~Method.code|domain, adjust = "none") #intuition/theory vs. rest
 emmeans(model.phase2,pairwise ~Method.code|domain, adjust = "none")
 
+
+##across all domains
+model.phase2.total<-  lmer(MASE1_w2~Method.code+(1|ResponseId), data=academic_only)
+car::Anova(model.phase2.total,type="III") #nothing
+
+summ(model.phase2.total, digits=4)
+
+data.phase2.MASE.total<-as.data.frame(emmeans(model.phase2.total,pairwise ~Method.code, adjust = "none")$emmeans)
+data.phase2.MASE.total %>% 
+ ggplot(aes(x = Method.code, y = emmean, colour = Method.code, fill=Method.code))+
+ geom_pointrange(aes(ymin=lower.CL, ymax=upper.CL), position=pd)+ theme_minimal(base_size = 14) +geom_hline(yintercept =1, linetype='dashed', color='red', 14)+
+theme(legend.position="bottom") +scale_color_npg()+scale_fill_npg()+  
+  labs(colour = "",fill="", x="",y="MASE (M +/- 95%CI)") +scale_x_discrete(labels=labels)
+
+emmeans(model.phase2.total,pairwise ~Method.code, adjust = "none")
+
+##with naive benchmarks
+dat$ResponseId[dat$Method.code=="Naive-linear"]<-"Naive\nLinear Regression"
+dat$ResponseId[dat$Method.code=="Naive-rfw"]<-"Naive\nRandom Walk"
+dat$Method.code[dat$Method.code=="Naive-linear"]<-"Naive\nLinear Regression"
+dat$Method.code[dat$Method.code=="Naive-rfw"]<-"Naive\nRandom Walk"
+model.phase2.naive<-  lmer(MASE1_w2~Method.code+(1|ResponseId), data=filter(dat,Method.code=="Naive\nLinear Regression"|Method.code=="Naive\nRandom Walk"))
+
+data.phase2.MASE.naive<-as.data.frame(emmeans(model.phase2.naive,pairwise ~Method.code, adjust = "none")$emmeans)
+
+data.phase2.MASE.total.w.naive<-rbind(data.phase2.MASE.total,data.phase2.MASE.naive)
+data.phase2.MASE.total.w.naive %>% 
+ ggplot(aes(x = Method.code, y = emmean, colour = Method.code, fill=Method.code))+
+ geom_pointrange(aes(ymin=lower.CL, ymax=upper.CL), position=pd)+  theme_minimal(base_size = 14) +geom_hline(yintercept =1, linetype='dashed', color='red', 14)+
+theme(legend.position="none") +scale_color_d3()+scale_fill_d3()+  
+  labs(colour = "",fill="", x="",y="MASE (M +/- 95%CI)") 
+
+
 ## EXAMINE CONTRAST OF THEORY vs. DATA.HYBRID
 model.phase2.contrast<-  lmer(MASE1_w2~domain*method.contrast+(1|ResponseId), data=dat_phase2)
 car::Anova(model.phase2.contrast,type="III") #no sig
@@ -1395,7 +1455,13 @@ check.phase2.academ.wide %>%
   select(-ResponseId) %>% 
   correlation(use="pairwise.complete.obs") %>% summary()
 
+##correlation of errors between T1 and T2 (38 groups)
+dat_updated<-academic_only %>%filter(revised == 1)
+model.phase2.predicted.by.phase1.academ<-  lmer(MASE1_w2~MASE1_w1+(1|ResponseId), data=dat_updated)
+summ(model.phase2.predicted.by.phase1.academ, digits=4) #icc is .023
 
+model.phase2.predicted.by.phase1.academ.diff<-  lmer((MASE1_w1-MASE1_w2)~MASE1_w1+(1|ResponseId), data=dat_updated) #effect of inaccuracy in the 12m tournament for changes in inaccuracy between 12 and 6 m tournaments
+summ(model.phase2.predicted.by.phase1.academ.diff, digits=4) #icc is .023
 ```
 
 ```{r life satisfaction}

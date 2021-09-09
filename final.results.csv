@@ -1,6 +1,6 @@
 "","team_name","Domains","Tournament","Rank","Nteams","May2020","June2020","July2020","August2020","Sept2020","Oct2020","Nov2020","Dec2020","Jan2021","Feb2021","March2021","April2021","MAE","MASE"
 "1",NA,"Life Satisfaction","Ground truth marker",NA,NA,6.333665896,6.217446585,6.304412691,6.327005177,6.336293833,6.338430537,6.331353975,6.300137355,6.348834431,6.347219074,6.330294051,6.339913808,NA,NA
-"2",NA,"Negative Affect in Social Media","Ground truth marker",NA,NA,-1.40749022,-1.661675966,-1.433936184,-1.424874431,-1.444958072,-1.467245452,-1.477645499,-1.367589933,-1.413699028,-1.180119434,-1.177795227,-1.138665883,NA,NA
+"2",NA,"Positive Affect in Social Media","Ground truth marker",NA,NA,-1.40749022,-1.661675966,-1.433936184,-1.424874431,-1.444958072,-1.467245452,-1.477645499,-1.367589933,-1.413699028,-1.180119434,-1.177795227,-1.138665883,NA,NA
 "3",NA,"Negative Affect in Social Media","Ground truth marker",NA,NA,1.518040129,2.229231838,1.940713962,1.981325582,2.047503143,2.180029422,2.234960445,1.847798602,1.966320584,1.417357325,1.322084781,1.161730659,NA,NA
 "4",NA,"Ideological Preferences for Democrats","Ground truth marker",NA,NA,47.43023256,48.20666667,48.25022727,48.92388889,49.2315625,50.13557143,45.8,46,NA,44.42857143,46,44.25,NA,NA
 "5",NA,"Ideological Preferences for Republicans","Ground truth marker",NA,NA,41.17674419,41.28222222,41.44977273,41.81407407,43.1184375,42.78957143,45.65,48,NA,40.85714286,42,40.5,NA,NA
@@ -342,34 +342,34 @@
 "341","Little Bear","Political Polarization","May - 12-months",30,32,85,85,78,82,80,90,95,95,95,95,90,85,6.625,3.228342358
 "342","The Nowcast","Political Polarization","May - 12-months",31,32,80,81,82,84,86,87,84,69,69,69,69,69,7.625,3.715639318
 "343","Old Chickens","Political Polarization","May - 12-months",32,32,90.69249131,91.51557298,92.2724732,93.15053768,93.53956595,94.03108868,94.42002221,94.70431336,94.88517019,94.96699941,94.95717955,94.86568609,8.95842505,4.365413291
-"344","Imielin","Negative Affect in Social Media","May - 12-months",1,28,-1.35,-1.25,-1.15,-1.15,-1.28,-1.28,-1.28,-1,-1.1,-1.2,-1,-0.9,0.224621372,0.759943004
-"345","CantabRoyal","Negative Affect in Social Media","May - 12-months",2,28,-1,-1.1,-1.2,-1.1,-1.1,-1.4,-1.4,-1.3,-1.2,-1,-1,-1,0.232974611,0.788203831
-"346","TeamKL","Negative Affect in Social Media","May - 12-months",3,28,-1.2,-1.2,-1.2,-1.2,-1.1,-1.1,-1.1,-1.1,-1.05,-1.05,-1.1,-1.1,0.257974611,0.872784274
-"347","Compassionate Values","Negative Affect in Social Media","May - 12-months",4,28,-1.058,-1.062,-1.066,-1.07,-1.074,-1.078,-1.082,-1.086,-1.09,-1.094,-1.098,-1.102,0.302974611,1.025029071
-"348","BlackSwan","Negative Affect in Social Media","May - 12-months",5,28,-1.5,-1.2,-0.9,-1.2,-0.9,-1.2,-0.9,-1.2,-0.9,-1.2,-0.9,-1.2,0.311928688,1.055322663
-"349","The Forecasting Four","Negative Affect in Social Media","May - 12-months",6,28,-1.23,-1.3,-1.17,-1.03,-1.06,-1.13,-0.85,-0.93,-0.99,-0.96,-1.05,-1.05,0.320474611,1.084235381
-"350","ms607","Negative Affect in Social Media","May - 12-months",7,28,-1.2,-1.1,-1.3,-0.97,-0.95,-1.1,-0.95,-1.2,-0.9,-1.1,-0.8,-1.2,0.329030297,1.11318113
-"351","AbCdEfG","Negative Affect in Social Media","May - 12-months",8,28,-0.9333,-1.1826,-0.983,-1.1532,-1.0396,-0.8595,-1.137,-1.3994,-0.9259,-0.9302,-1.2639,-1.0749,0.329085417,1.113367615
-"352","ForeverJung90","Negative Affect in Social Media","May - 12-months",9,28,-1.1,-0.9,-0.9,-0.9,-0.9,-0.9,-1.1,-1.1,-1.2,-1.2,-1.2,-1.2,0.350211187,1.184840692
-"353","Bluebirds","Negative Affect in Social Media","May - 12-months",10,28,-0.999343,-1.30966,-0.842154,-1.00445,-1.30409,-0.848849,-1.00542,-1.29728,-0.854875,-1.00622,-1.29061,-0.855234,0.350261656,1.185011441
-"354","WQXZ","Negative Affect in Social Media","May - 12-months",11,28,-0.97658,-1.2778,-0.81689,-0.99204,-1.3028,-0.81412,-0.99235,-1.2945,-0.83359,-1.0087,-1.3195,-0.83082,0.368284573,1.245986892
-"355","WeGen","Negative Affect in Social Media","May - 12-months",12,28,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,0.382974611,1.295686488
-"356","CheeseCake","Negative Affect in Social Media","May - 12-months",13,28,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,0.382974611,1.295686488
-"357","Team29","Negative Affect in Social Media","May - 12-months",14,28,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,0.382974611,1.295686488
-"358","MLTS","Negative Affect in Social Media","May - 12-months",15,28,-0.963901588,-0.946688753,-1.036746978,-1.018969282,-0.970778336,-0.998721373,-1.020333845,-0.997319498,-0.992835442,-1.009646046,-1.008100168,-0.999515746,0.386011523,1.305961023
-"359","StatFore","Negative Affect in Social Media","May - 12-months",16,28,-0.954934239,-0.923653309,-1.055219334,-1.030984161,-0.956994165,-0.998585077,-1.032096736,-0.995199318,-0.987572771,-1.01450759,-1.011007924,-0.996064778,0.386572994,1.307860602
-"360","Bordeaux","Negative Affect in Social Media","May - 12-months",17,28,-0.998,-1.055,-0.998,-0.929,-0.998,-0.998,-0.966,-0.998,-0.996,-1.004,-0.998,-0.972,0.390474611,1.321060621
-"361","Heisenburg","Negative Affect in Social Media","May - 12-months",18,28,-0.873173682,-0.910349382,-1.217843669,-0.819901905,-0.997394541,-1.239215377,-0.775403768,-0.977202101,-1.242438419,-0.801102633,-0.970460188,-1.228454693,0.393527716,1.33138994
-"362","Average Joes","Negative Affect in Social Media","May - 12-months",19,28,-0.973223079,-0.973223079,-0.973223079,-0.973223079,-0.973223079,-0.973223079,-0.973223079,-0.973223079,-0.973223079,-0.973223079,-0.973223079,-0.973223079,0.409751531,1.386278641
-"363","Duckling Power","Negative Affect in Social Media","May - 12-months",20,28,-0.776,-1.0627,-0.8861633,-1.076909,-1,-0.7907,-1.044,-1.29,-0.786,-0.847,-1.193,-0.948,0.410469381,1.388707283
-"364","TheMets","Negative Affect in Social Media","May - 12-months",21,28,-0.973,-0.972,-0.973,-0.972,-0.973,-0.972,-0.973,-0.972,-0.973,-0.972,-0.973,-0.972,0.410474611,1.388724975
-"365","RTTMT","Negative Affect in Social Media","May - 12-months",22,28,-0.97,-0.97,-0.97,-0.97,-0.97,-0.97,-0.97,-0.97,-0.97,-0.97,-0.97,-0.97,0.412974611,1.39718302
-"366","BRTWN","Negative Affect in Social Media","May - 12-months",23,28,-0.8718201,-0.8182955,-1.0865841,-1.0313649,-0.884906,-0.966849,-1.0298003,-0.9588712,-0.9435329,-0.9920787,-0.9855549,-0.9579156,0.422343511,1.428880048
-"367","fearfulastra","Negative Affect in Social Media","May - 12-months",24,28,-0.867,-1.153,-0.977,-1.167,-1.091,-0.881,-0.885,-0.889,-0.893,-0.896,-0.9,-0.904,0.424391277,1.435808089
-"368","A Woman Scientist","Negative Affect in Social Media","May - 12-months",25,28,-0.8,-0.95,-0.9,-0.8,-1.4,-1.2,-1.3,-0.8,-1,-0.4,-1.15,-0.8,0.424641277,1.436653893
-"369","LongerSquigglyLines","Negative Affect in Social Media","May - 12-months",26,28,-0.493233,-0.79957,-1.291247,-1.506659,-0.435867,-0.849806,-1.264781,-1.458446,-0.7979,-0.760297,-1.243443,-1.228803,0.426874532,1.444209479
-"370","Me Myself and I","Negative Affect in Social Media","May - 12-months",27,28,-1,-0.8,-0.8,-0.8,-0.9,-0.9,-1,-1.1,-1.1,-1,-1,-1,0.432974611,1.464847374
-"371","SCREEN Team","Negative Affect in Social Media","May - 12-months",28,28,-2.5,-2,-2,-2,-2,-2,-1.5,-1.5,-2,-2,-2,-2,0.575358723,1.946563824
+"344","Imielin","Positive Affect in Social Media","May - 12-months",1,28,-1.35,-1.25,-1.15,-1.15,-1.28,-1.28,-1.28,-1,-1.1,-1.2,-1,-0.9,0.224621372,0.759943004
+"345","CantabRoyal","Positive Affect in Social Media","May - 12-months",2,28,-1,-1.1,-1.2,-1.1,-1.1,-1.4,-1.4,-1.3,-1.2,-1,-1,-1,0.232974611,0.788203831
+"346","TeamKL","Positive Affect in Social Media","May - 12-months",3,28,-1.2,-1.2,-1.2,-1.2,-1.1,-1.1,-1.1,-1.1,-1.05,-1.05,-1.1,-1.1,0.257974611,0.872784274
+"347","Compassionate Values","Positive Affect in Social Media","May - 12-months",4,28,-1.058,-1.062,-1.066,-1.07,-1.074,-1.078,-1.082,-1.086,-1.09,-1.094,-1.098,-1.102,0.302974611,1.025029071
+"348","BlackSwan","Positive Affect in Social Media","May - 12-months",5,28,-1.5,-1.2,-0.9,-1.2,-0.9,-1.2,-0.9,-1.2,-0.9,-1.2,-0.9,-1.2,0.311928688,1.055322663
+"349","The Forecasting Four","Positive Affect in Social Media","May - 12-months",6,28,-1.23,-1.3,-1.17,-1.03,-1.06,-1.13,-0.85,-0.93,-0.99,-0.96,-1.05,-1.05,0.320474611,1.084235381
+"350","ms607","Positive Affect in Social Media","May - 12-months",7,28,-1.2,-1.1,-1.3,-0.97,-0.95,-1.1,-0.95,-1.2,-0.9,-1.1,-0.8,-1.2,0.329030297,1.11318113
+"351","AbCdEfG","Positive Affect in Social Media","May - 12-months",8,28,-0.9333,-1.1826,-0.983,-1.1532,-1.0396,-0.8595,-1.137,-1.3994,-0.9259,-0.9302,-1.2639,-1.0749,0.329085417,1.113367615
+"352","ForeverJung90","Positive Affect in Social Media","May - 12-months",9,28,-1.1,-0.9,-0.9,-0.9,-0.9,-0.9,-1.1,-1.1,-1.2,-1.2,-1.2,-1.2,0.350211187,1.184840692
+"353","Bluebirds","Positive Affect in Social Media","May - 12-months",10,28,-0.999343,-1.30966,-0.842154,-1.00445,-1.30409,-0.848849,-1.00542,-1.29728,-0.854875,-1.00622,-1.29061,-0.855234,0.350261656,1.185011441
+"354","WQXZ","Positive Affect in Social Media","May - 12-months",11,28,-0.97658,-1.2778,-0.81689,-0.99204,-1.3028,-0.81412,-0.99235,-1.2945,-0.83359,-1.0087,-1.3195,-0.83082,0.368284573,1.245986892
+"355","WeGen","Positive Affect in Social Media","May - 12-months",12,28,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,0.382974611,1.295686488
+"356","CheeseCake","Positive Affect in Social Media","May - 12-months",13,28,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,0.382974611,1.295686488
+"357","Team29","Positive Affect in Social Media","May - 12-months",14,28,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,0.382974611,1.295686488
+"358","MLTS","Positive Affect in Social Media","May - 12-months",15,28,-0.963901588,-0.946688753,-1.036746978,-1.018969282,-0.970778336,-0.998721373,-1.020333845,-0.997319498,-0.992835442,-1.009646046,-1.008100168,-0.999515746,0.386011523,1.305961023
+"359","StatFore","Positive Affect in Social Media","May - 12-months",16,28,-0.954934239,-0.923653309,-1.055219334,-1.030984161,-0.956994165,-0.998585077,-1.032096736,-0.995199318,-0.987572771,-1.01450759,-1.011007924,-0.996064778,0.386572994,1.307860602
+"360","Bordeaux","Positive Affect in Social Media","May - 12-months",17,28,-0.998,-1.055,-0.998,-0.929,-0.998,-0.998,-0.966,-0.998,-0.996,-1.004,-0.998,-0.972,0.390474611,1.321060621
+"361","Heisenburg","Positive Affect in Social Media","May - 12-months",18,28,-0.873173682,-0.910349382,-1.217843669,-0.819901905,-0.997394541,-1.239215377,-0.775403768,-0.977202101,-1.242438419,-0.801102633,-0.970460188,-1.228454693,0.393527716,1.33138994
+"362","Average Joes","Positive Affect in Social Media","May - 12-months",19,28,-0.973223079,-0.973223079,-0.973223079,-0.973223079,-0.973223079,-0.973223079,-0.973223079,-0.973223079,-0.973223079,-0.973223079,-0.973223079,-0.973223079,0.409751531,1.386278641
+"363","Duckling Power","Positive Affect in Social Media","May - 12-months",20,28,-0.776,-1.0627,-0.8861633,-1.076909,-1,-0.7907,-1.044,-1.29,-0.786,-0.847,-1.193,-0.948,0.410469381,1.388707283
+"364","TheMets","Positive Affect in Social Media","May - 12-months",21,28,-0.973,-0.972,-0.973,-0.972,-0.973,-0.972,-0.973,-0.972,-0.973,-0.972,-0.973,-0.972,0.410474611,1.388724975
+"365","RTTMT","Positive Affect in Social Media","May - 12-months",22,28,-0.97,-0.97,-0.97,-0.97,-0.97,-0.97,-0.97,-0.97,-0.97,-0.97,-0.97,-0.97,0.412974611,1.39718302
+"366","BRTWN","Positive Affect in Social Media","May - 12-months",23,28,-0.8718201,-0.8182955,-1.0865841,-1.0313649,-0.884906,-0.966849,-1.0298003,-0.9588712,-0.9435329,-0.9920787,-0.9855549,-0.9579156,0.422343511,1.428880048
+"367","fearfulastra","Positive Affect in Social Media","May - 12-months",24,28,-0.867,-1.153,-0.977,-1.167,-1.091,-0.881,-0.885,-0.889,-0.893,-0.896,-0.9,-0.904,0.424391277,1.435808089
+"368","A Woman Scientist","Positive Affect in Social Media","May - 12-months",25,28,-0.8,-0.95,-0.9,-0.8,-1.4,-1.2,-1.3,-0.8,-1,-0.4,-1.15,-0.8,0.424641277,1.436653893
+"369","LongerSquigglyLines","Positive Affect in Social Media","May - 12-months",26,28,-0.493233,-0.79957,-1.291247,-1.506659,-0.435867,-0.849806,-1.264781,-1.458446,-0.7979,-0.760297,-1.243443,-1.228803,0.426874532,1.444209479
+"370","Me Myself and I","Positive Affect in Social Media","May - 12-months",27,28,-1,-0.8,-0.8,-0.8,-0.9,-0.9,-1,-1.1,-1.1,-1,-1,-1,0.432974611,1.464847374
+"371","SCREEN Team","Positive Affect in Social Media","May - 12-months",28,28,-2.5,-2,-2,-2,-2,-2,-1.5,-1.5,-2,-2,-2,-2,0.575358723,1.946563824
 "372","BlackSwan","Explicit African American Bias","November - 6-months",1,32,NA,NA,NA,NA,NA,NA,-0.2,-0.2,-0.21,-0.21,-0.21,-0.21,0.010668058,0.354090991
 "373","FMTeam","Explicit African American Bias","November - 6-months",2,32,NA,NA,NA,NA,NA,NA,-0.2035987,-0.2035987,-0.2035987,-0.2035987,-0.2035987,-0.2035987,0.011101402,0.368474393
 "374","Compassionate Values","Explicit African American Bias","November - 6-months",3,32,NA,NA,NA,NA,NA,NA,-0.19,-0.19,-0.19,-0.19,-0.2,-0.2,0.012300968,0.40829005
@@ -865,54 +865,54 @@
 "864","Old Chickens","Political Polarization","November - 6-months",45,47,NA,NA,NA,NA,NA,NA,94.42002221,94.70431336,94.88517019,94.96699941,94.95717955,94.86568609,10.88322847,4.685063276
 "865","The Frugal Few","Political Polarization","November - 6-months",46,47,NA,NA,NA,NA,NA,NA,93.32296296,95.64592593,97.96888889,100.2918519,97.96888889,95.64592593,12.89074075,5.549266586
 "866","The Nowcast","Political Polarization","November - 6-months",47,47,NA,NA,NA,NA,NA,NA,87,83,65,65,65,65,12.91666667,5.560427297
-"867","The Forecasting Four","Negative Affect in Social Media","November - 6-months",1,51,NA,NA,NA,NA,NA,NA,-1.4975,-1.3375,-1.185,-1.195,-1.1225,-1.115,0.062080856,0.231283658
-"868","Hi5","Negative Affect in Social Media","November - 6-months",2,51,NA,NA,NA,NA,NA,NA,-1.5,-1.4,-1.3,-1.2,-1.1,-1,0.067467545,0.251351892
-"869","ForeverJung90","Negative Affect in Social Media","November - 6-months",3,51,NA,NA,NA,NA,NA,NA,-1.5,-1.5,-1.5,-1.25,-1.25,-1.25,0.082414166,0.307035871
-"870","savvy time traveler","Negative Affect in Social Media","November - 6-months",4,51,NA,NA,NA,NA,NA,NA,-1.45,-1.45,-1.42,-1.4,-1.3,-1.2,0.086629332,0.32273957
-"871","Team Social Psychological Skill","Negative Affect in Social Media","November - 6-months",5,51,NA,NA,NA,NA,NA,NA,-1.429062763,-1.39007051,-1.357733901,-1.331173762,-1.291261891,-1.319018315,0.095316977,0.355105591
-"872","Lady in Black","Negative Affect in Social Media","November - 6-months",6,51,NA,NA,NA,NA,NA,NA,-1.5,-1.3,-1.1,-1.1,-1.1,-1.1,0.100037334,0.37269139
-"873","scaled-humanity","Negative Affect in Social Media","November - 6-months",7,51,NA,NA,NA,NA,NA,NA,-1.3408903,-1.3721121,-1.20014563,-1.2187539,-1.27520286,-1.2938111,0.10766968,0.401125869
-"874","The Causal Lab","Negative Affect in Social Media","November - 6-months",8,51,NA,NA,NA,NA,NA,NA,-1.55,-1.61,-1.48,-1.29,-1.27,-1.24,0.114080833,0.425010766
-"875","The Star","Negative Affect in Social Media","November - 6-months",9,51,NA,NA,NA,NA,NA,NA,-1.226596475,-1.226246238,-1.232077241,-1.226166725,-1.216990232,-1.216990232,0.122930192,0.457979257
-"876","A Woman Scientist","Negative Affect in Social Media","November - 6-months",10,51,NA,NA,NA,NA,NA,NA,-1.4,-1.3,-1.2,-1.4,-1.3,-1.1,0.123280947,0.459286003
-"877","Northstar","Negative Affect in Social Media","November - 6-months",11,51,NA,NA,NA,NA,NA,NA,-1.42,-1.38,-1.36,-1.4,-1.38,-1.36,0.127862342,0.476354094
-"878","5casters","Negative Affect in Social Media","November - 6-months",12,51,NA,NA,NA,NA,NA,NA,-1.334366574,-1.379827695,-1.409388157,-1.390033985,-1.389881144,-1.375088452,0.136375099,0.508068568
-"879","MLTS","Negative Affect in Social Media","November - 6-months",13,51,NA,NA,NA,NA,NA,NA,-1.365837865,-1.397550201,-1.309541707,-1.332914625,-1.368893046,-1.382838228,0.13899843,0.517841846
-"880","CantabRoyal","Negative Affect in Social Media","November - 6-months",14,51,NA,NA,NA,NA,NA,NA,-1.4,-1.3,-1.2,-1,-1,-1,0.142585834,0.531206804
-"881","FrostNova","Negative Affect in Social Media","November - 6-months",15,51,NA,NA,NA,NA,NA,NA,-1.4,-1.3,-1.2,-1.1,-1,-0.9,0.142585834,0.531206804
-"882","BRTWN","Negative Affect in Social Media","November - 6-months",16,51,NA,NA,NA,NA,NA,NA,-1.337279,-1.269524,-1.223251,-1.197793,-1.391202,-1.338329,0.143270653,0.533758111
-"883","CPMY","Negative Affect in Social Media","November - 6-months",17,51,NA,NA,NA,NA,NA,NA,-1.286925043,-1.297836282,-1.308747521,-1.31965876,-1.330569998,-1.341481237,0.143425844,0.534336281
-"884","Imielin","Negative Affect in Social Media","November - 6-months",18,51,NA,NA,NA,NA,NA,NA,-1.4,-1.5,-1.4,-1.4,-1.4,-1.4,0.154529008,0.575701374
-"885","Compassionate Values","Negative Affect in Social Media","November - 6-months",19,51,NA,NA,NA,NA,NA,NA,-1.48,-1.49,-1.5,-1.51,-1.52,-1.25,0.165747499,0.617496121
-"886","polarization-2020CO","Negative Affect in Social Media","November - 6-months",20,51,NA,NA,NA,NA,NA,NA,-1.48,-1.62,-1.54,-1.4,-1.38,-1.34,0.167414166,0.623705326
-"887","Team Supreme Ignorance","Negative Affect in Social Media","November - 6-months",21,51,NA,NA,NA,NA,NA,NA,-1.5,-1.5,-1.5,-1.5,-1.5,-1.3,0.174080833,0.648542146
-"888","Duckling Power","Negative Affect in Social Media","November - 6-months",22,51,NA,NA,NA,NA,NA,NA,-1.5,-1.7,-1.4,-1.5,-1.55,-1.2,0.186980509,0.696600185
-"889","BlackSwan","Negative Affect in Social Media","November - 6-months",23,51,NA,NA,NA,NA,NA,NA,-1.5,-1.5,-1.5,-1.5,-1.5,-1.4,0.190747499,0.710634195
-"890","Dragon","Negative Affect in Social Media","November - 6-months",24,51,NA,NA,NA,NA,NA,NA,-1.5,-1.5,-1.5,-1.5,-1.5,-1.5,0.207414166,0.772726245
-"891","TeamKL","Negative Affect in Social Media","November - 6-months",25,51,NA,NA,NA,NA,NA,NA,-1.1,-1.1,-1.05,-1.05,-1.1,-1.1,0.209252501,0.779575004
-"892","Team CCS","Negative Affect in Social Media","November - 6-months",26,51,NA,NA,NA,NA,NA,NA,-1.481783,-1.631427,-1.201455,-1.242502,-1.618512,-1.428842,0.212249009,0.790738563
-"893","Polarization Disciples","Negative Affect in Social Media","November - 6-months",27,51,NA,NA,NA,NA,NA,NA,-1.489722747,-1.498249755,-1.517638484,-1.515665103,-1.519003545,-1.540065111,0.220804957,0.822613945
-"894","Team42","Negative Affect in Social Media","November - 6-months",28,51,NA,NA,NA,NA,NA,NA,-0.7,-1.4,-1.3,-1,-1,-1.2,0.223833895,0.833898325
-"895","teamGreenLake","Negative Affect in Social Media","November - 6-months",29,51,NA,NA,NA,NA,NA,NA,-1.0591789,-1.0697748,-1.1263339,-1.1203545,-0.9522054,-0.9926408,0.239171117,0.891037498
-"896","Average Joes","Negative Affect in Social Media","November - 6-months",30,51,NA,NA,NA,NA,NA,NA,-1.05,-1.05,-1.05,-1.05,-1.05,-1.05,0.242585834,0.903759103
-"897","adamman","Negative Affect in Social Media","November - 6-months",31,51,NA,NA,NA,NA,NA,NA,-1.570760453,-1.820737761,-1.315650186,-1.305427775,-1.638936904,-1.396650116,0.248124313,0.924392832
-"898","LongerSquigglyLines","Negative Affect in Social Media","November - 6-months",32,51,NA,NA,NA,NA,NA,NA,-1.264781,-1.458446,-0.7979,-0.760297,-1.243443,-1.228803,0.24918782,0.928354953
-"899","Me Myself and I","Negative Affect in Social Media","November - 6-months",33,51,NA,NA,NA,NA,NA,NA,-1,-1.1,-1.1,-1,-1,-1,0.259252501,0.965851153
-"900","Bluebirds","Negative Affect in Social Media","November - 6-months",34,51,NA,NA,NA,NA,NA,NA,-1.00542,-1.29728,-0.854875,-1.00622,-1.29061,-0.855234,0.278584258,1.037872061
-"901","Team Blue Skies","Negative Affect in Social Media","November - 6-months",35,51,NA,NA,NA,NA,NA,NA,-1.02246288,-1.04746288,-1.07246288,-1.02246288,-0.97246288,-0.92246288,0.282622954,1.052918315
-"902","StatFore","Negative Affect in Social Media","November - 6-months",36,51,NA,NA,NA,NA,NA,NA,-1.032096736,-0.995199318,-0.987572771,-1.01450759,-1.011007924,-0.996064778,0.286510981,1.06740325
-"903","AbCdEfG","Negative Affect in Social Media","November - 6-months",37,51,NA,NA,NA,NA,NA,NA,-1.585163388,-1.847563388,-1.374063388,-1.378363388,-1.712063388,-1.523063388,0.290672767,1.082908079
-"904","Team29","Negative Affect in Social Media","November - 6-months",38,51,NA,NA,NA,NA,NA,NA,-1,-1,-1,-1,-1,-1,0.292585834,1.090035253
-"905","CheeseCake","Negative Affect in Social Media","November - 6-months",39,51,NA,NA,NA,NA,NA,NA,-1,-1,-1,-1,-1,-1,0.292585834,1.090035253
-"906","WQXZ","Negative Affect in Social Media","November - 6-months",40,51,NA,NA,NA,NA,NA,NA,-0.99235,-1.2945,-0.83359,-1.0087,-1.3195,-0.83082,0.293244092,1.092487607
-"907","Bordeaux","Negative Affect in Social Media","November - 6-months",41,51,NA,NA,NA,NA,NA,NA,-0.966,-0.998,-0.996,-1.004,-0.998,-0.972,0.303585834,1.131016006
-"908","TheMets","Negative Affect in Social Media","November - 6-months",42,51,NA,NA,NA,NA,NA,NA,-0.973,-0.972,-0.973,-0.972,-0.973,-0.972,0.320085834,1.192487136
-"909","RTTMT","Negative Affect in Social Media","November - 6-months",43,51,NA,NA,NA,NA,NA,NA,-0.97,-0.97,-0.97,-0.97,-0.97,-0.97,0.322585834,1.201800943
-"910","Heisenburg","Negative Affect in Social Media","November - 6-months",44,51,NA,NA,NA,NA,NA,NA,-0.775403768,-0.977202101,-1.242438419,-0.801102633,-0.970460188,-1.228454693,0.32333847,1.204604906
-"911","Motivation & Emotion","Negative Affect in Social Media","November - 6-months",45,51,NA,NA,NA,NA,NA,NA,-1.545736926,-1.590222381,-1.689667854,-1.638123286,-1.658243302,-1.619996771,0.331079253,1.23344337
-"912","datamodelers","Negative Affect in Social Media","November - 6-months",46,51,NA,NA,NA,NA,NA,NA,-1.482354,-1.783009,-1.372946,-1.546894,-1.838936,-1.807153,0.359547175,1.33950127
-"913","ms607","Negative Affect in Social Media","November - 6-months",47,51,NA,NA,NA,NA,NA,NA,-0.7,-0.9,-1.3,-0.9,-1.5,-0.8,0.383320758,1.428070301
-"914","Team Apple","Negative Affect in Social Media","November - 6-months",48,51,NA,NA,NA,NA,NA,NA,-1.8,-1.9,-1.8,-1.7,-1.5,-1.4,0.390747499,1.455738795
-"915","fearfulastra","Negative Affect in Social Media","November - 6-months",49,51,NA,NA,NA,NA,NA,NA,-0.885,-0.889,-0.893,-0.896,-0.9,-0.904,0.398085834,1.48307793
-"916","SCREEN Team","Negative Affect in Social Media","November - 6-months",50,51,NA,NA,NA,NA,NA,NA,-1.5,-1.5,-2,-2,-2,-2,0.540747499,2.014567245
-"917","TAPE-Measurement","Negative Affect in Social Media","November - 6-months",51,51,NA,NA,NA,NA,NA,NA,-1.9,-2,-1.9,-1.8,-1.9,-1.6,0.557414166,2.076659295
+"867","The Forecasting Four","Positive Affect in Social Media","November - 6-months",1,51,NA,NA,NA,NA,NA,NA,-1.4975,-1.3375,-1.185,-1.195,-1.1225,-1.115,0.062080856,0.231283658
+"868","Hi5","Positive Affect in Social Media","November - 6-months",2,51,NA,NA,NA,NA,NA,NA,-1.5,-1.4,-1.3,-1.2,-1.1,-1,0.067467545,0.251351892
+"869","ForeverJung90","Positive Affect in Social Media","November - 6-months",3,51,NA,NA,NA,NA,NA,NA,-1.5,-1.5,-1.5,-1.25,-1.25,-1.25,0.082414166,0.307035871
+"870","savvy time traveler","Positive Affect in Social Media","November - 6-months",4,51,NA,NA,NA,NA,NA,NA,-1.45,-1.45,-1.42,-1.4,-1.3,-1.2,0.086629332,0.32273957
+"871","Team Social Psychological Skill","Positive Affect in Social Media","November - 6-months",5,51,NA,NA,NA,NA,NA,NA,-1.429062763,-1.39007051,-1.357733901,-1.331173762,-1.291261891,-1.319018315,0.095316977,0.355105591
+"872","Lady in Black","Positive Affect in Social Media","November - 6-months",6,51,NA,NA,NA,NA,NA,NA,-1.5,-1.3,-1.1,-1.1,-1.1,-1.1,0.100037334,0.37269139
+"873","scaled-humanity","Positive Affect in Social Media","November - 6-months",7,51,NA,NA,NA,NA,NA,NA,-1.3408903,-1.3721121,-1.20014563,-1.2187539,-1.27520286,-1.2938111,0.10766968,0.401125869
+"874","The Causal Lab","Positive Affect in Social Media","November - 6-months",8,51,NA,NA,NA,NA,NA,NA,-1.55,-1.61,-1.48,-1.29,-1.27,-1.24,0.114080833,0.425010766
+"875","The Star","Positive Affect in Social Media","November - 6-months",9,51,NA,NA,NA,NA,NA,NA,-1.226596475,-1.226246238,-1.232077241,-1.226166725,-1.216990232,-1.216990232,0.122930192,0.457979257
+"876","A Woman Scientist","Positive Affect in Social Media","November - 6-months",10,51,NA,NA,NA,NA,NA,NA,-1.4,-1.3,-1.2,-1.4,-1.3,-1.1,0.123280947,0.459286003
+"877","Northstar","Positive Affect in Social Media","November - 6-months",11,51,NA,NA,NA,NA,NA,NA,-1.42,-1.38,-1.36,-1.4,-1.38,-1.36,0.127862342,0.476354094
+"878","5casters","Positive Affect in Social Media","November - 6-months",12,51,NA,NA,NA,NA,NA,NA,-1.334366574,-1.379827695,-1.409388157,-1.390033985,-1.389881144,-1.375088452,0.136375099,0.508068568
+"879","MLTS","Positive Affect in Social Media","November - 6-months",13,51,NA,NA,NA,NA,NA,NA,-1.365837865,-1.397550201,-1.309541707,-1.332914625,-1.368893046,-1.382838228,0.13899843,0.517841846
+"880","CantabRoyal","Positive Affect in Social Media","November - 6-months",14,51,NA,NA,NA,NA,NA,NA,-1.4,-1.3,-1.2,-1,-1,-1,0.142585834,0.531206804
+"881","FrostNova","Positive Affect in Social Media","November - 6-months",15,51,NA,NA,NA,NA,NA,NA,-1.4,-1.3,-1.2,-1.1,-1,-0.9,0.142585834,0.531206804
+"882","BRTWN","Positive Affect in Social Media","November - 6-months",16,51,NA,NA,NA,NA,NA,NA,-1.337279,-1.269524,-1.223251,-1.197793,-1.391202,-1.338329,0.143270653,0.533758111
+"883","CPMY","Positive Affect in Social Media","November - 6-months",17,51,NA,NA,NA,NA,NA,NA,-1.286925043,-1.297836282,-1.308747521,-1.31965876,-1.330569998,-1.341481237,0.143425844,0.534336281
+"884","Imielin","Positive Affect in Social Media","November - 6-months",18,51,NA,NA,NA,NA,NA,NA,-1.4,-1.5,-1.4,-1.4,-1.4,-1.4,0.154529008,0.575701374
+"885","Compassionate Values","Positive Affect in Social Media","November - 6-months",19,51,NA,NA,NA,NA,NA,NA,-1.48,-1.49,-1.5,-1.51,-1.52,-1.25,0.165747499,0.617496121
+"886","polarization-2020CO","Positive Affect in Social Media","November - 6-months",20,51,NA,NA,NA,NA,NA,NA,-1.48,-1.62,-1.54,-1.4,-1.38,-1.34,0.167414166,0.623705326
+"887","Team Supreme Ignorance","Positive Affect in Social Media","November - 6-months",21,51,NA,NA,NA,NA,NA,NA,-1.5,-1.5,-1.5,-1.5,-1.5,-1.3,0.174080833,0.648542146
+"888","Duckling Power","Positive Affect in Social Media","November - 6-months",22,51,NA,NA,NA,NA,NA,NA,-1.5,-1.7,-1.4,-1.5,-1.55,-1.2,0.186980509,0.696600185
+"889","BlackSwan","Positive Affect in Social Media","November - 6-months",23,51,NA,NA,NA,NA,NA,NA,-1.5,-1.5,-1.5,-1.5,-1.5,-1.4,0.190747499,0.710634195
+"890","Dragon","Positive Affect in Social Media","November - 6-months",24,51,NA,NA,NA,NA,NA,NA,-1.5,-1.5,-1.5,-1.5,-1.5,-1.5,0.207414166,0.772726245
+"891","TeamKL","Positive Affect in Social Media","November - 6-months",25,51,NA,NA,NA,NA,NA,NA,-1.1,-1.1,-1.05,-1.05,-1.1,-1.1,0.209252501,0.779575004
+"892","Team CCS","Positive Affect in Social Media","November - 6-months",26,51,NA,NA,NA,NA,NA,NA,-1.481783,-1.631427,-1.201455,-1.242502,-1.618512,-1.428842,0.212249009,0.790738563
+"893","Polarization Disciples","Positive Affect in Social Media","November - 6-months",27,51,NA,NA,NA,NA,NA,NA,-1.489722747,-1.498249755,-1.517638484,-1.515665103,-1.519003545,-1.540065111,0.220804957,0.822613945
+"894","Team42","Positive Affect in Social Media","November - 6-months",28,51,NA,NA,NA,NA,NA,NA,-0.7,-1.4,-1.3,-1,-1,-1.2,0.223833895,0.833898325
+"895","teamGreenLake","Positive Affect in Social Media","November - 6-months",29,51,NA,NA,NA,NA,NA,NA,-1.0591789,-1.0697748,-1.1263339,-1.1203545,-0.9522054,-0.9926408,0.239171117,0.891037498
+"896","Average Joes","Positive Affect in Social Media","November - 6-months",30,51,NA,NA,NA,NA,NA,NA,-1.05,-1.05,-1.05,-1.05,-1.05,-1.05,0.242585834,0.903759103
+"897","adamman","Positive Affect in Social Media","November - 6-months",31,51,NA,NA,NA,NA,NA,NA,-1.570760453,-1.820737761,-1.315650186,-1.305427775,-1.638936904,-1.396650116,0.248124313,0.924392832
+"898","LongerSquigglyLines","Positive Affect in Social Media","November - 6-months",32,51,NA,NA,NA,NA,NA,NA,-1.264781,-1.458446,-0.7979,-0.760297,-1.243443,-1.228803,0.24918782,0.928354953
+"899","Me Myself and I","Positive Affect in Social Media","November - 6-months",33,51,NA,NA,NA,NA,NA,NA,-1,-1.1,-1.1,-1,-1,-1,0.259252501,0.965851153
+"900","Bluebirds","Positive Affect in Social Media","November - 6-months",34,51,NA,NA,NA,NA,NA,NA,-1.00542,-1.29728,-0.854875,-1.00622,-1.29061,-0.855234,0.278584258,1.037872061
+"901","Team Blue Skies","Positive Affect in Social Media","November - 6-months",35,51,NA,NA,NA,NA,NA,NA,-1.02246288,-1.04746288,-1.07246288,-1.02246288,-0.97246288,-0.92246288,0.282622954,1.052918315
+"902","StatFore","Positive Affect in Social Media","November - 6-months",36,51,NA,NA,NA,NA,NA,NA,-1.032096736,-0.995199318,-0.987572771,-1.01450759,-1.011007924,-0.996064778,0.286510981,1.06740325
+"903","AbCdEfG","Positive Affect in Social Media","November - 6-months",37,51,NA,NA,NA,NA,NA,NA,-1.585163388,-1.847563388,-1.374063388,-1.378363388,-1.712063388,-1.523063388,0.290672767,1.082908079
+"904","Team29","Positive Affect in Social Media","November - 6-months",38,51,NA,NA,NA,NA,NA,NA,-1,-1,-1,-1,-1,-1,0.292585834,1.090035253
+"905","CheeseCake","Positive Affect in Social Media","November - 6-months",39,51,NA,NA,NA,NA,NA,NA,-1,-1,-1,-1,-1,-1,0.292585834,1.090035253
+"906","WQXZ","Positive Affect in Social Media","November - 6-months",40,51,NA,NA,NA,NA,NA,NA,-0.99235,-1.2945,-0.83359,-1.0087,-1.3195,-0.83082,0.293244092,1.092487607
+"907","Bordeaux","Positive Affect in Social Media","November - 6-months",41,51,NA,NA,NA,NA,NA,NA,-0.966,-0.998,-0.996,-1.004,-0.998,-0.972,0.303585834,1.131016006
+"908","TheMets","Positive Affect in Social Media","November - 6-months",42,51,NA,NA,NA,NA,NA,NA,-0.973,-0.972,-0.973,-0.972,-0.973,-0.972,0.320085834,1.192487136
+"909","RTTMT","Positive Affect in Social Media","November - 6-months",43,51,NA,NA,NA,NA,NA,NA,-0.97,-0.97,-0.97,-0.97,-0.97,-0.97,0.322585834,1.201800943
+"910","Heisenburg","Positive Affect in Social Media","November - 6-months",44,51,NA,NA,NA,NA,NA,NA,-0.775403768,-0.977202101,-1.242438419,-0.801102633,-0.970460188,-1.228454693,0.32333847,1.204604906
+"911","Motivation & Emotion","Positive Affect in Social Media","November - 6-months",45,51,NA,NA,NA,NA,NA,NA,-1.545736926,-1.590222381,-1.689667854,-1.638123286,-1.658243302,-1.619996771,0.331079253,1.23344337
+"912","datamodelers","Positive Affect in Social Media","November - 6-months",46,51,NA,NA,NA,NA,NA,NA,-1.482354,-1.783009,-1.372946,-1.546894,-1.838936,-1.807153,0.359547175,1.33950127
+"913","ms607","Positive Affect in Social Media","November - 6-months",47,51,NA,NA,NA,NA,NA,NA,-0.7,-0.9,-1.3,-0.9,-1.5,-0.8,0.383320758,1.428070301
+"914","Team Apple","Positive Affect in Social Media","November - 6-months",48,51,NA,NA,NA,NA,NA,NA,-1.8,-1.9,-1.8,-1.7,-1.5,-1.4,0.390747499,1.455738795
+"915","fearfulastra","Positive Affect in Social Media","November - 6-months",49,51,NA,NA,NA,NA,NA,NA,-0.885,-0.889,-0.893,-0.896,-0.9,-0.904,0.398085834,1.48307793
+"916","SCREEN Team","Positive Affect in Social Media","November - 6-months",50,51,NA,NA,NA,NA,NA,NA,-1.5,-1.5,-2,-2,-2,-2,0.540747499,2.014567245
+"917","TAPE-Measurement","Positive Affect in Social Media","November - 6-months",51,51,NA,NA,NA,NA,NA,NA,-1.9,-2,-1.9,-1.8,-1.9,-1.6,0.557414166,2.076659295
