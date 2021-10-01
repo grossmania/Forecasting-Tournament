@@ -264,9 +264,19 @@ names(set3) = c('upper.CL','emmean','lower.CL','domain')
 set3$type<-"Regression Benchmark"
 
 ## EXAMINE EFFECTS OF UPDATING FOR PHASE I PREDICTIONS AMONG ACADEMICS
-model.phase1.base<-  lmer(MASE1_w1~domain+(1|ResponseId), data=phase1_exp)
+model.phase1.base<-  glmer(MASE1_w1~domain+(1|ResponseId), data=phase1_exp, family="poisson")
 
-data.May<-as.data.frame(emmeans(model.phase1.base,pairwise ~domain, adjust = "none")$emmeans) #nonsig
+ggeffects::ggpredict(model.phase1.base,"domain") #compare to ggpredict effects (using predict())
+
+#raw means
+phase1_exp %>%
+  group_by(domain) %>%
+  summarise_at(vars(MASE1_w1), list(name = mean))
+
+
+data.May<-as.data.frame(emmeans(model.phase1.base, ~|domain, adjust = "none")$emmeans) #nonsig
+
+
 data.May$type<-"May participants"
 data.wb3<-rbind(data.May[,c('domain','emmean','lower.CL','upper.CL','type')],set3)
 
