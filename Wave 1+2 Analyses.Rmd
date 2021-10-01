@@ -379,6 +379,26 @@ chisq.test(xtabs( ~ compare_to_naive_linear_MASE_w2+Method.code,academic_only%>%
 #############################################################
 ```
 
+# Visualize historical results
+
+```{r}
+historical<-read.csv("historical_data.csv")
+library(tsibble)
+historical_tsbl <- as_tsibble(historical, index = Month)
+
+historical_tsbl %>% pivot_longer(negaffect:polar,names_to="Domain",values_to="Score") %>% 
+  ggplot(aes(x = Month, y = Score, colour = Domain))+
+  geom_smooth(aes(x = Month, y = Score, colour = Domain),method = "loess") +  
+    facet_wrap(~Domain, scales = "free", nrow = 3, labeller=labeller(Domain=labels))+
+  theme_minimal(base_size = 14) +
+   theme(legend.position="none") +
+  labs(x="Months (< 0 = before May 2020)",y="Estimate") 
+
+
+
+
+
+```
 
 # Phase 1 analyses 
 
