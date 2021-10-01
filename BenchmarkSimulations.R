@@ -299,9 +299,7 @@ combined_phase1 %>% ggplot(aes(x = domain, y = MASE1_w1,colour = type, fill=type
   theme(legend.position="bottom") +scale_color_d3()+scale_fill_d3()+ylim(0,NA)+facet_wrap(~domain, nrow=3, scale="free")+stat_summary(fun.data = mean_cl_boot, geom = "errorbar", width = 0.2, position=pd, size = 1.2)+
   labs(colour = "Sample",fill="Sample", x="",y="MASE (M +/- 95%CI)")
 
-
 psych::describe.by(combined_phase1$MASE1_w1,group=combined_phase1[c("domain","type")])
-
 
 #MUSINGS###
 ########################################################################################
