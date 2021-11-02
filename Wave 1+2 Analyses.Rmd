@@ -484,10 +484,17 @@ interactions::cat_plot(model.long.phase1.fac,pred=Month.F,modx =Method.code,mod2
 
 
 #by method for phase 1
+###inspect data for distribution properties
+
+hist(log(phase1$MASE1_w1)) #possibly do it on logs?
+
+describe(phase1$MASE1_w1)
 
 #analyses of phase 1  - MASE overall
 #For models evaluating overall accuracy of the forecasted model, we will use forecasting type (purely theoretical, purely data-driven and hybrid models), forecasting domain as predictors, with MASE scores nested within teams. 
-model.phase1<-  lmer(MASE1_w1~domain*Method.code+(1|ResponseId), data=phase1)
+model.phase1.lmer<-  lmer(log(MASE1_w1)~domain*Method.code+(1|ResponseId), data=phase1)
+
+model.phase1<-  glmer(MASE1_w1~domain*Method.code+(1|ResponseId), data=phase1, family=poisson)
 car::Anova(model.phase1,type="III") #no interaction, so just look at main effects
 
 summ(model.phase1, digits=4)
@@ -499,7 +506,7 @@ data.phase1.MASE %>%
  ggplot(aes(x = domain, y = emmean, colour = Method.code, fill=Method.code))+
  geom_pointrange(aes(ymin=lower.CL, ymax=upper.CL), position=pd)+  theme_minimal(base_size = 14) +geom_hline(yintercept =1, linetype='dashed', color='red', 14)+
 theme(legend.position="bottom") +scale_color_d3()+scale_fill_d3()+  
-  labs(colour = "",fill="", x="",y="MASE (M +/- 95%CI)") 
+  labs(colour = "",fill="", x="",y="Log MASE (M +/- 95%CI)") 
 #data driven and hybrid is better than lay people for igen (marginal), life satisfaction (sig)
 
 phase1 %>% ggplot(aes(x = domain, y = MASE1_w1,colour = Method.code, fill=Method.code))+geom_violin()+
