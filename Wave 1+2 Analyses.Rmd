@@ -430,7 +430,7 @@ phase1_exp$is_multidisciplinary<-ifelse(phase1_exp$discipline=="Multi-disciplina
 phase1_exp$objectivexpert<-ifelse(phase1_exp$pub==1,"Expert",ifelse(phase1_exp$pub==2,"Non Expert",NA))
 
 #add historical variability data (as extra variable)
-phase1_exp<-phase1_exp %>% left_join(hist_all_summary)
+phase1_exp<-hist_all_summary %>% left_join(phase1_exp)
 
 #count how many domains per person
 phase1_exp<-phase1_exp %>%group_by(team_name) %>% 
@@ -818,6 +818,14 @@ model.phase1.Ndomains<-  lmer(log(MASE1_w1)~domain*n_domains+(1|ResponseId), dat
 car::Anova(model.phase1.Ndomains,type="III") #marginal effect of number of domains and a sig interaction
 emtrends(model.phase1.Ndomains,specs=~domain,var="n_domains") #
 interactions::sim_slopes(model.phase1.Ndomains,pred="n_domains",modx="domain", digits=4)
+
+##### Fourteen and a half: number fo domains & method - assumption that preferred method may be more likely tobe data-oriented when using multiple domains.
+model.phase1.Ndomains.method<-  lmer(log(MASE1_w1)~domain*n_domains+domain*Method.code+(1|ResponseId), data=phase1_exp)
+car::Anova(model.phase1.Ndomains.method,type="III") #still an effect when including method (separate effects)
+emtrends(model.phase1.Ndomains.method,specs=~domain,var="n_domains") #
+interactions::sim_slopes(model.phase1.Ndomains.method,pred="n_domains",modx="domain", digits=4) #number of domain effect for explicit asian bias, but nothing else (marginal for implicit Asian bias and explicit african bias)
+interactions::sim_slopes(model.phase1.Ndomains.method,pred="n_domains",modx="domain", digits=4)
+
 
 ```
 
@@ -1327,9 +1335,17 @@ car::Anova(model.phase2.MAD,type="III") ##variability in historical data did not
 #### Fourteen: number of domains the team made predictions about
 
 model.phase2.Ndomains<-  lmer(log(MASE1_w2)~domain*n_domains+(1|ResponseId), data=dat_phase2)
-car::Anova(model.phase2.Ndomains,type="III") #marginal effect of number of domains and a sig interaction
+car::Anova(model.phase2.Ndomains,type="III") #no effect
 emtrends(model.phase2.Ndomains,specs=~domain,var="n_domains") #
 interactions::sim_slopes(model.phase2.Ndomains,pred="n_domains",modx="domain", digits=4)
+
+##### Fourteen and a half: number fo domains & method - assumption that preferred method may be more likely tobe data-oriented when using multiple domains.
+model.phase2.Ndomains.method<-  lmer(log(MASE1_w2)~domain*n_domains+domain*Method.code+(1|ResponseId), data=dat_phase2)
+car::Anova(model.phase2.Ndomains.method,type="III") #no effect when including method
+emtrends(model.phase2.Ndomains.method,specs=~domain,var="n_domains") #no sig effects
+interactions::sim_slopes(model.phase2.Ndomains.method,pred="n_domains",modx="domain", digits=4) #number of domain effect for explicit asian bias, but nothing else 
+
+
 ```
 
 ```{r PHASE II Supplementary MAPE analyses}
