@@ -22,6 +22,8 @@ library(dplyr)
 library(ggsci)
 library(dplyr)
 library(Hmisc)
+library(lubridate)
+library(statcomp) #to get complexity measures for time series
 
 options(max.print = 20000, scipen = 1000)
 
@@ -43,7 +45,7 @@ academic_only <- filter(dat, isExpert == 1 )
 phase1 <- filter(dat, phase == 1)
 phase2 <- filter(dat, phase == 2)
 
-# Phase 1 & 2further filtered to only include academics won't be necessary once we have updated objective data
+# Phase 1 & 2 further filtered to only include academics won't be necessary once we have updated objective data
 phase1_exp <- filter(phase1, isExpert == 1)
 phase2_exp <-filter(phase2, isExpert == 1)
 
@@ -192,6 +194,11 @@ top.1.MASE.t1<-phase1 %>% filter(isExpert.factor == 'Academic')  %>%
 arrange(domain,MASE1_w1) %>%group_by(domain) %>% dplyr::slice_head(n = 1) %>% select(team_name,mean_abs_error_w1,MASE1_w1,Month.1:Month.12,domain,team_size.coded,discipline,previous_tournament.coded,Method.code,model,theory,numpred,parameters,Method.complex,team_expertise) %>% arrange(MASE1_w1)
 write.csv(top.1.MASE.t1,"top.t1.csv")
 
+#median MASE by domain?
+median.MASE.t1<-phase1 %>% filter(isExpert.factor == 'Academic')  %>%
+arrange(domain) %>%group_by(domain) %>% dplyr::summarize(MASE_med = median(MASE1_w1)) %>% select(domain,MASE_med) %>% arrange(MASE_med)
+write.csv(median.MASE.t1,"medianMASE.t1.csv")
+
 #examine top 5
 top.5.MASE.t1<-phase1 %>% filter(isExpert.factor == 'Academic')  %>%
 arrange(domain,MASE1_w1) %>%group_by(domain) %>% dplyr::slice_head(n = 5) %>% select(team_name,MASE1_w1,domain,compare_to_naive_linear_MASE,compare_to_naive_rwf_MASE,team_size.coded,discipline,previous_tournament.coded,Method.code,model,theory,numpred,parameters,Method.complex,team_expertise)
@@ -287,7 +294,10 @@ top.1.MASE.t2<-academic_only  %>% filter(!(phase == 1 & revised == 1)) %>%
   
 write.csv(top.1.MASE.t2,"top.t2.csv")
 
-
+#median MASE by domain?
+median.MASE.t2<-academic_only  %>% filter(!(phase == 1 & revised == 1)) %>%
+arrange(domain) %>%group_by(domain) %>% dplyr::summarize(MASE_med = median(MASE1_w2)) %>% select(domain,MASE_med) %>% arrange(MASE_med)
+write.csv(median.MASE.t2,"medianMASE.t2.csv")
 
 #examine top 5
 
@@ -392,26 +402,46 @@ historical_tsbl %>% pivot_longer(negaffect:polar,names_to="Domain",values_to="Sc
    theme(legend.position="none") +
   labs(x="Months (< 0 = before May 2020)",y="Estimate") 
 
-
+#historical long
+hist_long<-as_tibble(historical_tsbl) %>% pivot_longer(negaffect:polar,names_to="domain",values_to="Score")
 #examine SD of all domains for historical data
 
-hist_var<-as_tibble(historical_tsbl) %>% pivot_longer(negaffect:polar,names_to="Domain",values_to="Score") %>%
-  filter(Month < 0)%>%group_by(Domain) %>% select(Domain,Score) %>% mutate(sd_hist = sd(Score), mad_hist = mad(Score))
+hist_var_w1<-as_tibble(historical_tsbl) %>%subset(Month < 0)%>% pivot_longer(negaffect:polar,names_to="domain",values_to="Score") %>%
+  select(domain,Score) %>% group_by(domain) %>%summarise(sd_hist_w1 = sd(Score), mad_hist_w1 = mad(Score), perp_entropy_hist_w1=permutation_entropy(Score))
 
-hist_all_summary<-hist_var %>% select(Domain,sd_hist,mad_hist) %>% group_by(Domain) %>% summarise_all(mean) %>% 
-  rename( domain = Domain) %>% arrange(sd_hist) #got SD and MAD scores for capturing variability in historical data
+tournament1_var<-as_tibble(historical_tsbl) %>%subset(Month > 0)%>% pivot_longer(negaffect:polar,names_to="domain",values_to="Score") %>%
+ select(domain,Score) %>% na.omit%>%group_by(domain) %>% 
+summarise(sd_w1 = sd(Score), mad_w1 = mad(Score), perp_entropy_w1=permutation_entropy(Score))
 
+hist_var_w2<-as_tibble(historical_tsbl) %>%subset(Month < 7)%>% pivot_longer(negaffect:polar,names_to="domain",values_to="Score") %>%
+  select(domain,Score) %>% group_by(domain) %>%summarise(sd_hist_w2 = sd(Score), mad_hist_w2 = mad(Score), perp_entropy_hist_w2=permutation_entropy(Score))
 
+tournament2_var<-as_tibble(historical_tsbl) %>%subset(Month > 6)%>% pivot_longer(negaffect:polar,names_to="domain",values_to="Score") %>%
+ select(domain,Score) %>% na.omit%>%group_by(domain) %>% 
+summarise(sd_w2 = sd(Score), mad_w2 = mad(Score), perp_entropy_w2=permutation_entropy(Score))
+
+complexity<-hist_var_w1%>%left_join(tournament1_var)%>%
+  left_join(hist_var_w2)%>%
+  left_join(tournament2_var)
 
 
 ```
 
-# Phase 1 analyses 
+
+# Visualizations
+
+## Visualizations of predictions across domains
 
 ```{r PHASE 1 prep and simple visualizations of trends}
 
-
 #do by method (among experts now)
+#recorder levels of the domains
+dat_long$domain <- factor(dat_long$domain,      # Reordering group factor levels
+                         levels = c("egend","easian","eafric",
+                                    "igend","iasian","iafric",
+                                    "posaffect","negaffect","lifesat",
+                                    "polar","ideoldem","ideolrep"))
+
 #get ground truth markers (subset)
 dat_long$Month0<-dat_long$Month-1
 
@@ -430,7 +460,7 @@ phase1_exp$is_multidisciplinary<-ifelse(phase1_exp$discipline=="Multi-disciplina
 phase1_exp$objectivexpert<-ifelse(phase1_exp$pub==1,"Expert",ifelse(phase1_exp$pub==2,"Non Expert",NA))
 
 #add historical variability data (as extra variable)
-phase1_exp<-hist_all_summary %>% left_join(phase1_exp)
+phase1_exp<-complexity %>% left_join(phase1_exp)
 
 #count how many domains per person
 phase1_exp<-phase1_exp %>%group_by(team_name) %>% 
@@ -445,7 +475,7 @@ dat_long_phase1$objectivexpert<-ifelse(dat_long_phase1$pub==1,"Expert",ifelse(da
 dat_long %>% subset(phase == 1 & !is.na(Method.code)& Method.code!="Ground Truth") %>% 
    ggplot(aes(x = Month0, y = value, colour = Method.code, fill=Method.code))+
   geom_smooth(aes(x = Month0, y = value, colour = Method.code, fill=Method.code),method = "loess") +  
-    facet_wrap(~domain, scales = "free", nrow = 3, labeller=labeller(domain=labels))+
+    facet_wrap(~domain, scales = "free", nrow = 4, labeller=labeller(domain=labels))+
   theme_minimal(base_size = 14) +
   geom_smooth(data=objective,se=F) + #here we add the ground truth markers without confidence band
    theme(legend.position="bottom") +scale_color_d3()+scale_fill_d3()+ 
@@ -460,6 +490,95 @@ dat_long %>% subset(phase == 1 & !is.na(Method.code)& Method.code!="Ground Truth
    theme(legend.position="bottom") +scale_color_d3()+scale_fill_d3()+ 
   labs(colour = "Sample",fill="Sample", x="Months (from May 2021)",y="Estimate (M +/- 95%CI)")
 
+#without any benchmarks
+dat_long$GT[dat_long$Method.code!="Ground Truth"]<-"Forecasting Estimate"
+dat_long$GT[dat_long$Method.code=="Ground Truth"]<-"Ground Truth"
+objective$GT<-objective$Method.code
+
+dat_long %>% subset(phase == 1 & !is.na(Method.code)& Method.code!="Ground Truth"& Method.code!="Naive-linear"&Method.code!="Naive-rfw" &Method.code!="Lay People") %>% 
+   ggplot(aes(x = Month0, y = value, colour = GT, fill=GT))+
+  geom_smooth(aes(x = Month0, y = value, colour = GT, fill=GT),method = "loess") +  
+  facet_wrap(~domain, scales = "free", nrow = 3, labeller=labeller(domain=labels))+theme_minimal() +
+  geom_smooth(data=objective,se=F) + #here we add the ground truth markers without confidence band
+   theme(legend.position="bottom") +scale_color_d3()+scale_fill_d3()+ 
+  labs(colour = "",fill="", x="Months (from May 2021)",y="Estimate (M +/- 95%CI)")
+
+hist_long$domain<-hist_long$Domain
+hist_long$GT<-"Ground Truth"
+hist_long$Month0<-hist_long$Month-1
+hist_long$value<-hist_long$Score
+
+dat_longX<-dat_long %>% subset(phase == 1 & !is.na(Method.code)& Method.code!="Ground Truth"& Method.code!="Naive-linear"&Method.code!="Naive-rfw" &Method.code!="Lay People") #to get extra scores for indiv point visualization.
+dat_longX$GT<-"Forecasts from\nIndiv. Teams"
+
+dat_long$GT[dat_long$Method.code!="Ground Truth"]<-"Forecasting Estimate"
+
+dat_long %>% subset(phase == 1 & !is.na(Method.code)& Method.code!="Ground Truth"& Method.code!="Naive-linear"&Method.code!="Naive-rfw" &Method.code!="Lay People") %>% 
+   ggplot(aes(x = as.numeric(Month0), y = value, colour = GT, fill=GT))+geom_line(data=dat_longX,alpha=.3,aes(group=team_name), na.rm=TRUE)+  geom_point(data = dat_longX,alpha=.1,aes(group=team_name)) +
+  geom_smooth(aes(x = Month0, y = value, colour = GT, fill=GT),method = "loess") +  
+  facet_wrap(~domain, scales = "free", nrow = 6, labeller=labeller(domain=labels))+theme_minimal() +
+  geom_smooth(data=hist_long,se=F) + #here we add the ground truth markers without confidence band
+   theme(legend.position="bottom") +scale_color_npg()+scale_fill_npg()+ 
+  labs(colour = "",fill="", x="Months (< 0 = before May 2020 Tournament)",y="Estimate (M +/- 95%CI)")
+
+dat_long %>% subset(phase == 1 & !is.na(Method.code)& Method.code!="Ground Truth"& Method.code!="Naive-linear"&Method.code!="Naive-rfw" &Method.code!="Lay People") %>% 
+   ggplot(aes(x = as.numeric(Month0), y = value, colour = GT, fill=GT))+geom_line(data=dat_longX,alpha=.3,aes(group=team_name), na.rm=TRUE)+  geom_point(data = dat_longX,alpha=.1,aes(group=team_name)) +
+  geom_smooth(aes(x = Month0, y = value, colour = GT, fill=GT),method = "loess") +  
+  facet_wrap(~domain, scales = "free", nrow = 6, labeller=labeller(domain=labels))+theme_minimal() +
+  geom_smooth(data=objective,se=F) + #here we add the ground truth markers without confidence band
+   theme(legend.position="bottom") +scale_color_d3()+scale_fill_d3()+ 
+  labs(colour = "",fill="", x="Months (< 0 = before May 2020 Tournament)",y="Estimate (M +/- 95%CI)")
+
+#combine with the phase 2 data.
+dat_long_phase2X<-dat_long %>%filter(!(phase == 1 & revised == 1)& Method.code!="Ground Truth"& Method.code!="Naive-linear"&Method.code!="Naive-rfw" & Month %in% c(7,8,9,10,11,12))
+
+
+dat_long$GT[dat_long$Method.code!="Ground Truth"]<-"Aggregate Estimate\n(lowess)"
+objective$value
+dat_long$phaseF[dat_long$phase==1]<-"First Tournament\n(May 2020)"
+dat_long$phaseF[dat_long$phase==2]<-"Follow-up Tournament\n(Nov 2020)" 
+
+objective$phaseF<-"Ground Truth"
+dat_longX<-dat_long %>% subset(!is.na(Method.code)& Method.code!="Ground Truth"& Method.code!="Naive-linear"&Method.code!="Naive-rfw" &Method.code!="Lay People"& Month %in% c(1:12)) 
+                               #to get extra scores for indiv point visualization 
+dat_longX<-dat_longX %>%subset(!(domain=="lifesat" & value <6)) #cut off scores below 5 for life satisfaction for visualization of trends
+
+dat_longX$GT<-"Forecasts from\nIndiv. Teams"
+
+dat_long$date[dat_long$Month==1] <- "05-2020"
+dat_long$date[dat_long$Month==2] <- "06-2020"
+dat_long$date[dat_long$Month==3] <- "07-2020"
+dat_long$date[dat_long$Month==4] <- "08-2020"
+dat_long$date[dat_long$Month==5] <- "09-2020"
+dat_long$date[dat_long$Month==6] <- "10-2020"
+dat_long$date[dat_long$Month==7] <- "11-2020"
+dat_long$date[dat_long$Month==8] <- "12-2020"
+dat_long$date[dat_long$Month==9] <- "01-2021"
+dat_long$date[dat_long$Month==10] <- "02-2021"
+dat_long$date[dat_long$Month==11] <- "03-2021"
+dat_long$date[dat_long$Month==12] <- "04-2021"
+
+dat_long$date<-my(dat_long$date)
+objective$date[objective$Month==1] <- "05-2020"
+objective$date[objective$Month==2] <- "06-2020"
+objective$date[objective$Month==3] <- "07-2020"
+objective$date[objective$Month==4] <- "08-2020"
+objective$date[objective$Month==5] <- "09-2020"
+objective$date[objective$Month==6] <- "10-2020"
+objective$date[objective$Month==7] <- "11-2020"
+objective$date[objective$Month==8] <- "12-2020"
+objective$date[objective$Month==9] <- "01-2021"
+objective$date[objective$Month==10] <- "02-2021"
+objective$date[objective$Month==11] <- "03-2021"
+objective$date[objective$Month==12] <- "04-2021"
+objective$date<-my(objective$date)
+
+dat_long %>% subset(!is.na(Method.code)& Method.code!="Ground Truth"& Method.code!="Naive-linear"&Method.code!="Naive-rfw" &Method.code!="Lay People"& Month %in% c(1:12)) %>% 
+   ggplot(aes(x = Month0, y = value, colour = phaseF, fill=phaseF))+geom_line(data=dat_longX,alpha=.09,aes(x = Month0, group=team_name), na.rm=TRUE)+  #geom_point(data = dat_longX,alpha=.1,aes(x = Month0, group=team_name)) +
+  geom_smooth(aes(x = Month0, y = value, colour = phaseF, fill=phaseF),method = "loess") +  
+  facet_wrap(~domain, scales = "free", nrow = 4, labeller=labeller(domain=labels))+theme_minimal() +
+  geom_line(data=objective,alpha=.8,aes(x = Month0, group=team_name), na.rm=TRUE)+  geom_point(data = objective,alpha=.9,aes(x = Month0, group=team_name)) + #here we add the ground truth markers without confidence band
+   theme(legend.position="bottom") +scale_color_d3()+scale_fill_d3()+ xlim(0,12)+ scale_x_continuous(breaks=c(0:11), labels =c("May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Jan","Feb","Mar","Apr"))+  labs(colour = "",fill="", x="Months",y="Forecasted & Observed Change")+theme(axis.text.x = element_text(angle=45, vjust=.5, hjust=1, size=rel(0.5)))
 
 #######JUST PLOT _ ==>ELEGANT BUT ERRORS! IT MISSES THE WITHIN-PERSON STRUCTURE AND REPEATED OBSERVATIONS
 #dat_long_phase1 %>% ggplot(aes(x = as.factor(Month), y = value.dif,colour = Method.code, fill=Method.code))+
@@ -471,7 +590,500 @@ dat_long %>% subset(phase == 1 & !is.na(Method.code)& Method.code!="Ground Truth
 
 ```
 
+## Visualizations of MASE versus benchmarks
+```{r Phases 1 and 2 along with sims}
+
+pd <- position_dodge(0.7) # move them .07 to the left and right
+
+##by method for phase 1
+###inspect data for distribution properties
+
+hist(log(phase1$MASE1_w1)) #possibly do it on logs?
+describe(phase1$MASE1_w1)
+
+#analyses of phase 1  - MASE overall
+model.phase1.together<-  lmer(log(MASE1_w1)~domain*isExpert.factor+(1|ResponseId), data=phase1)
+car::Anova(model.phase1.together,type="III") #sig interaction!
+data.phase1.MASE.together<-as.data.frame(emmeans(model.phase1.together, pairwise~domain*isExpert.factor, adjust = "none", type = "response")$emmeans) #backtransformed to the original scale
+
+
+#phase 2
+dat_phase2<-academic_only %>%filter(!(phase == 1 & revised == 1)) #just academics
+model.phase2.together<-  lmer(log(MASE1_w2)~domain+(1|ResponseId), data=dat_phase2)
+car::Anova(model.phase2.together,type="III") #sig interaction!
+data.phase2.MASE.together<-as.data.frame(emmeans(model.phase2.together, pairwise~domain, adjust = "none", type = "response")$emmeans) #backtransformed to the original scale
+
+data.phase1.MASE.together$Wave<-"First Tournament"
+data.phase1.MASE.together$Type[data.phase1.MASE.together$isExpert.factor=="Academic"]<-"Scientists"
+data.phase1.MASE.together$Type[data.phase1.MASE.together$isExpert.factor=="Prolific"]<-"Naive Crowd"
+
+
+data.phase2.MASE.together$Wave<-"Second Tournament"
+data.phase2.MASE.together$Type<-"Scientists"
+
+#add simulation benchmarks
+sim.w1<- load("sim/BenchmarkData_Combined.RData")
+sim.w1<-Stats_all_benchmarks_raw
+sim.w1$Wave<-"First Tournament"
+sim.w1<-subset(sim.w1,source!="Experts"&source!="Lay People")
+sim.w1$response<-sim.w1$Mean
+sim.w1$lower.CL<-sim.w1$CI_L
+sim.w1$upper.CL<-sim.w1$CI_U
+sim.w1$Type[sim.w1$source=="Benchmark 1"]<-"Historic Mean"
+sim.w1$Type[sim.w1$source=="Benchmark 2"]<-"Random Walk"
+sim.w1$Type[sim.w1$source=="Benchmark 3"]<-"Linear Regression"
+
+
+sim.w2<- load("sim/BenchmarkData_Combined_W2.RData")
+sim.w2<-Stats_all_benchmarks_raw_w2
+sim.w2$Wave<-"Second Tournament"
+sim.w2<-subset(sim.w2,source!="ExpertsW2")
+sim.w2$response<-sim.w2$Mean
+sim.w2$lower.CL<-sim.w2$CI_L
+sim.w2$upper.CL<-sim.w2$CI_U
+sim.w2$Type[sim.w1$source=="Benchmark 1"]<-"Historic Mean"
+sim.w2$Type[sim.w1$source=="Benchmark 2"]<-"Random Walk"
+sim.w2$Type[sim.w1$source=="Benchmark 3"]<-"Linear Regression"
+
+#combine
+means.compare.to.naive<-bind_rows(data.phase1.MASE.together,data.phase2.MASE.together,sim.w1,sim.w2)
+
+#arrange in descending order based on MASE w2 of academics
+means.compare.to.naive$domain<-factor(means.compare.to.naive$domain,levels=c("ideolrep","negaffect","ideoldem","polar","iafric","lifesat","eafric","easian","egend","iasian","igend","posaffect"))
+
+#arrange in descending order based on MASE w2 of academics
+means.compare.to.naive$Wave<-factor(means.compare.to.naive$Wave,levels=c("First Tournament","Second Tournament"))
+
+#arrange groups
+means.compare.to.naive$Type<-factor(means.compare.to.naive$Type,levels=c("Scientists","Naive Crowd","Historic Mean","Random Walk","Linear Regression"))
+
+#add var for Scientists vs. rest (to define colors)
+means.compare.to.naive$Group[means.compare.to.naive$Type=="Scientists"]<-"Estimate"
+means.compare.to.naive$Group[means.compare.to.naive$Type!="Scientists"]<-"Non Estimate"
+
+labeling<-c(
+  eafric = "Exp. Afr.-Am. Bias",
+  easian = "Exp. Asian-Am. Bias",
+  egend = "Exp. Gender Bias",
+  iafric = "Imp. Afr.-Am. Bias",
+  iasian = "Imp. Asian-Am. Bias",
+  ideoldem = "Democrat. Support",
+  ideolrep ="Republic. Support",
+  igend = "Imp. Gender Bias",
+  lifesat = "Life Satisfaction",
+  negaffect = "Negative Affect",
+  polar = "Polarization",
+  posaffect = "Positive Affect")
+
+#plot
+means.compare.to.naive %>%  
+ ggplot(aes(x = response, y = domain, color = Type, shape=Type))+
+ geom_pointrange(aes(xmin=lower.CL, xmax=upper.CL), position=pd)+  theme_minimal(base_size = 14)+geom_vline(xintercept =1, linetype='dashed', color='red',14)+theme(legend.position="bottom")+scale_color_jama()+  labs(x="Inaccuracy - MASE (M +/- 95%CI)",shape="",color="")+scale_y_discrete(labels=labeling, name="")+facet_grid(~Wave)
+
+#subplots for presentation
+
+#scientists
+means.compare.to.naive %>%  subset(Type=="Scientists")%>%  
+ ggplot(aes(x = response, y = domain, color = Type, shape=Type))+
+ geom_pointrange(aes(xmin=lower.CL, xmax=upper.CL), position=pd)+  theme_minimal(base_size = 14)+geom_vline(xintercept =1, linetype='dashed', color='red',14)+theme(legend.position="bottom")+scale_color_jama()+  labs(x="Inaccuracy - MASE (M +/- 95%CI)",shape="",color="")+scale_y_discrete(labels=labeling, name="")+facet_grid(~Wave)
+
+#scientists & lay crowd
+means.compare.to.naive %>%  subset(Type=="Scientists"|Type=="Naive Crowd")%>%  
+ ggplot(aes(x = response, y = domain, color = Type, shape=Type))+
+ geom_pointrange(aes(xmin=lower.CL, xmax=upper.CL), position=pd)+  theme_minimal(base_size = 14)+geom_vline(xintercept =1, linetype='dashed', color='red',14)+theme(legend.position="bottom")+scale_color_jama()+  labs(x="Inaccuracy - MASE (M +/- 95%CI)",shape="",color="")+scale_y_discrete(labels=labeling, name="")+facet_grid(~Wave)
+
+
+```
+
+#graph change in ranking
+```{r}
+
+#install.packages("CGPfunctions")
+library(CGPfunctions)
+
+#get ranking of median scores among academics in May and November
+median.MASE.t1$Wave<-"First Tournament\nMay"
+median.MASE.t2$Wave<-"Second Tournament\nNov"
+median.ranks<-bind_rows(median.MASE.t1,median.MASE.t2)
+median.ranks$MASE<-round(median.ranks$MASE_med,2) #two decimals
+median.ranks$Domain[median.ranks$domain=="eafric"]<-"Exp. Afr.-Am. Bias"
+median.ranks$Domain[median.ranks$domain=="easian"]<-"Exp. Asian-Am. Bias"
+median.ranks$Domain[median.ranks$domain=="egend"]<-"Exp. Gender Bias"
+median.ranks$Domain[median.ranks$domain=="iafric"]<-"Imp. Afr.-Am. Bias"
+median.ranks$Domain[median.ranks$domain=="iasian"]<-"Imp. Asian-Am. Bias"
+median.ranks$Domain[median.ranks$domain=="ideoldem"]<-"Democrat. Support"
+median.ranks$Domain[median.ranks$domain=="ideolrep"]<-"Republic. Support"
+median.ranks$Domain[median.ranks$domain=="igend"]<-"Imp. Gender Bias"
+median.ranks$Domain[median.ranks$domain=="lifesat"]<-"Life Satisfaction"
+median.ranks$Domain[median.ranks$domain=="polar"]<-"Polarization"
+median.ranks$Domain[median.ranks$domain=="negaffect"]<-"Negative Affect"
+median.ranks$Domain[median.ranks$domain=="posaffect"]<-"Positive Affect"
+
+
+newggslopegraph(dataframe = median.ranks,
+                Times = Wave,
+                Measurement = MASE,
+                Grouping = Domain,
+                WiderLabels=T,
+                Title = "Which domains are harder to predict?",
+                SubTitle = "higher scores - more inaccurate",
+                Caption = "Ranking based on median MASE scores per domain",
+                ThemeChoice="tufte")+scale_color_d3(palette = "category20")
+```
+
+```{r ranking in phase 1 and complexity}
+
+#For complexity,we used permutation_entropy, which is Ra substitution the Shannon entropy with a monoparametric entropy. 
+
+rank_complex_w1<-median.MASE.t1%>%left_join(complexity)
+rank_complex_w2<-median.MASE.t2%>%left_join(complexity)
+
+correlation::correlation(rank_complex_w1%>%
+ select(MASE_med,sd_hist_w1,mad_hist_w1,perp_entropy_hist_w1,sd_w1,mad_w1,perp_entropy_w1), p_adjust="none", ranktransform=T) 
+
+correlation::correlation(rank_complex_w2%>%
+ select(MASE_med,sd_hist_w2,mad_hist_w2,perp_entropy_hist_w2,sd_w2,mad_w2,perp_entropy_w2), p_adjust="none", ranktransform=T) 
+
+```
+
+## visualize by method (phase 1 and 2)
+
+```{r}
+#analyses of phase 1  - MASE overall
+#For models evaluating overall accuracy of the forecasted model, we will use forecasting type (purely theoretical, purely data-driven and hybrid models), forecasting domain as predictors, with MASE scores nested within teams. 
+
+#first, what is the percentage using different method?
+prop.table(table(phase1_exp$Method.code))
+
+perc.by.domain.phase1<-phase1_exp %>%
+  group_by(domain,Method.code) %>%
+  summarise(n = n()) %>%
+  mutate(perc = round(n / sum(n)*100),2) %>% 
+  ggplot(aes(x = "", y = perc, fill = Method.code)) +
+  geom_col(color = "black") +
+  geom_label(aes(label = perc),
+             color = "white",
+             position = position_stack(vjust = 0.5),
+             show.legend = FALSE) +scale_fill_jama()+labs(fill="")+
+  coord_polar(theta = "y")+theme_void()+facet_wrap(~domain, nrow = 4, labeller=labeller(domain=labels))+theme(legend.position="bottom")
+
+
+#recorder levels of the domains
+dat_long$domain <- factor(dat_long$domain,      # Reordering group factor levels
+                         levels = c("egend","easian","eafric",
+                                    "igend","iasian","iafric",
+                                    "posaffect","negaffect","lifesat",
+                                    "polar","ideoldem","ideolrep"))
+
+#next run models
+model.phase1<-  lmer(log(MASE1_w1)~domain*Method.code+(1|ResponseId), data=subset(phase1,isExpert.factor=="Academic"))
+car::Anova(model.phase1,type="III") #sig interaction!
+
+summ(model.phase1, digits=4)
+emmeans(model.phase1,trt.vs.ctrl ~Method.code|domain, adjust = "none") #lay vs. rest
+emmeans(model.phase1,pairwise ~Method.code|domain, adjust = "none")
+
+
+data.phase1.MASE<-as.data.frame(emmeans(model.phase1,pairwise ~Method.code|domain, type = "response", adjust = "none")$emmeans)
+
+model.phase1.across.domains<-  lmer(log(MASE1_w1)~Method.code+(1|ResponseId), data=subset(phase1,isExpert.factor=="Academic"))
+car::Anova(model.phase1.across.domains,type="III") #sig interaction!
+
+## EXAMINE ONLY ACADEMICS, USING CONTRAST OF THEORY vs. DATA.HYBRID
+phase1_exp$method.contrast<-ifelse(phase1_exp$Method.code=='Intuition/Theory',0,1)
+model.phase1.contrast<-  lmer(log(MASE1_w1)~method.contrast+(1|ResponseId), data=phase1_exp)
+car::Anova(model.phase1.contrast,type="III") #sig domain effect,  and sig interaction
+summ(model.phase1.contrast, digits=4) #get effect size for the overall model
+model.phase1.contrast.by.domain<-  lmer(log(MASE1_w1)~method.contrast*domain+(1|ResponseId), data=phase1_exp)
+
+car::Anova(model.phase1.contrast.by.domain, type=3)
+emmeans(model.phase1.contrast.by.domain,pairwise ~method.contrast|domain, adjust = "fdr",type="response" )
+
+write.csv(emmeans(model.phase1.contrast.by.domain,pairwise ~method.contrast|domain, adjust = "fdr",type="response" )
+$contrasts,"contrast1.csv")
+
+# EXAMINE ACADEMICS DATA VS. NO DATA AND LAY PEOPLE
+
+## EXAMINE ONLY ACADEMICS, USING CONTRAST OF THEORY vs. DATA.HYBRID
+phase1$method.contrast.layppl[phase1$Method.code=='Intuition/Theory']<-"Sci data-free"
+phase1$method.contrast.layppl[phase1$Method.code=='Lay People']<-"lay people"
+phase1$method.contrast.layppl[phase1$Method.code=='Data-Driven']<-"Sci data-incl."
+phase1$method.contrast.layppl[phase1$Method.code=='Hybrid']<-"Sci data-incl."
+
+model.phase1.contrast.lay<-  lmer(log(MASE1_w1)~method.contrast.layppl+(1|ResponseId), data=phase1)
+car::Anova(model.phase1.contrast.lay,type="III") #sig domain effect,  and sig interaction
+emmeans(model.phase1.contrast.lay,specs = trt.vs.ctrl ~method.contrast.layppl, adjust = "fdr",type="response" )
+
+#arrange in descending order based on MASE w2 of academics
+data.phase1.MASE$domain<-factor(data.phase1.MASE$domain,levels=c("ideolrep","negaffect","ideoldem","polar","iafric","lifesat","eafric","easian","egend","iasian","igend","posaffect"))
+
+data.phase1.MASE %>% 
+ ggplot(aes(x = domain, y = response, colour = Method.code, fill=Method.code))+
+ geom_pointrange(aes(ymin=lower.CL, ymax=upper.CL), position=pd)+  theme_minimal(base_size = 14) +geom_hline(yintercept =1, linetype='dashed', color='red', 14)+coord_flip()+
+theme(legend.position="bottom") +scale_color_d3()+scale_fill_d3()+  scale_x_discrete(labels=labeling, name="")+
+  labs(colour = "",fill="", x="",y="MASE (M +/- 95%CI)") 
+
+
+data.phase1.MASE.total %>% 
+ ggplot(aes(x = Method.code, y = response, colour = Method.code, fill=Method.code))+
+ geom_pointrange(aes(ymin=lower.CL, ymax=upper.CL), position=pd)+  theme_minimal(base_size = 14) +geom_hline(yintercept =1, linetype='dashed', color='red', 14)+coord_flip()+
+theme(legend.position="bottom") +scale_color_d3()+scale_fill_d3()+  scale_x_discrete(labels=labeling, name="")+
+  labs(colour = "",fill="", x="",y="MASE (M +/- 95%CI)") 
+
+
+
+#phase 2
+dat_phase2<-academic_only %>%filter(!(phase == 1 & revised == 1)) #just academics
+
+#first, what is the percentage using different method?
+prop.table(table(dat_phase2$Method.code))
+
+table(phase2$Method.code)
+
+perc.by.domain.phase2<-dat_phase2 %>%
+  group_by(domain,Method.code) %>%
+  summarise(n = n()) %>%
+  mutate(perc = round(n / sum(n)*100),2) %>% 
+  ggplot(aes(x = "", y = perc, fill = Method.code)) +
+  geom_col(color = "black") +
+  geom_label(aes(label = perc),
+             color = "white",
+             position = position_stack(vjust = 0.5),
+             show.legend = FALSE) +scale_fill_jama()+labs(fill="")+
+  coord_polar(theta = "y")+theme_void()+facet_wrap(~domain, nrow = 4, labeller=labeller(domain=labels))+theme(legend.position="bottom")
+
+#combine plots
+
+cowplot::plot_grid(perc.by.domain.phase1,perc.by.domain.phase2,labels=c("1st Tournament","2nd Tournament"), label_size = 10,
+  align = "v")
+#next run models
+
+data.phase2.model<-  lmer(log(MASE1_w2)~domain*Method.code+(1|ResponseId), data=dat_phase2)
+car::Anova(data.phase2.model,type="III") #sig interaction!
+data.phase2.MASE<-as.data.frame(emmeans(data.phase2.model, pairwise~Method.code|domain, adjust = "none", type = "response")$emmeans) #backtransformed to the original scale
+
+data.phase2.model.across.domains<-  lmer(log(MASE1_w2)~Method.code+(1|ResponseId), data=dat_phase2)
+car::Anova(data.phase2.model.across.domains,type="III") #sig interaction!
+data.phase2.MASE.total<-as.data.frame(emmeans(data.phase2.model.across.domains,pairwise ~Method.code, type = "response", adjust = "none")$emmeans)
+
+
+## EXAMINE ONLY ACADEMICS, USING CONTRAST OF THEORY vs. DATA.HYBRID
+dat_phase2$method.contrast<-ifelse(dat_phase2$Method.code=='Intuition/Theory',0,1)
+model.phase2.contrast<-  lmer(log(MASE1_w2)~method.contrast+(1|ResponseId), data=dat_phase2)
+car::Anova(model.phase2.contrast,type="III") #sig domain effect,  and sig interaction
+summ(model.phase2.contrast, digits=4) #get effect size for the overall model
+model.phase2.contrast.by.domain<-  lmer(log(MASE1_w2)~method.contrast*domain+(1|ResponseId), data=dat_phase2)
+
+car::Anova(model.phase2.contrast.by.domain, type=3)
+emmeans(model.phase2.contrast.by.domain,pairwise ~method.contrast|domain, adjust = "fdr",type="response" )
+
+write.csv(emmeans(model.phase2.contrast.by.domain,pairwise ~method.contrast|domain, adjust = "none",type="response" )
+$contrasts,"contrast2.csv")
+
+data.phase1.MASE.total<-as.data.frame(emmeans(model.phase1.across.domains,pairwise ~Method.code, type = "response", adjust = "none")$emmeans)
+
+#arrange in descending order based on MASE w2 of academics
+data.phase2.MASE.total$domain<-factor(data.phase2.MASE.total$domain,levels=c("ideolrep","negaffect","ideoldem","polar","iafric","lifesat","eafric","easian","egend","iasian","igend","posaffect"))
+
+
+data.phase2.MASE %>% 
+ ggplot(aes(x = domain, y = response, colour = Method.code, fill=Method.code))+
+ geom_pointrange(aes(ymin=lower.CL, ymax=upper.CL), position=pd)+  theme_minimal(base_size = 14) +geom_hline(yintercept =1, linetype='dashed', color='red', 14)+coord_flip()+
+theme(legend.position="bottom") +scale_color_d3()+scale_fill_d3()+  scale_x_discrete(labels=labeling, name="")+
+  labs(colour = "",fill="", x="",y="MASE (M +/- 95%CI)") 
+
+
+data.phase2.MASE.total %>% 
+ ggplot(aes(x = Method.code, y = response, colour = Method.code, fill=Method.code))+
+ geom_pointrange(aes(ymin=lower.CL, ymax=upper.CL), position=pd)+  theme_minimal(base_size = 14) +geom_hline(yintercept =1, linetype='dashed', color='red', 14)+coord_flip()+
+theme(legend.position="bottom") +scale_color_d3()+scale_fill_d3()+  scale_x_discrete(labels=labeling, name="")+
+  labs(colour = "",fill="", x="",y="MASE (M +/- 95%CI)") 
+
+data.phase1.MASE.total$Wave<-"First Tournament"
+data.phase2.MASE.total$Wave<-"Second Tournament"
+
+#combine
+means.compare.by.method<-bind_rows(data.phase1.MASE.total,data.phase2.MASE.total)
+
+
+
+
+means.compare.by.method$Method[means.compare.by.method$Method.code=="Data-Driven"&
+                                      means.compare.by.method$Wave=="First Tournament"]<-"Data-Driven/n51%"
+
+#arrange in descending order based on MASE w2 of academics
+means.compare.by.method$Wave<-factor(means.compare.by.method$Wave,levels=c("First Tournament","Second Tournament"))
+
+means.compare.by.method$Method<-c('Data-Driven\n51%','Hybrid\n7%','Intuition/Theory\n42%','Data-Driven\n53%','Hybrid\n8%','Intuition/Theory\n39%')
+
+means.compare.by.method %>%  
+ ggplot(aes(x = Method, y = response, color = Method.code))+
+ geom_pointrange(aes(ymin=lower.CL, ymax=upper.CL), position=pd)+  theme_minimal(base_size = 14)+geom_hline(yintercept =1, linetype='dashed', color='red',14)+theme(legend.position="none")+scale_color_futurama()+  labs(y="Inaccuracy - MASE (M +/- 95%CI)",x="",shape="",color="")+ facet_wrap(~ Wave, scales = "free_x")
+
+  
+  
+  
+
+```
+
+## compare scores from tournament 1 and tournament 2
+
+```{r}
+#count how many domains per person
+phase1_exp<-phase1_exp %>%group_by(team_name) %>%  mutate(n_domains = n())
+phase1_exp$Domain_Publications<-ifelse(phase1_exp$pub==1,1,ifelse(phase1_exp$pub==2,0,NA))
+
+
+#count how many domains per person
+dat_phase2<-dat_phase2 %>%group_by(team_name) %>%  mutate(n_domains = n())
+dat_phase2$Domain_Publications<-ifelse(dat_phase2$pub==1,1,ifelse(dat_phase2$pub==2,0,NA))
+
+subset1<- phase1_exp %>% ungroup() %>% select(MASE1_w1,domain,Method.code,ResponseId,team_name,covidcondyn,CounterFactual_Presence_Final,Method.complex,parameters_coded,n_domains,multi_dis.factor,team_discipline.coded,team_size.coded,team_gender,team_education,confidence,subexpert,Domain_Publications,previous_tournament.coded) %>% mutate(inaccuracy = MASE1_w1,phase = "first")
+
+subset2<- dat_phase2 %>% ungroup() %>% select(MASE1_w2,domain,Method.code,ResponseId,team_name,covidcondyn,CounterFactual_Presence_Final,Method.complex,parameters_coded,n_domains,multi_dis.factor,team_discipline.coded,team_size.coded,team_gender,team_education,confidence,subexpert,Domain_Publications,previous_tournament.coded) %>% mutate(inaccuracy = MASE1_w2,phase = "second")
+
+#combine
+both.sets<-bind_rows(subset1,subset2)
+
+both.sets$covidconditional<-ifelse(both.sets$covidcondyn==1,1,0)
+both.sets$covidconditional[is.na(both.sets$covidconditional)]<-0
+both.sets$Method.complex[is.na(both.sets$Method.complex)]<-1 #simple when no extra info is provided, because the rest {number of parameters et.) suggests no extra factors considered}
+both.sets$multi_dis.factor[is.na(both.sets$multi_dis.factor)]<-"Single domain expertise" #(setting is NA to non multidisciplinary)
+both.sets$team_discipline.coded[is.na(both.sets$team_discipline.coded)]<-5 #(setting is NA to other)
+
+both.sets$team_discipline.datasci<-ifelse(both.sets$team_discipline.coded==3,1,0)
+both.sets$team_discipline.SBsci<-ifelse(both.sets$team_discipline.coded==1,1,ifelse(both.sets$team_discipline.coded==2,1,0))
+
+
+#analyze comparison of tournament 1 to tournament 2
+
+both.sets.model<-  lmer(log(inaccuracy)~phase+(1|team_name), data=both.sets)
+car::Anova(both.sets.model,type="III") #sig effect
+emmeans(both.sets.model,~phase, type="response")
+
+both.sets.domain.model<-  lmer(log(inaccuracy)~domain+(1|team_name), data=both.sets)
+car::Anova(both.sets.domain.model,type="III") #sig effect
+emmeans(both.sets.domain.model,pairwise~domain, type="response")
+
+#examine effects of covariates
+
+both.sets$inaccuracy_log<-log(both.sets$inaccuracy)
+
+both.sets$Multidisciplinary<-ifelse(both.sets$multi_dis.factor=="Single domain expertise",0,1)
+both.sets$covidconditional[is.na(both.sets$covidconditional)]<-0
+both.sets$Method.complex[is.na(both.sets$Method.complex)]<-1 #simple when no extra info is provided, because the rest {number of parameters et.) suggests no extra factors considered}
+both.sets$multi_dis.factor[is.na(both.sets$multi_dis.factor)]<-"Single domain expertise" #(setting is NA to non multidisciplinary)
+
+###analyses
+
+model.bothTournaments.COVs<-lmer(inaccuracy_log~parameters_coded+Method.complex+covidconditional+CounterFactual_Presence_Final+n_domains+team_discipline.datasci+team_discipline.SBsci+Multidisciplinary+team_size.coded+team_gender+team_education+confidence+subexpert+Domain_Publications+previous_tournament.coded+(1|team_name), data=both.sets, REML=F)
+summ(model.bothTournaments.COVs, conf.method="boot", digits=3, center=T, robust = "HC1")
+
+plot.COV<-plot_summs(model.bothTournaments.COVs, scale = TRUE, robust = "HC1",n.sd = 2, inner_ci_level = .9,
+                     coefs = c("Statistical Model Complexity" = "Method.complex","N Model Parameters" = "parameters_coded", 
+                     "Considered COVID-19" = "covidconditional",
+                     "Considered Counterfactuals"="CounterFactual_Presence_Final",
+                     "Number of Predicted Domains"="n_domains",
+                     "Data Scientists on the Team"="team_discipline.datasci",
+                     "Behav./Soc. Scientists on the Team"="team_discipline.SBsci",
+                     "Multidisciplinary"="Multidisciplinary",
+                     "Team Size"="team_size.coded",
+                     "% non-Male on the Team"="team_gender",
+                     "% without PhD on the Team"="team_education",
+                     "Confidence in Forecast"="confidence",
+                     "Self-report Expertise"="subexpert",
+                     "Team Members Topic Publications"="Domain_Publications",
+                      "Prev. Exp. with\nForecasting Tournaments"="previous_tournament.coded"))
+plot.COV$data<-plot.COV$data %>% arrange(estimate) %>%    # First sort by val. This sort the dataframe but NOT the factor levels
+  mutate(term=factor(term, levels=term))
+  plot.COV+labs(x="Contribution to Inaccuracy")
+  
+#export_summs(model.bothTournaments.COVs, scale = TRUE, robust = "HC1",n.sd = 2, to.file = "docx")
+#export_summs(model.bothTournaments.COVs, scale = F, robust = "HC1", to.file = "docx")
+
+
+library(partR2)
+
+partr2.COV<-partR2(model.bothTournaments.COVs,  data=both.sets,
+              R2_type = "marginal", nboot = 10, CI = 0.95)
+summary(partr2.COV) #obtain effect sizes scores for unique predictors (incremental R2)
+
+```
+
+# Role of Updating - Phase 2
+
+```{r}
+
+pd <- position_dodge(0.7) # move them .07 to the left and right
+dat_phase2<-academic_only %>%filter(!(phase == 1 & revised == 1)) #just academics
+dat_phase2$Method.code <- relevel(factor(dat_phase2$Method.code), "Intuition/Theory") #use lay people as a reference group
+dat_phase2$method.contrast<-ifelse(dat_phase2$Method.code=='Intuition/Theory',0,1)
+dat_phase2$compare_to_naive_rwf_MASE2.update<-ifelse(dat_phase2$compare_to_naive_rwf_MASE_w2!="Equal to Naive rwf",dat_phase2$compare_to_naive_rwf_MASE_w2,ifelse(dat_phase2$compare_to_naive_rwf_MASE_w2=="Equal to Naive rwf","Below Naive rwf",NA))
+dat_phase2$compare_to_naive_linear_MASE2.update<-ifelse(dat_phase2$compare_to_naive_linear_MASE_w2!="Equal to Naive linear",dat_phase2$compare_to_naive_linear_MASE_w2,ifelse(dat_phase2$compare_to_naive_linear_MASE_w2=="Equal to Naive linear","Below Naive linear",NA))
+dat_phase2$Group[dat_phase2$TournamentStart=="May"&dat_phase2$revised == 0]<-"Original May"
+dat_phase2$Group[dat_phase2$TournamentStart=="November"&dat_phase2$revised == 0]<-"Original November"
+dat_phase2$Group[dat_phase2$TournamentStart=="May"&dat_phase2$revised == 1]<-"Updated May"
+dat_phase2$teamS<-as.factor(ifelse(dat_phase2$team_size.coded>=6,3,ifelse(dat_phase2$team_size.coded<6&dat_phase2$team_size.coded>1,2,ifelse(dat_phase2$team_size.coded==1,1,NA))))
+dat_phase2$is_multidisciplinary<-ifelse(dat_phase2$discipline=="Multi-disciplinary",1,0)
+dat_phase2$objectivexpert<-ifelse(dat_phase2$pub==1,"Expert",ifelse(dat_phase2$pub==2,"Non Expert",NA))
+dat_phase2$covidconditional<-ifelse(dat_phase2$covidcondyn==0,"No",ifelse(dat_phase2$covidcondyn==1,"Yes",NA))
+
+#add historical variability data (as extra variable)
+dat_phase2<-dat_phase2 %>% left_join(complexity)
+
+#count how many domains per person
+dat_phase2<-dat_phase2 %>%group_by(team_name) %>% 
+ mutate(n_domains = n())
+
+## EXAMINE EFFECTS OF new teams at phase 2 vs. OG teams who updated their forecasts: Just ACADEMICS
+##revised  - Indicates whether or not the team has a matching submission in both phase 1 & 2 for the same domain
+model.phase2.update<-  lmer(log(MASE1_w2)~Group+(1|ResponseId), data=dat_phase2)
+car::Anova(model.phase2.update,type="III") #sig difference between May and Nov, but not between original may and original Nov
+summ(model.phase2.update)
+emmeans(model.phase2.update,pairwise ~Group, adjust = "none") #nonsig
+#contrast difference of updating forecasts for explicit asian bias, life satisfaction, neg affect, polarization, pos affect
+
+###by type of justification
+##first, create the variable
+#Just new data as a reason for update
+dat_phase2$Group.data[dat_phase2$Group!="Updated May"]<-dat_phase2$Group
+dat_phase2$Group.data[dat_phase2$Group=="Updated May"&dat_phase2$justification_dataReceived==1]<-"Data"
+dat_phase2$Group.data[dat_phase2$Group=="Updated May"&dat_phase2$justification_theoreticalInsight==1]<-"Theory"
+dat_phase2$Group.data[dat_phase2$Group=="Updated May"&dat_phase2$justification_externalEvent==1]<-"Extra"
+
+model.phase2.update.data<-  lmer(log(MASE1_w2)~Group.data+(1|ResponseId), data=dat_phase2)
+car::Anova(model.phase2.update.data,type="III")
+emmeans(model.phase2.update.data,pairwise ~Group.data, adjust = "none") #nonsig
+
+dat_phase2$MASE1_w2_log<-log(dat_phase2$MASE1_w2)
+model.phase2.update.type<-  lmer(MASE1_w2_log~justification_dataReceived+justification_theoreticalInsight+justification_externalEvent+(1|team_name), data=dat_phase2)
+car::Anova(model.phase2.update.type,type="III") #sig difference between May and Nov, but not between original may and original Nov
+summ(model.phase2.update.type,scale = F, robust = "HC1", digits=3, n.sd = 2)
+#no sig differences
+#export_summs(model.phase2.update.type, scale = T, robust = "HC1", n.sd = 2, to.file = "docx")
+
+
+```
+
+# Phase 1 analyses 
+
 ```{r PHASE 1 analyses}
+
+
+model.layVSsci.phase1<-  lmer(log(MASE1_w1)~domain*isExpert.factor+(1|ResponseId), data=phase1)
+car::Anova(model.layVSsci.phase1,type="III") #sig interaction!
+emmeans(model.layVSsci.phase1,specs = trt.vs.ctrl ~isExpert.factor|domain,  type="response",adjust = "fdr") 
+
+eff_size(emmeans(model.layVSsci.phase1,specs = trt.vs.ctrl ~isExpert.factor|domain,  type="response",adjust = "fdr") 
+, sigma = sigma(model.layVSsci.phase1), edf = 1796) #get Cohen's D effect sizes
+
+#comparison of domains among scientists
+model.domains.phase1<-  lmer(log(MASE1_w1)~domain+(1|ResponseId), data=phase1_exp)
+car::Anova(model.domains.phase1,type="III") #sig main effect!
+emmeans(model.domains.phase1,pairwise  ~domain,  type="response",adjust = "fdr") 
+
+
+
 model.long.phase1<-  lmer(value.dif~domain*Method.code*Month0+(1|domain/ResponseId), data=dat_long_phase1)
 car::Anova(model.long.phase1,type="III") #marg effect of method, sig Month, and domain * method
 
@@ -498,48 +1110,7 @@ theme(legend.position="bottom") +scale_color_d3()+scale_fill_d3()+ facet_wrap(~d
 #interactions::cat_plot(model.long.phase1.fac,pred=Month.F,modx =Method.code,mod2 = domain,interval = T, mod2.labels = c("Exp. Af-Am. Bias","Exp. As-Am. Bias","Exp. Gender Bias","Imp. Af-Am. Bias","Imp. As.-Am. Bias",
 #         "Democrats","Republicans","Imp. Gender Bias","Life Satisfaction","Negative Affect","Polit. Polarization","Positive Affect"),legend.main="", colors="Qual3",interval.geom="linerange")+facet_wrap(vars(domain), scales = "free", nrow = 4)+labs(x="Months #(from May 2021)",y="Absolute Percentage Deviation (M +/- 95%CI)")
 
-#by method for phase 1
-###inspect data for distribution properties
-
-hist(log(phase1$MASE1_w1)) #possibly do it on logs?
-describe(phase1$MASE1_w1)
-
-#analyses of phase 1  - MASE overall
-#For models evaluating overall accuracy of the forecasted model, we will use forecasting type (purely theoretical, purely data-driven and hybrid models), forecasting domain as predictors, with MASE scores nested within teams. 
-model.phase1<-  lmer(log(MASE1_w1)~domain*Method.code+(1|ResponseId), data=phase1)
-
-car::Anova(model.phase1,type="III") #sig interaction!
-
-summ(model.phase1, digits=4)
-emmeans(model.phase1,trt.vs.ctrl ~Method.code|domain, adjust = "none") #lay vs. rest
-emmeans(model.phase1,pairwise ~Method.code|domain, adjust = "none")
-
-data.phase1.MASE<-as.data.frame(emmeans(model.phase1,pairwise ~Method.code|domain, adjust = "none")$emmeans)
-data.phase1.MASE %>% 
- ggplot(aes(x = domain, y = emmean, colour = Method.code, fill=Method.code))+
- geom_pointrange(aes(ymin=lower.CL, ymax=upper.CL), position=pd)+  theme_minimal(base_size = 14) +geom_hline(yintercept =0, linetype='dashed', color='red', 14)+
-theme(legend.position="bottom") +scale_color_d3()+scale_fill_d3()+  scale_x_discrete(labels=labels, name="")+
-  labs(colour = "",fill="", x="",y="Log MASE (M +/- 95%CI)") 
-
-#phase1 %>% ggplot(aes(x = domain, y = MASE1_w1,colour = Method.code, fill=Method.code))+geom_violin()+
-#   theme(legend.position="bottom") +scale_color_d3()+scale_fill_d3()+ylim(0,NA)+facet_wrap(~domain, nrow=3, scale="free")+
-#  labs(colour = "Sample",fill="Sample", x="",y="MASE (M +/- 95%CI)") #not very useful graph
-
-##try to estimate overall fixed effects across domains
-
-model.phase1.total<-  lmer(log(MASE1_w1)~Method.code+(1|ResponseId), data=phase1)
-car::Anova(model.phase1.total,type="III") #overall, a main effect of method
-summ(model.phase1.total, digits=4)
-emmeans(model.phase1.total,trt.vs.ctrl ~Method.code, adjust = "none") #data driven sig different from lay people, but not for intuition vs. lay people.
-
-data.phase1.MASE.total<-as.data.frame(emmeans(model.phase1.total,pairwise ~Method.code, adjust = "none")$emmeans)
-data.phase1.MASE.total %>% 
- ggplot(aes(x = Method.code, y = emmean, colour = Method.code, fill=Method.code))+
- geom_pointrange(aes(ymin=lower.CL, ymax=upper.CL), position=pd)+  theme_minimal(base_size = 14) +geom_hline(yintercept =0, linetype='dashed', color='red', 14)+
-theme(legend.position="bottom") +scale_color_d3()+scale_fill_d3()+  scale_x_discrete(labels=labels, name="")+
-  labs(colour = "",fill="", x="",y="log(MASE) (M +/- 95%CI)") 
-
-##with naive benchmarks
+#MASE 1 with naive benchmarks
 dat$ResponseId[dat$Method.code=="Naive-linear"]<-"Naive\nLinear Regression"
 dat$ResponseId[dat$Method.code=="Naive-rfw"]<-"Naive\nRandom Walk"
 dat$Method.code[dat$Method.code=="Naive-linear"]<-"Naive\nLinear Regression"
@@ -555,14 +1126,6 @@ data.phase1.MASE.total.w.naive %>%
 theme(legend.position="none") +scale_color_d3()+scale_fill_d3()+  scale_x_discrete(labels=labels, name="")+
   labs(colour = "",fill="", x="",y="log(MASE) (M +/- 95%CI)") 
 
-## EXAMINE ONLY ACADEMICS, USING CONTRAST OF THEORY vs. DATA.HYBRID
-phase1_exp$method.contrast<-ifelse(phase1_exp$Method.code=='Intuition/Theory',0,1)
-
-model.phase1.contrast<-  lmer(log(MASE1_w1)~domain*method.contrast+(1|ResponseId), data=phase1_exp)
-car::Anova(model.phase1.contrast,type="III") #sig domain effect,  and sig interaction
-
-summ(model.phase1.contrast, digits=4) #get effect size for the overall model
-emmeans(model.phase1.contrast,pairwise ~method.contrast|domain, adjust = "none")
 
 #examine vs. benchmarks of accuracy 
 ## naive random walk
@@ -680,7 +1243,7 @@ theme(legend.position="bottom") +scale_color_d3()+scale_fill_d3()+  scale_x_disc
 
 
 ```{r PHASE 1 MASE analyses w covariates}
-
+p
 #### first, confidence
 model.phase1.conf<-  lmer(log(MASE1_w1)~domain*confidence+(1|ResponseId), data=phase1_exp)
 car::Anova(model.phase1.conf,type="III") #sig interaction
@@ -801,16 +1364,35 @@ emtrends(model.phase1.team,specs=~domain,var="team_education") #
 emtrends(model.phase1.team,specs=~domain,var="team_Age") #
 
 
-#### Thirsteen: variability in historical data
+#### Thirteen: variability in historical data
 
 summary(lm(log(MASE1_w1)~sd_hist, data=phase1_exp))
-model.phase1.SD<-  lmer(log(MASE1_w1)~sd_hist +(1|ResponseId), data=phase1_exp)
+model.phase1.SD<-  lmer(log(MASE1_w1)~sd_hist_w1 +(1|ResponseId), data=phase1_exp)
 car::Anova(model.phase1.SD,type="III") ##variability in historical data did not matter
 
-summary(lm(log(MASE1_w1)~mad_hist, data=phase1_exp))
+summary(lm(log(MASE1_w1)~mad_hist_w1, data=phase1_exp))
 
-model.phase1.MAD<-  lmer(log(MASE1_w1)~mad_hist +(1|ResponseId), data=phase1_exp)
+model.phase1.MAD<-  lmer(log(MASE1_w1)~mad_hist_w1 +(1|ResponseId), data=phase1_exp)
 car::Anova(model.phase1.MAD,type="III") ##variability in historical data did not matter
+
+model.phase1.permcomplex<-  lmer(log(MASE1_w1)~perp_entropy_hist_w1 +(1|ResponseId), data=phase1_exp)
+summary(model.phase1.permcomplex)
+car::Anova(model.phase1.permcomplex,type="III") ## the more perm/ complex the historical trends, the higher the MASE
+
+
+#### Thirteen & 1/2: complexity in predicted trends and MASE
+summary(lm(log(MASE1_w1)~sd_w1, data=phase1_exp))
+model.phase1.SD.data<-  lmer(log(MASE1_w1)~sd_w1 +(1|ResponseId), data=phase1_exp)
+car::Anova(model.phase1.SD.data,type="III") ##variability in objective -to-predict data did not matter
+
+summary(lm(log(MASE1_w1)~mad_w1, data=phase1_exp))
+
+model.phase1.MAD.data<-  lmer(log(MASE1_w1)~mad_w1 +(1|ResponseId), data=phase1_exp)
+car::Anova(model.phase1.MAD.data,type="III") ##variability in objective -to-predict  data did not matter
+
+model.phase1.permcomplex.data<-  lmer(log(MASE1_w1)~perp_entropy_w1 +(1|ResponseId), data=phase1_exp)
+summary(model.phase1.permcomplex.data)
+car::Anova(model.phase1.permcomplex.data,type="III") # nonsig trend -  the more perm/ complex the objective trends, the lower the MASE - but effect is weak!
 
 #### Fourteen: number of domains the team made predictions about
 
@@ -960,6 +1542,54 @@ emtrends(model.long.phase1.team,specs=~domain,var="team_gender") #
 
 ```
 
+```{r inaccuracy on odd and even month - stability of inaccuracy}
+#to assess and protect against the possibility that forecasting models are accurate by chance (in the same way that some investing strategies can “get lucky” in a particular time point without actually being better than other strategies), we used subsets of the data (odd and event months) to determine whether model accuracy in one subset of predictions (ranking of model performance across odd months) correlates with model accuracy in the other subset (ranking of model performance across even months). 
+
+dat_long_phase1_exp<-(subset(dat_long_phase1, isExpert.factor == 'Academic'))
+
+dat_long_phase1_exp_wide_by_month<-dat_long_phase1_exp %>%dplyr::select(domain,team_name,Month,value.dif) %>%  pivot_wider(names_from=c(Month),values_from=c(value.dif))
+
+dat_long_phase1_exp_wide_by_month$odd_month_inaccuracy=rowMeans(dat_long_phase1_exp_wide_by_month[c("1","3","5","7","9","11")],na.rm=T)
+
+dat_long_phase1_exp_wide_by_month$even_month_inaccuracy=rowMeans(dat_long_phase1_exp_wide_by_month[c("2","4","6","8","10","12")],na.rm=T)
+
+#correlations by domain
+
+dat_long_phase1_exp_wide_by_month %>%select(domain,odd_month_inaccuracy,even_month_inaccuracy) %>% 
+    group_by(domain) %>%
+    correlation::correlation(ranktransform =T)    
+
+#multilevel
+dat_long_phase1_exp_wide_by_month %>%select(domain,odd_month_inaccuracy,even_month_inaccuracy) %>% 
+    correlation::correlation(multilevel=T,ranktransform=T)  
+
+
+###PHASE 2
+
+dat_long$Month7<-dat_long$Month-7
+dat_long_phase2<-dat_long %>%filter(!(phase == 1 & revised == 1)& Method.code!="Ground Truth"& Method.code!="Naive-linear"&Method.code!="Naive-rfw" & Month %in% c(7,8,9,10,11,12))
+
+
+
+dat_long_phase2_exp_wide_by_month<-dat_long_phase2 %>%dplyr::select(domain,team_name,Month7,value.dif) %>%  pivot_wider(names_from=c(Month7),values_from=c(value.dif))
+
+dat_long_phase2_exp_wide_by_month$odd_month_inaccuracy=rowMeans(dat_long_phase2_exp_wide_by_month[c("1","3","5")],na.rm=T)
+
+dat_long_phase2_exp_wide_by_month$even_month_inaccuracy=rowMeans(dat_long_phase2_exp_wide_by_month[c("2","4","0")],na.rm=T)
+
+#correlations by domain
+
+dat_long_phase2_exp_wide_by_month %>%select(domain,odd_month_inaccuracy,even_month_inaccuracy) %>% 
+    group_by(domain) %>%
+    correlation::correlation(ranktransform =T)    
+
+#multilevel
+dat_long_phase2_exp_wide_by_month %>%select(domain,odd_month_inaccuracy,even_month_inaccuracy) %>% 
+    correlation::correlation(multilevel=T,ranktransform=T) 
+
+
+```
+
 # Phase 2 analyses
 
 ```{r PHASE 2 prep and simple viz}
@@ -980,7 +1610,7 @@ dat_phase2$objectivexpert<-ifelse(dat_phase2$pub==1,"Expert",ifelse(dat_phase2$p
 dat_phase2$covidconditional<-ifelse(dat_phase2$covidcondyn==0,"No",ifelse(dat_phase2$covidcondyn==1,"Yes",NA))
 
 #add historical variability data (as extra variable)
-dat_phase2<-dat_phase2 %>% left_join(hist_all_summary)
+dat_phase2<-dat_phase2 %>% left_join(complexity)
 
 #count how many domains per person
 dat_phase2<-dat_phase2 %>%group_by(team_name) %>% 
@@ -1024,37 +1654,12 @@ ggplot(aes(x = Month7, y = value, colour = Method.code, fill=Method.code))+
 
 ```{r PHASE 2 analyses}
 
-
-#OVERALL MASE by method for phase 2
-#For models evaluating overall accuracy of the forecasted model, we will use forecasting type (purely theoretical, purely data-driven and hybrid models), forecasting domain as predictors, with MASE scores nested within teams. 
-model.phase2<-  lmer(log(MASE1_w2)~domain*Method.code+(1|ResponseId), data=academic_only)
-car::Anova(model.phase2,type="III") #nothing
-
-data.phase2.MASE<-as.data.frame(emmeans(model.phase2,pairwise ~Method.code*domain, adjust = "none")$emmeans)
-data.phase2.MASE %>% 
- ggplot(aes(x = domain, y = emmean, colour = Method.code, fill=Method.code))+
- geom_pointrange(aes(ymin=lower.CL, ymax=upper.CL), position=pd)+ theme_minimal(base_size = 14) +geom_hline(yintercept =0, linetype='dashed', color='red', 14)+
-theme(legend.position="bottom") +scale_color_d3()+scale_fill_d3()+  
-  labs(colour = "",fill="", x="",y="log MASE (M +/- 95%CI)") +scale_x_discrete(labels=labels)
-
-emmeans(model.phase2,trt.vs.ctrl ~Method.code|domain, adjust = "none") #intuition/theory vs. rest
-emmeans(model.phase2,pairwise ~Method.code|domain, adjust = "none")
+#comparison of domains among scientists
+model.domains.phase2<-  lmer(log(MASE1_w2)~domain+(1|ResponseId), data=subset(dat_phase2,isExpert.factor="Academics"))
+car::Anova(model.domains.phase2,type="III") #sig main effect!
+emmeans(model.domains.phase2,pairwise  ~domain,  type="response",adjust = "fdr") 
 
 
-##across all domains
-model.phase2.total<-  lmer(log(MASE1_w2)~Method.code+(1|ResponseId), data=academic_only)
-car::Anova(model.phase2.total,type="III") #nothing
-
-summ(model.phase2.total, digits=4)
-
-data.phase2.MASE.total<-as.data.frame(emmeans(model.phase2.total,pairwise ~Method.code, adjust = "none")$emmeans)
-data.phase2.MASE.total %>% 
- ggplot(aes(x = Method.code, y = emmean, colour = Method.code, fill=Method.code))+
- geom_pointrange(aes(ymin=lower.CL, ymax=upper.CL), position=pd)+ theme_minimal(base_size = 14) +geom_hline(yintercept =0, linetype='dashed', color='red', 14)+
-theme(legend.position="bottom") +scale_color_npg()+scale_fill_npg()+  
-  labs(colour = "",fill="", x="",y="log MASE (M +/- 95%CI)") +scale_x_discrete(labels=labels)
-
-emmeans(model.phase2.total,pairwise ~Method.code, adjust = "none")
 
 ##with naive benchmarks
 dat$ResponseId[dat$Method.code=="Naive-linear"]<-"Naive\nLinear Regression"
@@ -1107,7 +1712,6 @@ naive_rwf_MASE_domain_w2 <- dat_phase2 %>% group_by(domain, compare_to_naive_rwf
   group_by(domain) %>% mutate(ptg = prop.table(N)*100) %>% ungroup() %>% 
   arrange(by_group=compare_to_naive_rwf_MASE_w2,desc(ptg))
 knitr::kable((naive_rwf_MASE_domain_w2))
-
 
 ## naive linear regression
 #to be able to calculate estimate scores==> equate at naive RWF to below.
@@ -1322,15 +1926,34 @@ emtrends(model.phase2.team,specs=~domain,var="team_gender") #nothing
 emtrends(model.phase2.team,specs=~domain,var="team_Age") #
 
 #### Thirsteen: variability in historical data
+summary(lm(log(MASE1_w2)~sd_hist_w2, data=dat_phase2))
+model.phase2.SD<-  lmer(log(MASE1_w2)~sd_hist_w2 +(1|ResponseId), data=dat_phase2)
+car::Anova(model.phase2.SD,type="III") ##variability in historical data matters
 
-summary(lm(log(MASE1_w2)~sd_hist, data=dat_phase2))
-model.phase2.SD<-  lmer(log(MASE1_w1)~sd_hist +(1|ResponseId), data=dat_phase2)
-car::Anova(model.phase2.SD,type="III") ##variability in historical data did not matter
+summary(lm(log(MASE1_w2)~mad_hist_w2, data=dat_phase2))
 
-summary(lm(log(MASE1_w2)~mad_hist, data=dat_phase2))
+model.phase2.MAD<-  lmer(log(MASE1_w2)~mad_hist_w2 +(1|ResponseId), data=dat_phase2)
+car::Anova(model.phase2.MAD,type="III") ##variability in historical data matters
 
-model.phase2.MAD<-  lmer(log(MASE1_w2)~mad_hist +(1|ResponseId), data=dat_phase2)
-car::Anova(model.phase2.MAD,type="III") ##variability in historical data did not matter
+model.phase2.permcomplex<-  lmer(log(MASE1_w2)~perp_entropy_hist_w2 +(1|ResponseId), data=dat_phase2)
+summary(model.phase2.permcomplex)
+car::Anova(model.phase2.permcomplex,type="III") ## tno sig effects
+
+
+#### Thirteen & 1/2: complexity in predicted trends and MASE
+summary(lm(log(MASE1_w2)~sd_w2, data=dat_phase2))
+model.phase2.SD.data<-  lmer(log(MASE1_w1)~sd_w2 +(1|ResponseId), data=dat_phase2)
+car::Anova(model.phase2.SD.data,type="III") ##variability in objective -to-predict data matters, too, but less than historical variability
+
+summary(lm(log(MASE1_w2)~mad_w2, data=dat_phase2))
+
+model.phase2.MAD.data<-  lmer(log(MASE1_w2)~mad_w2 +(1|ResponseId), data=dat_phase2)
+car::Anova(model.phase2.MAD.data,type="III") ##variability in objective -to-predict  data matters
+
+model.phase2.permcomplex.data<-  lmer(log(MASE1_w2)~perp_entropy_w2 +(1|ResponseId), data=dat_phase2)
+summary(model.phase2.permcomplex.data)
+car::Anova(model.phase2.permcomplex.data,type="III") # sig effect the more perm/ complex the objective trends, the lower the MASE 
+
 
 #### Fourteen: number of domains the team made predictions about
 
@@ -2081,16 +2704,18 @@ expert_dat <- filter(dat, isExpert == 1)
 
   #using MASE1
 
-updated.analysis <-lmer(MASE1_w2~revised +(1|ResponseId),data=expert_dat)
+updated.analysis <-lmer(log(MASE1_w1)~revised +(1|ResponseId),data=expert_dat)
 print(updated.analysis)
-
+emmeans(updated.analysis,~revised, scale="response")
 anova.updated  <- car::Anova(updated.analysis,type="III")
-print(anova.updated)
+
+print(anova.updated) #no difference
 
   #using MASE2
 
-updated.analysis2 <-lmer(MASE2_w2~revised+(1|ResponseId),data=expert_dat)
+updated.analysis2 <-lmer(log(MASE1_w2)~revised+(1|ResponseId),data=expert_dat)
 print(updated.analysis2)
+emmeans(updated.analysis2,~revised, scale="response")
 
 anova.updated2  <- car::Anova(updated.analysis2,type="III")
 print(anova.updated2)

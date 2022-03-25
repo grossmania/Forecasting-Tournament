@@ -1191,7 +1191,85 @@ dat <- dat %>% left_join(dat_accuracy_covid, by = c("phase" = "phase", "Response
 
 ```
 
+###compute mase for phase 1 months 1 to 6
 
+ 
+
+```{r compute mase for months 1 to 6 for phase 1 to compare to A. last six months, and to phase 2 }
+
+# create data set that will be merged with dat, that contains additional columns for mean error, root mean square error, mean percent error, mean absolute error, mean absolute percent error and the two types of mean absolute scaled error that are being calculated (#1 uses function declared on line 34, #2 uses Metrics::mase function)
+dat_accuracy_w1_firstmonths <- tibble(
+  ResponseId_w1_firstmonths = character(),
+  domain_w1_firstmonths = character(),
+  mean_error_w1_firstmonths = numeric(),
+  root_mean_sqr_error_w1_firstmonths = numeric(),
+  mean_abs_error_w1_firstmonths = numeric(),
+  mean_percent_error_w1_firstmonths = numeric(),
+  mean_abs_percent_error_w1_firstmonths = numeric(),
+  MASE1_w1_firstmonths = numeric()
+)
+
+
+dat_predicted_w1_firstmonths <- filter(dat_wave_1, Month < 7)
+domain_outcomes_w1_firstmonths <- filter(domain_outcomes, Month < 7)
+
+ 
+
+# For each team that submitted a prediction, filter dataset by team & domain
+# pull relevant historic data for the domain and generate forecast accuracy to get mean error, root mean square error, mean absolute error, mean percent error, and mean absolute percent error
+# calculate both types of MASE values
+
+ 
+
+for (i in 1:length(unique_teams_predicted_w1)) {
+  dat_temp_1_w1_firstmonths <- filter(dat_predicted_w1_firstmonths, ResponseId == unique_teams_predicted_w1[i])
+  
+  domain_list_w1_firstmonths <- unique(dat_temp_1_w1_firstmonths$domain)
+  
+  for (n in 1:length(domain_list_w1_firstmonths)) {
+    
+    dat_temp_2_w1_firstmonths <- filter(dat_temp_1_w1_firstmonths, domain == domain_list_w1_firstmonths[n])
+    
+    vals_w1_firstmonths <- as.vector(dat_temp_2_w1_firstmonths$value)
+    
+    objective_data_firstmonths <- dat_hist[ , which(names(dat_hist) == domain_list_w1_firstmonths[n])]
+    objective_data_firstmonths <- as.vector((objective_data_firstmonths))
+
+ 
+
+    
+    outcome_w1_firstmonths <- forecast::accuracy(dat_temp_2_w1_firstmonths$value, domain_outcomes_w1_firstmonths[, which(names(domain_outcomes_w1_firstmonths) == domain_list_w1_firstmonths[n])])
+
+ 
+
+    dat_accuracy_w1_firstmonths <- dat_accuracy_w1_firstmonths %>% add_row(
+      ResponseId_w1_firstmonths = unique_teams_predicted_w1[i],
+      domain_w1_firstmonths = domain_list_w1_firstmonths[n],
+      mean_error_w1_firstmonths = outcome_w1_firstmonths[1],
+      root_mean_sqr_error_w1_firstmonths = outcome_w1_firstmonths[2],
+      mean_abs_error_w1_firstmonths = outcome_w1_firstmonths[3],
+      mean_percent_error_w1_firstmonths = outcome_w1_firstmonths[4],
+      mean_abs_percent_error_w1_firstmonths = outcome_w1_firstmonths[5],
+      MASE1_w1_firstmonths = computeMASE(dat_temp_2_w1_firstmonths$value, objective_data_firstmonths[1:40], objective_data_firstmonths[41:46], 1)
+                             )
+
+ 
+
+  }
+}
+
+ 
+
+dat_accuracy_w1_firstmonths$phase <- 1
+
+ 
+
+# merge dat_accuracy with dat by matching response ID, phase, and domain
+dat <- dat %>% left_join(dat_accuracy_w1_firstmonths, by = c("phase" = "phase", "ResponseId" = "ResponseId_w1_firstmonths", "domain" = "domain_w1_firstmonths"))
+
+ 
+
+```
 
 ###compute mase for phase 1 months 7 to 12
 
@@ -1213,7 +1291,6 @@ dat_accuracy_w1_lastmonths <- tibble(
   MASE1_w1_lastmonths = numeric()
 )
 
- 
 
 dat_predicted_w1_lastmonths <- filter(dat_wave_1, Month > 6 & Month < 13)
 domain_outcomes_w1_lastmonths <- filter(domain_outcomes, Month > 6 & Month < 13)
