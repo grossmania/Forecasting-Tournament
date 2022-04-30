@@ -30,7 +30,6 @@ library(CGPfunctions) #to graph change in trends over time.
 library(partR2) #to get partR2 for LME models
 library(moments) #to get skewness
 library(ggpubr) #to combine plots
-theme_set(theme_pubr())
 
 options(max.print = 20000, scipen = 1000)
 
@@ -45,6 +44,57 @@ setwd("~/GitHub/Forecasting-Tournament") #igor's working directory
 dat <- read.csv("dat_for_analyses.csv", stringsAsFactors = FALSE)
 dat_long <- read.csv("dat_long.csv", stringsAsFactors = FALSE)
 
+```
+
+```{r get simulated benchmark data & add RW to data}
+#add simulation benchmarks
+sim.w1<- load("sim/BenchmarkData_Combined.RData")
+sim.w1<-Stats_all_benchmarks_raw
+sim.w1$Wave<-"First Tournament (May 2020)"
+sim.w1<-subset(sim.w1,source!="Experts"&source!="Lay People")
+sim.w1$response<-sim.w1$Mean
+sim.w1$lower.CL<-sim.w1$CI_L
+sim.w1$upper.CL<-sim.w1$CI_U
+sim.w1$Type[sim.w1$source=="Benchmark 1"]<-"Historic Mean"
+sim.w1$Type[sim.w1$source=="Benchmark 2"]<-"Random Walk"
+sim.w1$Type[sim.w1$source=="Benchmark 3"]<-"Linear Regression"
+
+sim.w2<- load("sim/BenchmarkData_Combined_W2.RData")
+sim.w2<-Stats_all_benchmarks_raw_w2
+sim.w2$Wave<-"Second Tournament (Nov 2020)"
+sim.w2<-subset(sim.w2,source!="ExpertsW2")
+sim.w2$response<-sim.w2$Mean
+sim.w2$lower.CL<-sim.w2$CI_L
+sim.w2$upper.CL<-sim.w2$CI_U
+sim.w2$Type[sim.w1$source=="Benchmark 1"]<-"Historic Mean"
+sim.w2$Type[sim.w1$source=="Benchmark 2"]<-"Random Walk"
+sim.w2$Type[sim.w1$source=="Benchmark 3"]<-"Linear Regression"
+#get simulation-based random walk cut-offs - to be used for inspection of top teams
+
+#ADD PART how to use RW SIM scores per domain per wave to get the cutoff scores.
+
+##
+#subset benchmark, first
+sim.w1.rw<-sim.w1 %>% filter(Type == 'Random Walk') %>% mutate(rw.MASE.w1 = response) %>% select(domain,rw.MASE.w1)
+sim.w2.rw<-sim.w2 %>% filter(Type == 'Random Walk') %>% mutate(rw.MASE.w2 = response) %>% select(domain,rw.MASE.w2)
+##
+
+##add to the datafile
+dat<-dat %>% left_join(sim.w1.rw)
+dat<-dat %>% left_join(sim.w2.rw)
+
+##create cut-offs
+dat$compare_to_naive_rwf_MASE<-NA #first set to NA
+dat$compare_to_naive_rwf_MASE[dat$MASE1_w1<dat$rw.MASE.w1]<-"Below Naive RW"
+dat$compare_to_naive_rwf_MASE[dat$MASE1_w1>dat$rw.MASE.w1]<-"Above Naive RW"
+dat$compare_to_naive_rwf_MASE[dat$MASE1_w1==dat$rw.MASE.w1]<-"Equal to Naive RW"
+dat$compare_to_naive_rwf_MASE[dat$MASE1_w2<dat$rw.MASE.w2]<-"Below Naive RW"
+dat$compare_to_naive_rwf_MASE[dat$MASE1_w2>dat$rw.MASE.w2]<-"Above Naive RW"
+dat$compare_to_naive_rwf_MASE[dat$MASE1_w2==dat$rw.MASE.w2]<-"Equal to Naive RW"
+
+```
+
+```{r set subsets of data for analyses}
 # dataset that only includes academic predictions and those who provided open-ended data
 academic_only <- filter(dat, isExpert == 1 )
 
@@ -58,7 +108,6 @@ phase2_exp <-filter(phase2, isExpert == 1)
 
 objective<-dat %>% filter(Method=="Objective", phase ==1) %>% select(domain:Month.12)
 ```
-
 
 ```{r create subsets for separate visualizations}
 #####download of phase 1 and 2 files########################
@@ -128,7 +177,7 @@ objective$Domains[objective$domain=="posaffect"]<-"Positive Affect in Social Med
 objective$Domains[objective$domain=="polar"]<-"Political Polarization"
 ```
 
-```{r create a file to share with teams}
+```{r create a file to share with teams to announce how they did}
 t1.academ.sorted<-t1.academ.sorted %>% rename(MASE=MASE1_w1,MAE=mean_abs_error_w1,
                                               May2020=Month.1,
                                               June2020=Month.2,
@@ -177,6 +226,11 @@ write.csv(results,"final.results.csv")
 
 ```{r visualize top performers}
 
+###################################
+#ANALYSES IN THIS SECTION ARE IN PART REPORTED IN THE SUPPLEMENT WENN DESCRIBING TOP PERFORMERS
+#OTHER ANALYSES ARE JUST ADDED FOR AN INTERESTED READER, BUT DID NOT MAKE IT IN THE THE PAPER
+###################################
+
 pd <- position_dodge(0.7) # move them .07 to the left and right
 labels<-c(
   eafric = "Exp. African\n-Am. Bias",
@@ -215,7 +269,7 @@ geom_point(size=3, position=pd, alpha = .5) + scale_x_discrete(labels=labels, na
 proportions(xtabs( ~ Method.code,top.5.MASE.t1))*100 #in total
 proportions(xtabs( ~ domain+Method.code,top.5.MASE.t1),"domain")*100 #by domain
 
-top.5.MASE.t1 %>%  ggplot(aes(x=domain, y=MASE1_w1, colour=compare_to_naive_linear_MASE, shape =compare_to_naive_rwf_MASE )) +  
+top.5.MASE.t1 %>%  ggplot(aes(x=domain, y=MASE1_w1, colour=compare_to_naive_linear_MASE, shape =compare_to_naive_rwf_MASE)) +  
 geom_point(size=3, position=pd, alpha = .5) + scale_x_discrete(labels=labels, name="")+geom_hline(yintercept =1, linetype='dashed', color='red', 14)+theme(legend.position="top")+scale_colour_d3(name="Compared to\nLinear Model")+scale_shape_discrete(name="Compared to\nRandom Walk")+ylab("MASE")
 
 top.5.MASE.t1 %>%  ggplot(aes(x=domain, y=MASE1_w1, colour=discipline)) +  
@@ -395,7 +449,9 @@ chisq.test(xtabs( ~ compare_to_naive_linear_MASE_w2+Method.code,academic_only%>%
 
 # Visualize historical results
 
-```{r}
+```{r INSPECT HISTORICAL TRENDS AND CALCULATE COMPLEXITY}
+#THE SECTION BELOW IS CHIEFLY FOR INFORMATION ABOUT THE HISTORICAL TRENDS, AND VISUALLY INSPECTING VARIABILITY IN TRENDS, AS OUTLINED IN ONE SENTENCE IN THE DISCUSSION OF THE PAPER.
+
 historical<-read.csv("historical_data.csv")
 historical_tsbl <- as_tsibble(historical, index = Month)
 
@@ -411,6 +467,8 @@ historical_tsbl %>% pivot_longer(negaffect:polar,names_to="Domain",values_to="Sc
 hist_long<-as_tibble(historical_tsbl) %>% pivot_longer(negaffect:polar,names_to="domain",values_to="Score")
 #examine SD of all domains for historical data
 
+#THIS SECTION BELOW COMPUTES MARKERS OF COMPLEXITY FOR THE TOURNAMENT, INCLUDING SD, MAD, AND AN SUPPLEMENTARY METRIC OF PERMUTATION ENTROPY
+
 hist_var_w1<-as_tibble(historical_tsbl) %>%subset(Month < 0)%>% pivot_longer(negaffect:polar,names_to="domain",values_to="Score") %>%
   select(domain,Score) %>% group_by(domain) %>%summarise(sd_hist_w1 = sd(Score), mad_hist_w1 = mad(Score), perp_entropy_hist_w1=permutation_entropy(Score))
 
@@ -424,6 +482,7 @@ hist_var_w2<-as_tibble(historical_tsbl) %>%subset(Month < 7)%>% pivot_longer(neg
 tournament2_var<-as_tibble(historical_tsbl) %>%subset(Month > 6)%>% pivot_longer(negaffect:polar,names_to="domain",values_to="Score") %>%
  select(domain,Score) %>% na.omit%>%group_by(domain) %>% 
 summarise(sd_w2 = sd(Score), mad_w2 = mad(Score), perp_entropy_w2=permutation_entropy(Score))
+
 
 complexity<-hist_var_w1%>%left_join(tournament1_var)%>%
   left_join(hist_var_w2)%>%
@@ -452,11 +511,12 @@ dat_long$Month0<-dat_long$Month-1
 
 objective<-as.data.frame(subset(dat_long,phase == 1 & !is.na(Method.code)& Method.code=="Ground Truth"))
 
-#get subset for analyses, focusing on value.dif column i -  absolute percent deviation for each predicted Month
+#get subset for supplementary analyses, not in the paper(!), focusing on value.dif column i -  absolute percent deviation for each predicted Month
 
 dat_long_phase1<-dat_long %>%subset(phase == 1 & Method.code!="Ground Truth"& Method.code!="Naive-linear"&Method.code!="Naive-rfw")
 dat_long_phase1$Method.code <- relevel(factor(dat_long_phase1$Method.code), "Lay People") #use lay people as a reference group
 
+#updates for the coding of categories
 phase1$Method.code <- relevel(factor(phase1$Method.code), "Lay People") #use lay people as a reference group
 phase1_exp$updated<-ifelse(phase1_exp$revised==1,"update","no update")
 phase1$compare_to_naive_rwf_MASE.update<-ifelse(phase1$compare_to_naive_rwf_MASE!="Equal to Naive rwf",phase1$compare_to_naive_rwf_MASE,ifelse(phase1$compare_to_naive_rwf_MASE=="Equal to Naive rwf","Below Naive rwf",NA))
@@ -471,22 +531,16 @@ phase1_exp<-complexity %>% left_join(phase1_exp)
 phase1_exp<-phase1_exp %>%group_by(team_name) %>% 
  mutate(n_domains = n())
 
-#For models evaluating accuracy of individual time points, we will use forecasting type (purely theoretical, purely data-driven and hybrid models), forecasting domain and time points as predictors, with absolute percent deviation scores nested within teams. 
+#Supplementary analyses NOT in the paper: For models evaluating accuracy of individual time points, we will use forecasting type (purely theoretical, purely data-driven and hybrid models), forecasting domain and time points as predictors, with absolute percent deviation scores nested within teams. 
 
 dat_long_phase1$teamS<-as.factor(ifelse(dat_long_phase1$team_size.coded>=6,3,ifelse(dat_long_phase1$team_size.coded<6&dat_long_phase1$team_size.coded>1,2,ifelse(dat_long_phase1$team_size.coded==1,1,NA))))
 dat_long_phase1$is_multidisciplinary<-ifelse(dat_long_phase1$discipline=="Multi-disciplinary",1,0)
 dat_long_phase1$objectivexpert<-ifelse(dat_long_phase1$pub==1,"Expert",ifelse(dat_long_phase1$pub==2,"Non Expert",NA))
 
-dat_long %>% subset(phase == 1 & !is.na(Method.code)& Method.code!="Ground Truth") %>% 
-   ggplot(aes(x = Month0, y = value, colour = Method.code, fill=Method.code))+
-  geom_smooth(aes(x = Month0, y = value, colour = Method.code, fill=Method.code),method = "loess") +  
-    facet_wrap(~domain, scales = "free", nrow = 4, labeller=labeller(domain=labels))+
-  theme_minimal(base_size = 14) +
-  geom_smooth(data=objective,se=F) + #here we add the ground truth markers without confidence band
-   theme(legend.position="bottom") +scale_color_d3()+scale_fill_d3()+ 
-  labs(colour = "Sample",fill="Sample", x="Months (from May 2021)",y="Estimate (M +/- 95%CI)") 
-
-#without the naive benchmarks
+###############################################################
+#graph individual predictions (supplementary, NOT in the paper)
+#BEGINNING
+###############################################################
 dat_long %>% subset(phase == 1 & !is.na(Method.code)& Method.code!="Ground Truth"& Method.code!="Naive-linear"&Method.code!="Naive-rfw") %>% 
    ggplot(aes(x = Month0, y = value, colour = Method.code, fill=Method.code))+
   geom_smooth(aes(x = Month0, y = value, colour = Method.code, fill=Method.code),method = "loess") +  
@@ -494,12 +548,10 @@ dat_long %>% subset(phase == 1 & !is.na(Method.code)& Method.code!="Ground Truth
   geom_smooth(data=objective,se=F) + #here we add the ground truth markers without confidence band
    theme(legend.position="bottom") +scale_color_d3()+scale_fill_d3()+ 
   labs(colour = "Sample",fill="Sample", x="Months (from May 2021)",y="Estimate (M +/- 95%CI)")
-
-#without any benchmarks
+##without any benchmarks
 dat_long$GT[dat_long$Method.code!="Ground Truth"]<-"Forecasting Estimate"
 dat_long$GT[dat_long$Method.code=="Ground Truth"]<-"Ground Truth"
 objective$GT<-objective$Method.code
-
 dat_long %>% subset(phase == 1 & !is.na(Method.code)& Method.code!="Ground Truth"& Method.code!="Naive-linear"&Method.code!="Naive-rfw" &Method.code!="Lay People") %>% 
    ggplot(aes(x = Month0, y = value, colour = GT, fill=GT))+
   geom_smooth(aes(x = Month0, y = value, colour = GT, fill=GT),method = "loess") +  
@@ -534,9 +586,19 @@ dat_long %>% subset(phase == 1 & !is.na(Method.code)& Method.code!="Ground Truth
    theme(legend.position="bottom") +scale_color_d3()+scale_fill_d3()+ 
   labs(colour = "",fill="", x="Months (< 0 = before May 2020 Tournament)",y="Estimate (M +/- 95%CI)")
 
+###############################################################
+#graph individual predictions (supplementary, NOT in the paper)
+#END
+###############################################################
+
+###############################################################
+#graph individual predictions and ground truth markers - FIGURE 1 IN THE SUPPLEMENT in the PAPER)
+#BEGINNING
+##this one includes creating subsets, historical data subsets, and designing sub-plots of various caliber for the paper, and for presentations and putting the subplots together
+###############################################################
+
 #combine with the phase 2 data.
 dat_long_phase2X<-dat_long %>%filter(!(phase == 1 & revised == 1)& Method.code!="Ground Truth"& Method.code!="Naive-linear"&Method.code!="Naive-rfw" & Month %in% c(7,8,9,10,11,12))
-
 
 dat_long$GT[dat_long$Method.code!="Ground Truth"]<-"Aggregate Estimate\n(lowess)"
 objective$value
@@ -667,16 +729,25 @@ plot.all.but.WB<-hist_long%>% subset(Month %in% c(-2:12)& domain %in% c("egend",
 
 #combine into megaplot
 
-
 plot.all<-ggarrange(plot.wbX,plot.all.but.WB,  ncol=1, nrow=2, heights = c(1.2,1.8),  common.legend = TRUE, legend="bottom")
 
 plot.all
+###############################################################
+#graph individual predictions and ground truth markers - IN THE SUPPLEMENT in the PAPER
+#END
+###############################################################
+
 
 ```
 
 ## Visualizations of MASE versus benchmarks
 ```{r Phases 1 and 2 along with sims}
-
+###############################################################
+#graph individual predictions and ground truth markers - FIGURE 2 IN THE SUPPLEMENT in the PAPER, as well as one FIGURE in the MAIN TEXT)
+#ALSO: analyses of scientists versus lay people in tournament 1
+#BEGINNING
+##this one includes creating model estimates for tournament 1 and tournament 2 for academics (and lay people in tournament 1 - we focus on linear mixed model estimates to account for interdependence in predictions), saving mean estimates and CIs, combining with benchmarks, and designing plots of various caliber for the paper
+###############################################################
 pd <- position_dodge(0.7) # move them .07 to the left and right
 
 ##by method for phase 1
@@ -692,7 +763,7 @@ data.phase1.MASE.together<-as.data.frame(emmeans(model.phase1.together, pairwise
 
 
 #phase 2
-dat_phase2<-academic_only %>%filter(!(phase == 1 & revised == 1)) #just academics
+dat_phase2<-academic_only %>%filter(!(phase == 1 & revised == 1)) #just academics, omitting original (non-revised phase 1)
 model.phase2.together<-  lmer(log(MASE1_w2)~domain+(1|team_name), data=dat_phase2)
 car::Anova(model.phase2.together,type="III") #sig interaction!
 data.phase2.MASE.together<-as.data.frame(emmeans(model.phase2.together, pairwise~domain, adjust = "none", type = "response")$emmeans) #backtransformed to the original scale
@@ -705,38 +776,14 @@ data.phase1.MASE.together$Type[data.phase1.MASE.together$isExpert.factor=="Proli
 data.phase2.MASE.together$Wave<-"Second Tournament (Nov 2020)"
 data.phase2.MASE.together$Type<-"Scientists"
 
-#add simulation benchmarks
-sim.w1<- load("sim/BenchmarkData_Combined.RData")
-sim.w1<-Stats_all_benchmarks_raw
-sim.w1$Wave<-"First Tournament (May 2020)"
-sim.w1<-subset(sim.w1,source!="Experts"&source!="Lay People")
-sim.w1$response<-sim.w1$Mean
-sim.w1$lower.CL<-sim.w1$CI_L
-sim.w1$upper.CL<-sim.w1$CI_U
-sim.w1$Type[sim.w1$source=="Benchmark 1"]<-"Historic Mean"
-sim.w1$Type[sim.w1$source=="Benchmark 2"]<-"Random Walk"
-sim.w1$Type[sim.w1$source=="Benchmark 3"]<-"Linear Regression"
-
-
-sim.w2<- load("sim/BenchmarkData_Combined_W2.RData")
-sim.w2<-Stats_all_benchmarks_raw_w2
-sim.w2$Wave<-"Second Tournament (Nov 2020)"
-sim.w2<-subset(sim.w2,source!="ExpertsW2")
-sim.w2$response<-sim.w2$Mean
-sim.w2$lower.CL<-sim.w2$CI_L
-sim.w2$upper.CL<-sim.w2$CI_U
-sim.w2$Type[sim.w1$source=="Benchmark 1"]<-"Historic Mean"
-sim.w2$Type[sim.w1$source=="Benchmark 2"]<-"Random Walk"
-sim.w2$Type[sim.w1$source=="Benchmark 3"]<-"Linear Regression"
-
-#combine
+#add simulation benchmarks & combine
 means.compare.to.naive<-bind_rows(data.phase1.MASE.together,data.phase2.MASE.together,sim.w1,sim.w2)
 
 #arrange in descending order based on MASE w1 of academics
 means.compare.to.naive$domain<-factor(means.compare.to.naive$domain,levels=c("iafric","ideolrep","eafric",
   "negaffect", "lifesat","easian","ideoldem","iasian", "polar", "igend","posaffect","egend"))
 
-#arrange in descending order based on MASE w2 of academics
+#arrange in order of tournament factors
 means.compare.to.naive$Wave<-factor(means.compare.to.naive$Wave,levels=c("First Tournament (May 2020)","Second Tournament (Nov 2020)"))
 
 #arrange groups
@@ -760,12 +807,36 @@ labeling<-c(
   polar = "Polarization",
   posaffect = "Positive Affect")
 
-#plot
+#plot for the supplement
 means.compare.to.naive %>%  
  ggplot(aes(x = response, y = domain, color = Type, shape=Type))+
  geom_pointrange(aes(xmin=lower.CL, xmax=upper.CL), position=pd)+  theme_minimal(base_size = 14)+geom_vline(xintercept =1, linetype='dashed', color='red',14)+theme(legend.position="bottom")+scale_color_jama()+  labs(x="Forecasting Error - MASE (M +/- 95%CI)",shape="",color="")+scale_y_discrete(labels=labeling, name="")+facet_grid(~Wave)
 
-#subplots for presentation
+#create a main text version with top (lowest MASE) benchmark per domain instead of all three benchmarks
+##first, get lowest benchmarks per domain
+sim.w1.top<-sim.w1 %>% select(domain,Mean) %>% summarise(response = min(Mean), Wave="First Tournament (May 2020)")
+sim.w2.top<-sim.w2 %>% select(domain,Mean) %>% summarise(response = min(Mean), Wave="Second Tournament (Nov 2020)")
+#add simulation benchmarks & combine
+means.compare.to.naive.top<-bind_rows(data.phase1.MASE.together,data.phase2.MASE.together,sim.w1.top,sim.w2.top)
+#arrange in descending order based on MASE w1 of academics
+means.compare.to.naive.top$domain<-factor(means.compare.to.naive.top$domain,levels=c("iafric","ideolrep","eafric",
+  "negaffect", "lifesat","easian","ideoldem","iasian", "polar", "igend","posaffect","egend"))
+#arrange in order of tournament factors
+means.compare.to.naive.top$Wave<-factor(means.compare.to.naive.top$Wave,levels=c("First Tournament (May 2020)","Second Tournament (Nov 2020)"))
+#arrange groups
+means.compare.to.naive.top$Type[is.na(means.compare.to.naive.top$Type)==T]<-"Naive Statistic"
+means.compare.to.naive.top$Type<-factor(means.compare.to.naive.top$Type,levels=c("Scientists","Naive Crowd","Naive Statistic"))
+#add var for Scientists vs. rest (to define colors)
+means.compare.to.naive.top$Group[means.compare.to.naive.top$Type=="Scientists"]<-"Estimate"
+means.compare.to.naive.top$Group[means.compare.to.naive.top$Type!="Scientists"]<-"Non Estimate"
+
+#plot for the main text
+means.compare.to.naive.top %>%  
+ ggplot(aes(x = response, y = domain, color = Type, shape=Type))+
+ geom_pointrange(aes(xmin=lower.CL, xmax=upper.CL), position=pd)+  theme_minimal(base_size = 14)+geom_vline(xintercept =1, linetype='dashed', color='red',14)+theme(legend.position="bottom")+scale_color_jama()+  labs(x="Forecasting Error - MASE (M +/- 95%CI)",shape="",color="")+scale_y_discrete(labels=labeling, name="")+facet_grid(~Wave)
+
+
+#subplots for presentation (talks, etc)
 
 #scientists
 means.compare.to.naive %>%  subset(Type=="Scientists")%>%  
@@ -776,12 +847,17 @@ means.compare.to.naive %>%  subset(Type=="Scientists")%>%
 means.compare.to.naive %>%  subset(Type=="Scientists"|Type=="Naive Crowd")%>%  
  ggplot(aes(x = response, y = domain, color = Type, shape=Type))+
  geom_pointrange(aes(xmin=lower.CL, xmax=upper.CL), position=pd)+  theme_minimal(base_size = 14)+geom_vline(xintercept =1, linetype='dashed', color='red',14)+theme(legend.position="bottom")+scale_color_jama()+  labs(x="Forecasting Error - MASE (M +/- 95%CI)",shape="",color="")+scale_y_discrete(labels=labeling, name="")+facet_grid(~Wave)
-
+###############################################################
+#graph individual predictions and ground truth markers - FIGURE 2 IN THE SUPPLEMENT in the PAPER, as well as one FIGURE in the MAIN TEXT)
+#ALSO: analyses of scientists versus lay people in tournament 1
+#END
 ```
 
 #statistical tests of difference from benchmark
 ```{r}
-
+########################################################################################
+#THIS SECTION INCLUDES STATISTICAL TESTS AGAINST THE BENCHMARKS AND THEIR VISUALIZATION
+########################################################################################
 #to examine difference in inaccuracy from benchmark vs. domain estimates from scientists in the LME, we can do the following:
 
 #1. create ratio of  benchmark inaccuracy to forecasting inaccuracy -  score above 1 means forecast is more accurate compared to the benchmark
@@ -802,37 +878,28 @@ phase1_exp_wbench$domain <- factor(phase1_exp_wbench$domain,      # Reordering g
                                     "iafric","iasian","igend",
                                     "eafric","easian","egend" ))
 
-#skewness test suggests that sqrt is the most reasonable transofmration across the three metrics (esp. the first one) hence we will use it.
-
-(emmeans(lmer(sqrt(MASE_ratio1)~domain+(1|team_name), data=phase1_exp_wbench), ~1, type="response"))
-(emmeans(lmer(sqrt(MASE_ratio2)~domain+(1|team_name), data=phase1_exp_wbench), ~1, type="response"))
-(emmeans(lmer(sqrt(MASE_ratio3)~domain+(1|team_name), data=phase1_exp_wbench), ~1, type="response"))
-#get pvalues
-test(emmeans(lmer(sqrt(MASE_ratio1)~domain+(1|team_name), data=phase1_exp_wbench), ~1, type="response"))
-test(emmeans(lmer(sqrt(MASE_ratio2)~domain+(1|team_name), data=phase1_exp_wbench), ~1, type="response"))
-test(emmeans(lmer(sqrt(MASE_ratio3)~domain+(1|team_name), data=phase1_exp_wbench), ~1, type="response"))
+#skewness test suggests that sqrt is the most reasonable transformation across the three metrics (esp. the first one) hence we will use it.
 
 model.phase1.hist.mean.ratio<-  lmer(sqrt(MASE_ratio1)~domain+(1|team_name), data=phase1_exp_wbench)
 Anova(model.phase1.hist.mean.ratio, test.statistic = "F")
-test(emmeans(model.phase1.hist.mean.ratio,~domain, type="response"))
+emmeans(model.phase1.hist.mean.ratio,~domain, type="response")
+#here are the results of the historical mean tests for Tournament 1
 
-
-plot.t1.hist.mean<-plot(emmeans(model.phase1.hist.mean.ratio,~domain, type="response"),comparisons=T, color="black")+scale_y_discrete(labels=labeling, name="Historical Mean")+geom_vline(xintercept =1, linetype='dashed', color='black',14)+theme_minimal()+  labs(x="",shape="",color="", title="Tournament 1 (May 2020)")
+plot.t1.hist.mean<-plot(emmeans(model.phase1.hist.mean.ratio,~domain, type="response"),comparisons=F, color="black")+scale_y_discrete(labels=labeling, name="Historical Mean")+geom_vline(xintercept =1, linetype='dashed', color='black',14)+theme_minimal()+  labs(x="",shape="",color="", title="Tournament 1 (May 2020)")
 
 model.phase1.randwalk.ratio<-  lmer(sqrt(MASE_ratio2)~domain+(1|team_name), data=phase1_exp_wbench)
 Anova(model.phase1.randwalk.ratio, test.statistic = "F")
-test(emmeans(model.phase1.randwalk.ratio,~domain, type="response"))
+emmeans(model.phase1.randwalk.ratio,~domain, type="response")
+#here are the results of the random walk tests for Tournament 1
 
-plot.t1.randwalk<-plot(emmeans(model.phase1.randwalk.ratio,~domain, type="response"),comparisons=T, color="black")+scale_y_discrete(labels=labeling, name="Random Walk")+geom_vline(xintercept =1, linetype='dashed', color='black',14)+theme_minimal()+  labs(x="",shape="",color="", title="")
+plot.t1.randwalk<-plot(emmeans(model.phase1.randwalk.ratio,~domain, type="response"),comparisons=F, color="black")+scale_y_discrete(labels=labeling, name="Random Walk")+geom_vline(xintercept =1, linetype='dashed', color='black',14)+theme_minimal()+  labs(x="",shape="",color="", title="")
 
 model.phase1.linreg.ratio<-  lmer(sqrt(MASE_ratio3)~domain+(1|team_name), data=phase1_exp_wbench)
 Anova(model.phase1.linreg.ratio, test.statistic = "F")
-test(emmeans(model.phase1.linreg.ratio,~domain, type="response"))
+emmeans(model.phase1.linreg.ratio,~domain, type="response")
+#here are the results of the linear regression tests for Tournament 1
 
-plot.t1.linreg<-plot(emmeans(model.phase1.linreg.ratio,~domain, type="response"),comparisons=T, color="black")+scale_y_discrete(labels=labeling, name="Linear Regression")+geom_vline(xintercept =1, linetype='dashed', color='black',14)+theme_minimal()+  labs(x="",shape="",color="", title="")
-
-
-
+plot.t1.linreg<-plot(emmeans(model.phase1.linreg.ratio,~domain, type="response"),comparisons=F, color="black")+scale_y_discrete(labels=labeling, name="Linear Regression")+geom_vline(xintercept =1, linetype='dashed', color='black',14)+theme_minimal()+  labs(x="",shape="",color="", title="")
 
 #Tournament 2
 
@@ -851,35 +918,28 @@ phase2_exp_wbench$MASE_ratio3<- phase2_exp_wbench$'Benchmark 3'/phase2_exp_wbenc
 
 #here we use logs, because skewness suggests that sqrt is not enough and logs do a good job across all three markers
 
-print(emmeans(lmer(log(MASE_ratio1)~domain+(1|team_name), data=phase2_exp_wbench), ~1, type="response"))
-print(emmeans(lmer(log(MASE_ratio2)~domain+(1|team_name), data=phase2_exp_wbench), ~1, type="response"))
-print(emmeans(lmer(log(MASE_ratio3)~domain+(1|team_name), data=phase2_exp_wbench), ~1, type="response"))
-
-
-test(emmeans(lmer(log(MASE_ratio1)~domain+(1|team_name), data=phase2_exp_wbench), ~1, type="response"))
-test(emmeans(lmer(log(MASE_ratio2)~domain+(1|team_name), data=phase2_exp_wbench), ~1, type="response"))
-test(emmeans(lmer(log(MASE_ratio3)~domain+(1|team_name), data=phase2_exp_wbench), ~1, type="response"))
-
-
 model.phase2.hist.mean.ratio<-  lmer(log(MASE_ratio1)~domain+(1|team_name), data=phase2_exp_wbench)
 Anova(model.phase2.hist.mean.ratio, test.statistic = "F")
-test(emmeans(model.phase2.hist.mean.ratio,~domain, type="response"))
+emmeans(model.phase2.hist.mean.ratio,~domain, type="response")
+#here are the results of the historical mean tests for Tournament 2
 
-plot.t2.hist.mean<-plot(emmeans(model.phase2.hist.mean.ratio,~domain, type="response"),comparisons=T, color="black")+scale_y_discrete(name="")+geom_vline(xintercept =1, linetype='dashed', color='black',14)+theme_minimal()+  labs(x="",shape="",color="", title="Tournament 2 (Nov 2020)")+theme(axis.text.y=element_blank())
+plot.t2.hist.mean<-plot(emmeans(model.phase2.hist.mean.ratio,~domain, type="response"),comparisons=F, color="black")+scale_y_discrete(name="")+geom_vline(xintercept =1, linetype='dashed', color='black',14)+theme_minimal()+  labs(x="",shape="",color="", title="Tournament 2 (Nov 2020)")+theme(axis.text.y=element_blank())
 
 model.phase2.randwalk.ratio<-  lmer(log(MASE_ratio2)~domain+(1|team_name), data=phase2_exp_wbench)
 
 Anova(model.phase2.randwalk.ratio, test.statistic = "F")
-test(emmeans(model.phase2.randwalk.ratio,~domain, type="response"))
+emmeans(model.phase2.randwalk.ratio,~domain, type="response")
+#here are the results of the random walk tests for Tournament 2
 
-plot.t2.randwalk<-plot(emmeans(model.phase2.randwalk.ratio,~domain, type="response"),comparisons=T, color="black")+scale_y_discrete(name="")+geom_vline(xintercept =1, linetype='dashed', color='black',14)+theme_minimal()+  labs(x="",shape="",color="", title="")+theme(axis.text.y=element_blank())
-
+plot.t2.randwalk<-plot(emmeans(model.phase2.randwalk.ratio,~domain, type="response"),comparisons=F, color="black")+scale_y_discrete(name="")+geom_vline(xintercept =1, linetype='dashed', color='black',14)+theme_minimal()+  labs(x="",shape="",color="", title="")+theme(axis.text.y=element_blank())
 
 model.phase2.linreg.ratio<-  lmer(log(MASE_ratio3)~domain+(1|team_name), data=phase2_exp_wbench)
 Anova(model.phase2.linreg.ratio, test.statistic = "F")
-test(emmeans(model.phase2.linreg.ratio,~domain, type="response"))
+emmeans(model.phase2.linreg.ratio,~domain, type="response")
+#here are the results of the linear regression tests for Tournament 2
 
-plot.t2.linreg<-plot(emmeans(model.phase2.linreg.ratio,~domain, type="response"),comparisons=T, color="black")+scale_y_discrete(name="")+geom_vline(xintercept =1, linetype='dashed', color='black',14)+theme_minimal()+  labs(x="",shape="",color="", title="")+theme(axis.text.y=element_blank())
+
+plot.t2.linreg<-plot(emmeans(model.phase2.linreg.ratio,~domain, type="response"),comparisons=F, color="black")+scale_y_discrete(name="")+geom_vline(xintercept =1, linetype='dashed', color='black',14)+theme_minimal()+  labs(x="",shape="",color="", title="")+theme(axis.text.y=element_blank())
 
 #combine all graphs
 figs2<-ggarrange(plot.t1.hist.mean,plot.t2.hist.mean,
@@ -890,6 +950,251 @@ figs2
 
 ```
 
+## compare scores from tournament 1 and tournament 2 
+## test complexity associations
+
+```{r}
+#count how many domains per person
+phase1_exp<-phase1_exp %>%group_by(team_name) %>%  mutate(n_domains = n())
+phase1_exp$Domain_Publications<-ifelse(phase1_exp$pub==1,1,ifelse(phase1_exp$pub==2,0,NA))
+
+
+#count how many domains per person
+dat_phase2<-dat_phase2 %>%group_by(team_name) %>%  mutate(n_domains = n())
+dat_phase2$Domain_Publications<-ifelse(dat_phase2$pub==1,1,ifelse(dat_phase2$pub==2,0,NA))
+
+#####################
+#create subsets for tournament 1 and for tournament 2 to use in analyses here and later for covariate analyses below
+#####################
+subset1<- phase1_exp %>% ungroup() %>% select(MASE1_w1,domain,Method.code,ResponseId,team_name,covidcondyn,CounterFactual_Presence_Final,Method.complex,parameters_coded,n_domains,multi_dis.factor,team_discipline.coded,non_US,team_size.coded,team_gender,team_education,confidence,subexpert,Domain_Publications,previous_tournament.coded,TournamentStart) %>% mutate(inaccuracy = MASE1_w1,phase = "first")
+
+subset2<- dat_phase2 %>% ungroup() %>% select(MASE1_w2,domain,Method.code,ResponseId,team_name,covidcondyn,CounterFactual_Presence_Final,Method.complex,parameters_coded,n_domains,multi_dis.factor,team_discipline.coded,non_US,team_size.coded,team_gender,team_education,confidence,subexpert,Domain_Publications,previous_tournament.coded,TournamentStart) %>% mutate(inaccuracy = MASE1_w2,phase = "second")
+
+##compare effects by domain for each tournament
+##REPORTED IN MAIN TEXT####
+subset1.model<-  lmer(log(inaccuracy)~domain+(1|team_name), data=subset1)
+car::Anova(subset1.model,type="III", test.statistic="F") #sig effect
+emmeans(subset1.model,~domain, type="response")
+partR2(subset1.model)
+#rsq = 0.4498
+
+subset2.model<-  lmer(log(inaccuracy)~domain+(1|team_name), data=subset2)
+car::Anova(subset2.model,type="III", test.statistic="F") #sig effect
+emmeans(subset2.model,~domain, type="response")
+partR2(subset2.model)
+#rsq = 0.2909
+
+###########################
+
+##############################
+#combine tournament 1 and tournament 2 subsets for later analyses with covariates
+#BEGINNING
+##############################
+both.sets<-bind_rows(subset1,subset2)
+
+both.sets$covidconditional<-ifelse(both.sets$covidcondyn==1,1,0)
+both.sets$covidconditional[is.na(both.sets$covidconditional)]<-0
+both.sets$Method.complex[is.na(both.sets$Method.complex)]<-1 #simple when no extra info is provided, because the rest {number of parameters et.) suggests no extra factors considered}
+both.sets$multi_dis.factor[is.na(both.sets$multi_dis.factor)]<-"Single domain expertise" #(setting is NA to non multidisciplinary)
+both.sets$team_discipline.coded[is.na(both.sets$team_discipline.coded)]<-5 #(setting is NA to other)
+
+both.sets$team_discipline.datasci<-ifelse(both.sets$team_discipline.coded==3,1,0)
+both.sets$team_discipline.SBsci<-ifelse(both.sets$team_discipline.coded==1,1,ifelse(both.sets$team_discipline.coded==2,1,0))
+
+#add complexity
+
+both.sets<-both.sets %>% left_join(complexity)
+both.sets$sd_hist<-ifelse(both.sets$phase=="first",both.sets$sd_hist_w1,both.sets$sd_hist_w2)
+both.sets$mad_hist<-ifelse(both.sets$phase=="first",both.sets$mad_hist_w1,both.sets$mad_hist_w2)
+both.sets$perp_entropy_hist<-ifelse(both.sets$phase=="first",both.sets$perp_entropy_hist_w1,both.sets$perp_entropy_hist_w2)
+
+both.sets$sd<-ifelse(both.sets$phase=="first",both.sets$sd_w1,both.sets$sd_w2)
+both.sets$mad<-ifelse(both.sets$phase=="first",both.sets$mad_w1,both.sets$mad_w2)
+both.sets$perp_entropy<-ifelse(both.sets$phase=="first",both.sets$perp_entropy_w1,both.sets$perp_entropy_w2)
+
+#add domain differences in complexity between waves (just supplementary interests)
+both.sets$sd_hist_diff<-both.sets$sd_hist_w2-both.sets$sd_hist_w1
+both.sets$mad_hist_diff<-both.sets$mad_hist_w2-both.sets$mad_hist_w1
+both.sets$perp_entropy_hist_diff<-both.sets$perp_entropy_hist_w2-both.sets$perp_entropy_hist_w1
+
+both.sets$sd_diff<-both.sets$sd_w2-both.sets$sd_w1
+both.sets$mad_diff<-both.sets$mad_w2-both.sets$mad_w1
+both.sets$perp_entropy_diff<-both.sets$perp_entropy_w2-both.sets$perp_entropy_w1
+##############################
+#combine tournament 1 and tournament 2 subsets for later analyses with covariates
+#END
+##############################
+
+#############################
+#analyze comparison of tournament 1 to tournament 2, REPORTED IN THE MAIN TEXT
+#BEGINNING
+#############################
+
+both.sets.model<-  lmer(log(inaccuracy)~phase+(1|team_name), data=both.sets)
+car::Anova(both.sets.model,type="III", test.statistic="F") #sig effect
+emmeans(both.sets.model,~phase, type="response")
+partR2(both.sets.model)
+#effect size part rsq  0.0628
+
+#####################
+#supplementary analyses - comparison of tournament 1 versus tournament 2 by domain
+#####################
+both.sets.model.by.domain<-  lmer(log(inaccuracy)~phase*domain+(1|team_name), data=both.sets)
+car::Anova(both.sets.model.by.domain,type="III", test.statistic="F") #sig effect
+emmeans(both.sets.model.by.domain,~phase|domain, type="response")
+emmeans(both.sets.model.by.domain,pairwise~phase|domain, type="response")
+t.comparison.effects<-as.data.frame(emmeans(both.sets.model.by.domain,pairwise~phase|domain, type="response")$emmeans)
+t.comparison<-as.data.frame(emmeans(both.sets.model.by.domain,pairwise~phase|domain, type="response")$contrasts)
+#####################
+
+#####################
+#analyses of tournament 1 versus tournament 2 with covariates
+#####################
+both.sets.model.cov<-  lmer(log(inaccuracy)~phase+domain+
+                              n_domains+team_discipline.datasci+team_discipline.SBsci+multi_dis.factor+team_size.coded+team_gender+team_education+Domain_Publications+previous_tournament.coded+(1|team_name), data=both.sets)
+car::Anova(both.sets.model.cov,type="III", test.statistic="F") #sig effect
+emmeans(both.sets.model.cov,~phase, type="response")
+partR2(both.sets.model.cov, partvars = 
+         c("phase","domain"))
+#ergo, part rsq for phase itself remains 0.0617
+
+```
+
+
+#graph change in ranking
+```{r}
+##MAIN TEXT FIGURE SHOWING RANKING AND DOMAIN'S MASE, AS WELL AS SHOWING WHICH DIFFERENCES ARE SIG
+
+#get ranking of scores among academics in May and November
+median.MASE.t1$phase<-"first"
+median.MASE.t2$phase<-"second"
+median.MASE.t1$Wave<-"First Tournament\nMay 2020"
+median.MASE.t2$Wave<-"Second Tournament\nNov 2020"
+median.ranks<-bind_rows(median.MASE.t1,median.MASE.t2)
+median.ranks$Domain[median.ranks$domain=="eafric"]<-"Exp. Afr.-Am. Bias"
+median.ranks$Domain[median.ranks$domain=="easian"]<-"Exp. Asian-Am. Bias"
+median.ranks$Domain[median.ranks$domain=="egend"]<-"Exp. Gender Bias"
+median.ranks$Domain[median.ranks$domain=="iafric"]<-"Imp. Afr.-Am. Bias"
+median.ranks$Domain[median.ranks$domain=="iasian"]<-"Imp. Asian-Am. Bias"
+median.ranks$Domain[median.ranks$domain=="ideoldem"]<-"Democrat. Support"
+median.ranks$Domain[median.ranks$domain=="ideolrep"]<-"Republic. Support"
+median.ranks$Domain[median.ranks$domain=="igend"]<-"Imp. Gender Bias"
+median.ranks$Domain[median.ranks$domain=="lifesat"]<-"Life Satisfaction"
+median.ranks$Domain[median.ranks$domain=="polar"]<-"Polarization"
+median.ranks$Domain[median.ranks$domain=="negaffect"]<-"Negative Affect"
+median.ranks$Domain[median.ranks$domain=="posaffect"]<-"Positive Affect"
+
+median.ranks<-median.ranks %>% left_join(t.comparison.effects) %>% left_join(t.comparison %>% select(domain,ratio,t.ratio,p.value)) #add the sig testing from the tournament comparisons, incl ratio size and p-values
+
+#NOTE: here we have median ranks per domain, but also the estimates scores from multi-level models accounting for multiple predictions by different scientist groups. Due to this dependence in the data, we use the latter estimates.
+
+median.ranks$sig<-ifelse(median.ranks$p.value<.05,"eff","noeff")
+median.ranks$MASE<-round(median.ranks$response,2) #two decimals
+median.ranks$ranksize<-round(median.ranks$ratio,2) #two decimals
+newggslopegraph(dataframe = median.ranks,
+                Times = Wave,
+                Measurement = MASE,
+                Grouping = Domain,LineThickness = 2,
+                WiderLabels=T,
+                Title = "Which domains are harder to predict?",TitleJustify = "center",
+                SubTitle = NULL,
+                Caption = "Ranking based on MASE scores per domain",
+                ThemeChoice="ipsum")+scale_color_d3(palette = "category20")+geom_line(aes(linetype=sig, color="black",alpha=1))
+```
+
+# ranking of domain by forecasting error and correlation to historical variability in trends
+
+```{r ranking in phase 1 and complexity}
+##test reported in MAIN TEXT showing that domain differences in forecasting accuracy corresponded to differences in the complexity of historical data
+
+#covert to wide
+median.ranks.wide<-median.ranks %>% select(domain:phase,MASE) %>% 
+  pivot_wider(names_from="phase",values_from=c("MASE","MASE_med"))
+
+rank_complex_wide<-median.ranks.wide%>%left_join(complexity)
+
+#For complexity,we used SD and MAD. Additionally, I consider permutation_entropy, which is Ra substitution the Shannon entropy with a monoparametric entropy. 
+
+rank_complex_w1<-median.MASE.t1%>%left_join(complexity)
+rank_complex_w2<-median.MASE.t2%>%left_join(complexity)
+
+rank_complex<-median.ranks%>%left_join(complexity)
+
+#the scores below include both complexity markers (SD, MAD, and supplementary entropy) for historical data, as well as the data across the 12 months of the tournament. For the main text analyses we focus on historical complexity
+correlation::correlation(rank_complex%>%filter(phase=="first") %>% 
+ select(MASE_med,sd_hist_w1,mad_hist_w1,perp_entropy_hist_w1,sd_w1,mad_w1,perp_entropy_w1), p_adjust="none", ranktransform=T) 
+
+correlation::correlation(rank_complex%>%filter(phase=="second") %>% 
+ select(MASE_med,sd_hist_w2,mad_hist_w2,perp_entropy_hist_w2,sd_w2,mad_w2,perp_entropy_w2), p_adjust="none", ranktransform=T) 
+
+#add difference scores in complexity to the dataset
+#these are additional analyses to check the differences in complexity and differences in accuracy between tournaments
+
+rank_complex$sd_hist_diff<-rank_complex$sd_hist_w2-rank_complex$sd_hist_w1
+rank_complex$mad_hist_diff<-rank_complex$mad_hist_w2-rank_complex$mad_hist_w1
+rank_complex$perp_entropy_hist_diff<-rank_complex$perp_entropy_hist_w2-rank_complex$perp_entropy_hist_w1
+
+rank_complex$sd_diff<-rank_complex$sd_w2-rank_complex$sd_w1
+rank_complex$mad_diff<-rank_complex$mad_w2-rank_complex$mad_w1
+rank_complex$perp_entropy_diff<-rank_complex$perp_entropy_w2-rank_complex$perp_entropy_w1
+
+rank_complex$wave<-ifelse(rank_complex$phase=="first",0,1)
+
+domain.SD.change<-  lmer(MASE~wave*sd_hist_diff+(1|Domain), data=rank_complex)
+car::Anova(domain.SD.change,type="III", test.statistic="F") #sig effect
+emtrends(domain.SD.change,specs=~wave,var="sd_hist_diff") #
+interactions::sim_slopes(domain.SD.change,pred="wave",modx="sd_hist_diff", digits=4)
+#this interaction shows that when change in SD is high (domains become more variable at t2 compared to t1), there is no difference in inaccuracy
+ 
+domain.MAD.change<-  lmer(MASE~wave*mad_hist_diff+(1|Domain), data=rank_complex)
+car::Anova(domain.MAD.change,type="III", test.statistic="F") #sig effect
+emtrends(domain.MAD.change,specs=~wave,var="mad_hist_diff") #
+interactions::sim_slopes(domain.MAD.change,pred="wave",modx="mad_hist_diff", digits=4)
+#this interaction shows that when change in MAD is high (domains become more variable at t2 compared to t1), there is no difference in inaccuracy between t1 and t2
+
+##examine difference scores via corr
+
+rank_complex_wide$sd_hist_diff<-rank_complex_wide$sd_hist_w2-rank_complex_wide$sd_hist_w1
+rank_complex_wide$mad_hist_diff<-rank_complex_wide$mad_hist_w2-rank_complex_wide$mad_hist_w1
+rank_complex_wide$perp_entropy_hist_diff<-rank_complex_wide$perp_entropy_hist_w2-rank_complex_wide$perp_entropy_hist_w1
+
+rank_complex_wide$sd_diff<-rank_complex_wide$sd_w2-rank_complex_wide$sd_w1
+rank_complex_wide$mad_diff<-rank_complex_wide$mad_w2-rank_complex_wide$mad_w1
+rank_complex_wide$perp_entropy_diff<-rank_complex_wide$perp_entropy_w2-rank_complex_wide$perp_entropy_w1
+
+rank_complex_wide$MASE_diff<-rank_complex_wide$MASE_second-rank_complex_wide$MASE_first
+rank_complex_wide$MASE_med_diff<-rank_complex_wide$MASE_med_second-rank_complex_wide$MASE_med_first
+
+
+correlation::correlation(rank_complex_wide%>%
+ select(MASE_diff,MASE_med_diff,sd_hist_diff,mad_hist_diff,perp_entropy_hist_diff,sd_diff,mad_diff,perp_entropy_diff), p_adjust="none", ranktransform=T) 
+#added info about change in variability correlating to changes in accuracy.
+
+```
+
+
+## compare scores from tournament 1 - first six months vs. last six months
+```{r}
+#turn to long format (firstmonths and lastmonths MASE data)
+data.t1.t2.exp.long<- phase1_exp %>% ungroup() %>%pivot_longer(cols=c("MASE1_w1_firstmonths","MASE1_w1_lastmonths"), names_to="Time",values_to="MASE") 
+model.t1.t2<-lmer(log(MASE)~Time+domain+(1|team_name), data=data.t1.t2.exp.long)
+
+summary(model.t1.t2)     
+car::Anova(model.t1.t2,type="III",test.statistic="F") #sig interaction!
+
+#compare last months from the T1 to T2
+##turn to long format (lastmonths T1 an t2 MASE data)
+subset1.lastsix<- phase1_exp %>% ungroup() %>% select(MASE1_w1_lastmonths,domain,Method.code,ResponseId,team_name,covidcondyn,CounterFactual_Presence_Final,Method.complex,parameters_coded,n_domains,multi_dis.factor,team_discipline.coded,team_size.coded,team_gender,team_education,confidence,subexpert,Domain_Publications,previous_tournament.coded, TournamentStart) %>% mutate(inaccuracy = MASE1_w1_lastmonths,phase = "first")
+
+#combine
+both.sets.lastsix<-bind_rows(subset1.lastsix,subset2)
+
+model.t1.t2.lastsix<-lmer(log(inaccuracy)~phase+domain+(1|team_name), data=subset(both.sets.lastsix,TournamentStart=="May"))
+  
+car::Anova(model.t1.t2.lastsix,type="III",test.statistic="F") 
+emmeans(model.t1.t2.lastsix,specs = trt.vs.ctrl ~phase,  type="response",adjust = "fdr") 
+
+```
 
 ## visualize by method (phase 1 and 2)
 
@@ -1066,224 +1371,6 @@ means.compare.by.method %>%
  geom_pointrange(aes(ymin=lower.CL, ymax=upper.CL), position=pd)+  theme_minimal(base_size = 14)+geom_hline(yintercept =1, linetype='dashed', color='red',14)+theme(legend.position="none")+scale_color_futurama()+  labs(y="MASE (M +/- 95%CI)",x="",shape="",color="")+ facet_wrap(~ Wave, scales = "free_x")
 
   
-```
-
-## compare scores from tournament 1 and tournament 2
-
-```{r}
-#count how many domains per person
-phase1_exp<-phase1_exp %>%group_by(team_name) %>%  mutate(n_domains = n())
-phase1_exp$Domain_Publications<-ifelse(phase1_exp$pub==1,1,ifelse(phase1_exp$pub==2,0,NA))
-
-
-#count how many domains per person
-dat_phase2<-dat_phase2 %>%group_by(team_name) %>%  mutate(n_domains = n())
-dat_phase2$Domain_Publications<-ifelse(dat_phase2$pub==1,1,ifelse(dat_phase2$pub==2,0,NA))
-
-subset1<- phase1_exp %>% ungroup() %>% select(MASE1_w1,domain,Method.code,ResponseId,team_name,covidcondyn,CounterFactual_Presence_Final,Method.complex,parameters_coded,n_domains,multi_dis.factor,team_discipline.coded,non_US,team_size.coded,team_gender,team_education,confidence,subexpert,Domain_Publications,previous_tournament.coded,TournamentStart) %>% mutate(inaccuracy = MASE1_w1,phase = "first")
-
-subset2<- dat_phase2 %>% ungroup() %>% select(MASE1_w2,domain,Method.code,ResponseId,team_name,covidcondyn,CounterFactual_Presence_Final,Method.complex,parameters_coded,n_domains,multi_dis.factor,team_discipline.coded,non_US,team_size.coded,team_gender,team_education,confidence,subexpert,Domain_Publications,previous_tournament.coded,TournamentStart) %>% mutate(inaccuracy = MASE1_w2,phase = "second")
-
-##compare effects by domain for each tournament
-
-subset1.model<-  lmer(log(inaccuracy)~domain+(1|team_name), data=subset1)
-car::Anova(subset1.model,type="III", test.statistic="F") #sig effect
-emmeans(subset1.model,~domain, type="response")
-
-subset2.model<-  lmer(log(inaccuracy)~domain+(1|team_name), data=subset2)
-car::Anova(subset2.model,type="III", test.statistic="F") #sig effect
-emmeans(subset2.model,~domain, type="response")
-
-#combine
-both.sets<-bind_rows(subset1,subset2)
-
-both.sets$covidconditional<-ifelse(both.sets$covidcondyn==1,1,0)
-both.sets$covidconditional[is.na(both.sets$covidconditional)]<-0
-both.sets$Method.complex[is.na(both.sets$Method.complex)]<-1 #simple when no extra info is provided, because the rest {number of parameters et.) suggests no extra factors considered}
-both.sets$multi_dis.factor[is.na(both.sets$multi_dis.factor)]<-"Single domain expertise" #(setting is NA to non multidisciplinary)
-both.sets$team_discipline.coded[is.na(both.sets$team_discipline.coded)]<-5 #(setting is NA to other)
-
-both.sets$team_discipline.datasci<-ifelse(both.sets$team_discipline.coded==3,1,0)
-both.sets$team_discipline.SBsci<-ifelse(both.sets$team_discipline.coded==1,1,ifelse(both.sets$team_discipline.coded==2,1,0))
-
-#add complexity
-
-both.sets<-both.sets %>% left_join(complexity)
-both.sets$sd_hist<-ifelse(both.sets$phase=="first",both.sets$sd_hist_w1,both.sets$sd_hist_w2)
-both.sets$mad_hist<-ifelse(both.sets$phase=="first",both.sets$mad_hist_w1,both.sets$mad_hist_w2)
-both.sets$perp_entropy_hist<-ifelse(both.sets$phase=="first",both.sets$perp_entropy_hist_w1,both.sets$perp_entropy_hist_w2)
-
-both.sets$sd<-ifelse(both.sets$phase=="first",both.sets$sd_w1,both.sets$sd_w2)
-both.sets$mad<-ifelse(both.sets$phase=="first",both.sets$mad_w1,both.sets$mad_w2)
-both.sets$perp_entropy<-ifelse(both.sets$phase=="first",both.sets$perp_entropy_w1,both.sets$perp_entropy_w2)
-
-#add domain differences in complexity between waves
-both.sets$sd_hist_diff<-both.sets$sd_hist_w2-both.sets$sd_hist_w1
-both.sets$mad_hist_diff<-both.sets$mad_hist_w2-both.sets$mad_hist_w1
-both.sets$perp_entropy_hist_diff<-both.sets$perp_entropy_hist_w2-both.sets$perp_entropy_hist_w1
-
-both.sets$sd_diff<-both.sets$sd_w2-both.sets$sd_w1
-both.sets$mad_diff<-both.sets$mad_w2-both.sets$mad_w1
-both.sets$perp_entropy_diff<-both.sets$perp_entropy_w2-both.sets$perp_entropy_w1
-
-
-
-#analyze comparison of tournament 1 to tournament 2
-
-both.sets.model<-  lmer(log(inaccuracy)~phase+(1|team_name), data=both.sets)
-car::Anova(both.sets.model,type="III", test.statistic="F") #sig effect
-emmeans(both.sets.model,~phase, type="response")
-
-both.sets.model.by.domain<-  lmer(log(inaccuracy)~phase*domain+(1|team_name), data=both.sets)
-car::Anova(both.sets.model.by.domain,type="III", test.statistic="F") #sig effect
-emmeans(both.sets.model.by.domain,~phase|domain, type="response")
-emmeans(both.sets.model.by.domain,pairwise~phase|domain, type="response")
-t.comparison.effects<-as.data.frame(emmeans(both.sets.model.by.domain,pairwise~phase|domain, type="response")$emmeans)
-t.comparison<-as.data.frame(emmeans(both.sets.model.by.domain,pairwise~phase|domain, type="response")$contrasts)
-
-both.sets.model.cov<-  lmer(log(inaccuracy)~phase+domain+
-                              n_domains+team_discipline.datasci+team_discipline.SBsci+multi_dis.factor+team_size.coded+team_gender+team_education+Domain_Publications+previous_tournament.coded+(1|team_name), data=both.sets)
-car::Anova(both.sets.model.cov,type="III", test.statistic="F") #sig effect
-emmeans(both.sets.model.cov,~phase, type="response")
-
-both.sets.domain.model<-  lmer(log(inaccuracy)~domain+(1|team_name), data=both.sets)
-car::Anova(both.sets.domain.model,type="III", test.statistic="F") #sig effect
-emmeans(both.sets.domain.model,pairwise~domain, type="response")
-
-
-```
-
-#graph change in ranking
-```{r}
-
-#get ranking of scores among academics in May and November
-
-median.MASE.t1$phase<-"first"
-median.MASE.t2$phase<-"second"
-median.MASE.t1$Wave<-"First Tournament\nMay 2020"
-median.MASE.t2$Wave<-"Second Tournament\nNov 2020"
-median.ranks<-bind_rows(median.MASE.t1,median.MASE.t2)
-median.ranks$Domain[median.ranks$domain=="eafric"]<-"Exp. Afr.-Am. Bias"
-median.ranks$Domain[median.ranks$domain=="easian"]<-"Exp. Asian-Am. Bias"
-median.ranks$Domain[median.ranks$domain=="egend"]<-"Exp. Gender Bias"
-median.ranks$Domain[median.ranks$domain=="iafric"]<-"Imp. Afr.-Am. Bias"
-median.ranks$Domain[median.ranks$domain=="iasian"]<-"Imp. Asian-Am. Bias"
-median.ranks$Domain[median.ranks$domain=="ideoldem"]<-"Democrat. Support"
-median.ranks$Domain[median.ranks$domain=="ideolrep"]<-"Republic. Support"
-median.ranks$Domain[median.ranks$domain=="igend"]<-"Imp. Gender Bias"
-median.ranks$Domain[median.ranks$domain=="lifesat"]<-"Life Satisfaction"
-median.ranks$Domain[median.ranks$domain=="polar"]<-"Polarization"
-median.ranks$Domain[median.ranks$domain=="negaffect"]<-"Negative Affect"
-median.ranks$Domain[median.ranks$domain=="posaffect"]<-"Positive Affect"
-
-median.ranks<-median.ranks %>% left_join(t.comparison.effects) %>% left_join(t.comparison %>% select(domain,ratio,t.ratio,p.value)) #add the sig testing from the tournament comparisons, incl ratio size and p-values
-
-#NOTE: here we have median ranks per domain, but also the estimates scores from multi-level models accounting for multiple predictions by different scientist groups. Due to this dependence in the data, we use the latter estimates.
-
-median.ranks$sig<-ifelse(median.ranks$p.value<.05,"eff","noeff")
-median.ranks$MASE<-round(median.ranks$response,2) #two decimals
-median.ranks$ranksize<-round(median.ranks$ratio,2) #two decimals
-newggslopegraph(dataframe = median.ranks,
-                Times = Wave,
-                Measurement = MASE,
-                Grouping = Domain,LineThickness = 2,
-                WiderLabels=T,
-                Title = "Which domains are harder to predict?",TitleJustify = "center",
-                SubTitle = NULL,
-                Caption = "Ranking based on MASE scores per domain",
-                ThemeChoice="ipsum")+scale_color_d3(palette = "category20")+geom_line(aes(linetype=sig, color="black",alpha=1))
-```
-
-```{r ranking in phase 1 and complexity}
-
-#covert to wide
-median.ranks.wide<-median.ranks %>% select(domain:phase,MASE) %>% 
-  pivot_wider(names_from="phase",values_from=c("MASE","MASE_med"))
-
-rank_complex_wide<-median.ranks.wide%>%left_join(complexity)
-
-#For complexity,we used SD and MAD. Additionally, I consider permutation_entropy, which is Ra substitution the Shannon entropy with a monoparametric entropy. 
-
-rank_complex_w1<-median.MASE.t1%>%left_join(complexity)
-rank_complex_w2<-median.MASE.t2%>%left_join(complexity)
-
-rank_complex<-median.ranks%>%left_join(complexity)
-
-
-
-correlation::correlation(rank_complex%>%filter(phase=="first") %>% 
- select(MASE_med,sd_hist_w1,mad_hist_w1,perp_entropy_hist_w1,sd_w1,mad_w1,perp_entropy_w1), p_adjust="none", ranktransform=T) 
-
-correlation::correlation(rank_complex%>%filter(phase=="second") %>% 
- select(MASE_med,sd_hist_w2,mad_hist_w2,perp_entropy_hist_w2,sd_w2,mad_w2,perp_entropy_w2), p_adjust="none", ranktransform=T) 
-
-#add difference scores in complexity to the dataset
-
-rank_complex$sd_hist_diff<-rank_complex$sd_hist_w2-rank_complex$sd_hist_w1
-rank_complex$mad_hist_diff<-rank_complex$mad_hist_w2-rank_complex$mad_hist_w1
-rank_complex$perp_entropy_hist_diff<-rank_complex$perp_entropy_hist_w2-rank_complex$perp_entropy_hist_w1
-
-rank_complex$sd_diff<-rank_complex$sd_w2-rank_complex$sd_w1
-rank_complex$mad_diff<-rank_complex$mad_w2-rank_complex$mad_w1
-rank_complex$perp_entropy_diff<-rank_complex$perp_entropy_w2-rank_complex$perp_entropy_w1
-
-rank_complex$wave<-ifelse(rank_complex$phase=="first",0,1)
-
-domain.SD.change<-  lmer(MASE~wave*sd_hist_diff+(1|Domain), data=rank_complex)
-car::Anova(domain.SD.change,type="III", test.statistic="F") #sig effect
-emtrends(domain.SD.change,specs=~wave,var="sd_hist_diff") #
-interactions::sim_slopes(domain.SD.change,pred="wave",modx="sd_hist_diff", digits=4)
-#this interaction shows that when change in SD is high (domains become more variable at t2 compared to t1), there is no difference in inaccuracy
- 
-domain.MAD.change<-  lmer(MASE~wave*mad_hist_diff+(1|Domain), data=rank_complex)
-car::Anova(domain.MAD.change,type="III", test.statistic="F") #sig effect
-emtrends(domain.MAD.change,specs=~wave,var="mad_hist_diff") #
-interactions::sim_slopes(domain.MAD.change,pred="wave",modx="mad_hist_diff", digits=4)
-#this interaction shows that when change in MAD is high (domains become more variable at t2 compared to t1), there is no difference in inaccuracy between t1 and t2
-
-##examine difference scores via corr
-
-rank_complex_wide$sd_hist_diff<-rank_complex_wide$sd_hist_w2-rank_complex_wide$sd_hist_w1
-rank_complex_wide$mad_hist_diff<-rank_complex_wide$mad_hist_w2-rank_complex_wide$mad_hist_w1
-rank_complex_wide$perp_entropy_hist_diff<-rank_complex_wide$perp_entropy_hist_w2-rank_complex_wide$perp_entropy_hist_w1
-
-rank_complex_wide$sd_diff<-rank_complex_wide$sd_w2-rank_complex_wide$sd_w1
-rank_complex_wide$mad_diff<-rank_complex_wide$mad_w2-rank_complex_wide$mad_w1
-rank_complex_wide$perp_entropy_diff<-rank_complex_wide$perp_entropy_w2-rank_complex_wide$perp_entropy_w1
-
-rank_complex_wide$MASE_diff<-rank_complex_wide$MASE_second-rank_complex_wide$MASE_first
-rank_complex_wide$MASE_med_diff<-rank_complex_wide$MASE_med_second-rank_complex_wide$MASE_med_first
-
-
-correlation::correlation(rank_complex_wide%>%
- select(MASE_diff,MASE_med_diff,sd_hist_diff,mad_hist_diff,perp_entropy_hist_diff,sd_diff,mad_diff,perp_entropy_diff), p_adjust="none", ranktransform=T) 
-#added info about change in variability correlating to changes in accuracy.
-
-```
-
-
-## compare scores from tournament 1 - first six months vs. last six months
-```{r}
-#turn to long format (firstmonths and lastmonths MASE data)
-data.t1.t2.exp.long<- phase1_exp %>% ungroup() %>%pivot_longer(cols=c("MASE1_w1_firstmonths","MASE1_w1_lastmonths"), names_to="Time",values_to="MASE") 
-model.t1.t2<-lmer(log(MASE)~Time+domain+(1|team_name), data=data.t1.t2.exp.long)
-
-summary(model.t1.t2)     
-car::Anova(model.t1.t2,type="III",test.statistic="F") #sig interaction!
-emmeans(model.t1.t2,specs = trt.vs.ctrl ~Time|Method.code,  type="response",adjust = "fdr") 
-
-#compare last months from the T1 to T2
-##turn to long format (lastmonths T1 an t2 MASE data)
-subset1.lastsix<- phase1_exp %>% ungroup() %>% select(MASE1_w1_lastmonths,domain,Method.code,ResponseId,team_name,covidcondyn,CounterFactual_Presence_Final,Method.complex,parameters_coded,n_domains,multi_dis.factor,team_discipline.coded,team_size.coded,team_gender,team_education,confidence,subexpert,Domain_Publications,previous_tournament.coded, TournamentStart) %>% mutate(inaccuracy = MASE1_w1_lastmonths,phase = "first")
-
-#combine
-both.sets.lastsix<-bind_rows(subset1.lastsix,subset2)
-
-model.t1.t2.lastsix<-lmer(log(inaccuracy)~phase+domain+(1|team_name), data=subset(both.sets.lastsix,TournamentStart=="May"))
-  
-car::Anova(model.t1.t2.lastsix,type="III",test.statistic="F") 
-emmeans(model.t1.t2.lastsix,specs = trt.vs.ctrl ~phase,  type="response",adjust = "fdr") 
-
 ```
 
 
