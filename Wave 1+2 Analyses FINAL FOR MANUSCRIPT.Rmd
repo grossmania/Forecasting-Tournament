@@ -1567,6 +1567,14 @@ car::Anova(model.t1.COVID,type="III",test.statistic="F")
 summ(model.t1.COVID, conf.method="boot", digits=3, center=T) #no significant effect of COVID prediction in accuracy on MASE in accuracy
 
 
+#supplementary - test interaction between model complexity and phase
+
+model.bothTournaments.accuracy.COVs.phase<-lmer(accuracy_log~phase+domain+phase*parameters_coded+phase*Method.complex+covidconditional+CounterFactual_Presence_Final+n_domains+team_discipline.datasci+team_discipline.SBsci+Multidisciplinary+team_size.coded+team_education+confidence+subexpert+Domain_Publications+previous_tournament.coded+(1|team_name), data=both.sets)
+car::Anova(model.bothTournaments.accuracy.COVs.phase,type="III",test.statistic="F") #no significant interaction between phase and complexity (to test the question of lower number of datapoint favors simpler forecasts)
+
+
+
+
 
 ```
 
