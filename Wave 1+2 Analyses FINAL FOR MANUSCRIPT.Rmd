@@ -883,6 +883,8 @@ phase1_exp_wbench$domain <- factor(phase1_exp_wbench$domain,      # Reordering g
 model.phase1.hist.mean.ratio<-  lmer(sqrt(MASE_ratio1)~domain+(1|team_name), data=phase1_exp_wbench)
 Anova(model.phase1.hist.mean.ratio, test.statistic = "F")
 emmeans(model.phase1.hist.mean.ratio,~domain, type="response")
+
+
 #here are the results of the historical mean tests for Tournament 1
 
 plot.t1.hist.mean<-plot(emmeans(model.phase1.hist.mean.ratio,~domain, type="response"),comparisons=F, color="black")+scale_y_discrete(labels=labeling, name="Historical Mean")+geom_vline(xintercept =1, linetype='dashed', color='black',14)+theme_minimal()+  labs(x="",shape="",color="", title="Tournament 1 (May 2020)")
@@ -900,6 +902,21 @@ emmeans(model.phase1.linreg.ratio,~domain, type="response")
 #here are the results of the linear regression tests for Tournament 1
 
 plot.t1.linreg<-plot(emmeans(model.phase1.linreg.ratio,~domain, type="response"),comparisons=F, color="black")+scale_y_discrete(labels=labeling, name="Linear Regression")+geom_vline(xintercept =1, linetype='dashed', color='black',14)+theme_minimal()+  labs(x="",shape="",color="", title="")
+
+
+##examine if better than all 3 benchmarks
+
+phase1_exp_wbench$phase1_exp_wbench_topBenchmark <- pmin(phase1_exp_wbench$'Benchmark 1',phase1_exp_wbench$'Benchmark 2',phase1_exp_wbench$'Benchmark 3')
+phase1_exp_wbench$MASE_ratio1_topBenchmark<- phase1_exp_wbench$phase1_exp_wbench_topBenchmark/phase1_exp_wbench$MASE1_w1
+
+#skewness test suggests that sqrt is the most reasonable transformation  hence we will use it.
+model.phase1.topBenchmark.ratio<-  lmer(sqrt(MASE_ratio1_topBenchmark)~domain+(1|team_name), data=phase1_exp_wbench)
+Anova(model.phase1.topBenchmark.ratio, test.statistic = "F")
+emmeans(model.phase1.topBenchmark.ratio,~domain, type="response")
+
+
+plot.t1.topBenchmark<-plot(emmeans(model.phase1.topBenchmark.ratio,~domain, type="response"),comparisons=F, color="black")+scale_y_discrete(labels=labeling, name="Top Naive Benchmark")+geom_vline(xintercept =1, linetype='dashed', color='black',14)+theme_minimal()+  labs(x="",shape="",color="", title="Tournament 1 (May 2020)")
+
 
 #Tournament 2
 
@@ -940,6 +957,20 @@ emmeans(model.phase2.linreg.ratio,~domain, type="response")
 
 
 plot.t2.linreg<-plot(emmeans(model.phase2.linreg.ratio,~domain, type="response"),comparisons=F, color="black")+scale_y_discrete(name="")+geom_vline(xintercept =1, linetype='dashed', color='black',14)+theme_minimal()+  labs(x="",shape="",color="", title="")+theme(axis.text.y=element_blank())
+
+##examine if better than all 3 benchmarks
+
+phase2_exp_wbench$phase2_exp_wbench_topBenchmark <- pmin(phase2_exp_wbench$'Benchmark 1',phase2_exp_wbench$'Benchmark 2',phase2_exp_wbench$'Benchmark 3')
+phase2_exp_wbench$MASE_ratio2_topBenchmark<- phase2_exp_wbench$phase2_exp_wbench_topBenchmark/phase2_exp_wbench$MASE1_w2
+
+#skewness test suggests that sqrt is the most reasonable transformation  hence we will use it.
+model.phase2.topBenchmark.ratio<-  lmer(sqrt(MASE_ratio2_topBenchmark)~domain+(1|team_name), data=phase2_exp_wbench)
+Anova(model.phase2.topBenchmark.ratio, test.statistic = "F")
+emmeans(model.phase2.topBenchmark.ratio,~domain, type="response")
+
+
+plot.t2.topBenchmark<-plot(emmeans(model.phase2.topBenchmark.ratio,~domain, type="response"),comparisons=F, color="black")+scale_y_discrete(labels=labeling, name="Top Naive Benchmark")+geom_vline(xintercept =1, linetype='dashed', color='black',14)+theme_minimal()+  labs(x="",shape="",color="", title="Tournament 2 (Nov 2020)")
+
 
 #combine all graphs
 figs2<-ggarrange(plot.t1.hist.mean,plot.t2.hist.mean,
