@@ -1935,7 +1935,7 @@ dat_phase2$Group.data[dat_phase2$Group=="Updated May"&dat_phase2$justification_t
 dat_phase2$Group.data[dat_phase2$Group=="Updated May"&dat_phase2$justification_externalEvent==1]<-"Extra"
 
 model.phase2.update.data<-  lmer(log(MASE1_w2)~Group.data+(1|ResponseId), data=dat_phase2)
-car::Anova(model.phase2.update.data,type="III")
+car::Anova(model.phase2.update.data,type="III") # there is a significant difference in prediction error as a function of types of justifications.
 emmeans(model.phase2.update.data,pairwise ~Group.data, adjust = "none") 
 
 dat_phase2$MASE1_w2_log<-log(dat_phase2$MASE1_w2)
