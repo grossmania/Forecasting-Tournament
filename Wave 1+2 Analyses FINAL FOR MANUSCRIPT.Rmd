@@ -45,14 +45,14 @@ setwd("~/GitHub/Forecasting-Tournament") #igor's working directory
 
 ```{r Import Data}
 
-dat <- read.csv("dat_for_analyses.csv", stringsAsFactors = FALSE)
-dat_long <- read.csv("dat_long.csv", stringsAsFactors = FALSE)
+dat <- read.csv("/Users/guoxinqieve/Applications/OneDrive - UC San Diego/Forecasting-Tournament/dat_for_analyses.csv", stringsAsFactors = FALSE)
+dat_long <- read.csv("/Users/guoxinqieve/Applications/OneDrive - UC San Diego/Forecasting-Tournament/dat_long.csv", stringsAsFactors = FALSE)
 
 ```
 
 ```{r get simulated benchmark data & add RW to data}
 #add simulation benchmarks
-load("sim/BenchmarkData_Combined.RData")
+load("/Users/guoxinqieve/Applications/OneDrive - UC San Diego/Forecasting-Tournament/sim/BenchmarkData_Combined.RData")
 
 sim.w1 <- Stats_all_benchmarks_raw
 sim.w1$Wave <-"First Tournament (May 2020)"
@@ -64,7 +64,7 @@ sim.w1$Type[sim.w1$source=="Benchmark 1"]<-"Historic Mean"
 sim.w1$Type[sim.w1$source=="Benchmark 2"]<-"Random Walk"
 sim.w1$Type[sim.w1$source=="Benchmark 3"]<-"Linear Regression"
 
-load("sim/BenchmarkData_Combined_W2.RData")
+load("/Users/guoxinqieve/Applications/OneDrive - UC San Diego/Forecasting-Tournament/sim/BenchmarkData_Combined_W2.RData")
 sim.w2<-Stats_all_benchmarks_raw_w2
 sim.w2$Wave<-"Second Tournament (Nov 2020)"
 sim.w2<-subset(sim.w2,source!="ExpertsW2")
@@ -736,7 +736,7 @@ chisq.test(xtabs( ~ compare_to_naive_linear_MASE_w2+Method.code,academic_only%>%
 #THE SECTION BELOW IS CHIEFLY FOR INFORMATION ABOUT THE HISTORICAL TRENDS, AND VISUALLY INSPECTING VARIABILITY IN TRENDS, AS OUTLINED IN ONE SENTENCE IN THE DISCUSSION OF THE PAPER.
 
 # Read in historical data
-historical <- read.csv("historical_data.csv")
+historical <- read.csv("/Users/guoxinqieve/Applications/OneDrive - UC San Diego/Forecasting-Tournament/historical_data.csv")
 historical_tsbl <- as_tsibble(historical, index = Month)
 
 # Actual change based on survey results for each domain.
@@ -1516,7 +1516,7 @@ correlation::correlation(rank_complex_wide%>%
 ```{r}
 #turn to long format (firstmonths and lastmonths MASE data)
 data.t1.t2.exp.long<- phase1_exp %>% ungroup() %>%pivot_longer(cols=c("MASE1_w1_firstmonths","MASE1_w1_lastmonths"), names_to="Time",values_to="MASE") 
-model.t1.t2<-lmer(log(MASE)~Time+domain+(1|team_name), data=data.t1.t2.exp.long)
+model.t1.t2<-lmer(log(MASE)~Time*domain+(1|team_name), data=data.t1.t2.exp.long)
 
 summ(model.t1.t2)     
 car::Anova(model.t1.t2,type="III",test.statistic="F") #sig interaction!
@@ -1571,9 +1571,9 @@ dat_long_phase2<-dat_long %>%filter(!(phase == 1 & revised == 1)& Method.code!="
 
 dat_long_phase2_exp_wide_by_month<-dat_long_phase2 %>%dplyr::select(domain,team_name,Month7,value.dif) %>%  pivot_wider(names_from=c(Month7),values_from=c(value.dif))
 
-dat_long_phase2_exp_wide_by_month$odd_month_inaccuracy=rowMeans(dat_long_phase2_exp_wide_by_month[c("1","3","5")],na.rm=T)
+dat_long_phase2_exp_wide_by_month$even_month_inaccuracy=rowMeans(dat_long_phase2_exp_wide_by_month[c("1","3","5")],na.rm=T) # Evie: I think these are even months since previously the month was subtracted by 7
 
-dat_long_phase2_exp_wide_by_month$even_month_inaccuracy=rowMeans(dat_long_phase2_exp_wide_by_month[c("2","4","0")],na.rm=T)
+dat_long_phase2_exp_wide_by_month$odd_month_inaccuracy=rowMeans(dat_long_phase2_exp_wide_by_month[c("2","4","0")],na.rm=T) # Evie: I think these are odd months since previously the month was subtracted by 7
 
 #correlations by domain
 
@@ -1660,7 +1660,7 @@ partR2(model.phase1.across.domains, partvars =
 data.phase1.MASE.total<-as.data.frame(emmeans(model.phase1.across.domains,pairwise ~Method.code, type = "response", adjust = "none")$emmeans)
 
 #next run Tournament 2 models
-data.phase2.model.across.domains<-  lmer(log(MASE1_w2)~Method.code+domain+(1|ResponseId), data=dat_phase2)
+data.phase2.model.across.domains<-  lmer(log(MASE1_w2)~Method.code * domain+(1|ResponseId), data=dat_phase2)
 car::Anova(data.phase2.model.across.domains,type="III", test.statistic="F") #sig interaction!
 data.phase2.MASE.total<-as.data.frame(emmeans(data.phase2.model.across.domains,pairwise ~Method.code, type = "response", adjust = "none")$emmeans)
 partR2(data.phase2.model.across.domains, partvars = 
@@ -1814,7 +1814,7 @@ model.bothTournaments.no.COVs<-lmer(inaccuracy_log~domain+(1|team_name), data=bo
 summ(model.bothTournaments.no.COVs, conf.method="boot", digits=3, center=T)
 
 
-#xtra analysis with US residents on the team - not included to avoi doverfitting.
+#xtra analysis with US residents on the team - not included to avoid overfitting.
 model.bothTournaments.COVs.incl.US<-lmer(inaccuracy_log~domain+parameters_coded+Method.complex+covidconditional+CounterFactual_Presence_Final+n_domains+team_discipline.datasci+team_discipline.SBsci+Multidisciplinary+non_US+team_size.coded+team_education+confidence+subexpert+Domain_Publications+previous_tournament.coded+(1|team_name), data=both.sets)
 car::Anova(model.bothTournaments.COVs.incl.US,type="III",test.statistic="F") 
 #no effect of US residency
@@ -1902,7 +1902,7 @@ dat_phase2$compare_to_naive_linear_MASE2.update<-ifelse(dat_phase2$compare_to_na
 dat_phase2$Group[dat_phase2$TournamentStart=="May"&dat_phase2$revised == 0]<-"Original May"
 dat_phase2$Group[dat_phase2$TournamentStart=="November"&dat_phase2$revised == 0]<-"Original November"
 dat_phase2$Group[dat_phase2$TournamentStart=="May"&dat_phase2$revised == 1]<-"Updated May"
-dat_phase2$teamS<-as.factor(ifelse(dat_phase2$team_size.coded>=6,3,ifelse(dat_phase2$team_size.coded<6&dat_phase2$team_size.coded>1,2,ifelse(dat_phase2$team_size.coded==1,1,NA))))
+dat_phase2$teamS<-as.factor(ifelse(dat_phase2$team_size.coded>=6,3,ifelse(dat_phase2$team_size.coded<6 & dat_phase2$team_size.coded>1,2,ifelse(dat_phase2$team_size.coded==1,1,NA))))
 dat_phase2$is_multidisciplinary<-ifelse(dat_phase2$discipline=="Multi-disciplinary",1,0)
 dat_phase2$objectivexpert<-ifelse(dat_phase2$pub==1,"Expert",ifelse(dat_phase2$pub==2,"Non Expert",NA))
 dat_phase2$covidconditional<-ifelse(dat_phase2$covidcondyn==0,"No",ifelse(dat_phase2$covidcondyn==1,"Yes",NA))
@@ -1919,7 +1919,7 @@ dat_phase2<-dat_phase2 %>%group_by(team_name) %>%
 
 #MAIN TEXT ANALYSES####
 model.phase2.update<-  lmer(log(MASE1_w2)~Group+(1|ResponseId), data=dat_phase2)
-car::Anova(model.phase2.update,type="III") #sig difference between May and Nov, but not between original may and original Nov
+car::Anova(model.phase2.update,type="III") #sig difference between original May and original Nov, but not between updated May and original Nov
 summ(model.phase2.update)
 emmeans(model.phase2.update,pairwise ~Group, adjust = "none") #nonsig
 #contrast difference of updating forecasts for explicit asian bias, life satisfaction, neg affect, polarization, pos affect
@@ -1936,18 +1936,16 @@ dat_phase2$Group.data[dat_phase2$Group=="Updated May"&dat_phase2$justification_e
 
 model.phase2.update.data<-  lmer(log(MASE1_w2)~Group.data+(1|ResponseId), data=dat_phase2)
 car::Anova(model.phase2.update.data,type="III")
-emmeans(model.phase2.update.data,pairwise ~Group.data, adjust = "none") #nonsig
+emmeans(model.phase2.update.data,pairwise ~Group.data, adjust = "none") 
 
 dat_phase2$MASE1_w2_log<-log(dat_phase2$MASE1_w2)
 model.phase2.update.type<-  lmer(MASE1_w2_log~justification_dataReceived+justification_theoreticalInsight+justification_externalEvent+(1|team_name), data=dat_phase2)
-car::Anova(model.phase2.update.type,type="III") #sig difference between May and Nov, but not between original may and original Nov
+car::Anova(model.phase2.update.type,type="III")  
 summ(model.phase2.update.type,scale = F, robust = "HC1", digits=3, n.sd = 2)
 #no sig differences
 #export_summs(model.phase2.update.type, scale = T, robust = "HC1", n.sd = 2, to.file = "docx")
 partR2(model.phase2.update.type, partvars = 
          c("justification_dataReceived","justification_theoreticalInsight","justification_externalEvent"))
-       
-
 ```
 
 # demographics Phase 1
