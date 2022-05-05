@@ -1064,12 +1064,12 @@ pd <- position_dodge(0.7) # move them .07 to the left and right
 hist(log(phase1$MASE1_w1)) #possibly do it on logs?
 describe(phase1$MASE1_w1)
 
-#analyses of phase 1  - MASE overall
+#analyses of phase 1  - MASE overall, withot an interaction
 model.phase1.together.nodomain.interac<-  lmer(log(MASE1_w1)~isExpert.factor+domain+(1|ResponseId), data=phase1)
 car::Anova(model.phase1.together.nodomain.interac,type="III", test.statistic="F") #sig main effect, but only if we don't include interaction. 
 summ(model.phase1.together.nodomain.interac, digits = 5)
-#Pseudo-R² (fixed effects) = 0.00805
 partR2(model.phase1.together.nodomain.interac,partvars=c("isExpert.factor"), nboot=100)
+#Pseudo-R² (fixed effects) = 0.0132
 
 
 model.phase1.together<-  lmer(log(MASE1_w1)~domain*isExpert.factor+(1|ResponseId), data=phase1)
@@ -1077,7 +1077,14 @@ car::Anova(model.phase1.together,type="III", test.statistic="F") #sig interactio
 data.phase1.MASE.together<-as.data.frame(emmeans(model.phase1.together, pairwise~domain*isExpert.factor, adjust = "none", type = "response")$emmeans) #backtransformed to the original scale
 summ(model.phase1.together, digits = 8)
 #Pseudo-R² (fixed effects) = 0.28053205
-partR2(model.phase1.together,partvars=c("isExpert.factor"), nboot=100)
+partR2(model.phase1.together,partvars=c("isExpert.factor","isExpert.factor:domain"), nboot=100)
+
+#test the difference between experts and lay people
+model.layVSsci.phase1<-  lmer(log(MASE1_w1)~domain*isExpert.factor+(1|ResponseId), data=phase1)
+car::Anova(model.layVSsci.phase1,type="III",test.statistic="F") #sig interaction!
+emmeans(model.layVSsci.phase1,pairwise ~isExpert.factor|domain,  type="response",adjust = "fdr") #but this FDR is not doing it across all tests, Need to investigate
+
+eff_size(emmeans(model.layVSsci.phase1,pairwise ~isExpert.factor|domain),sigma = sigma(model.layVSsci.phase1), edf =df.residual(model.layVSsci.phase1) ) #using the smallest DF among the three
 
 
 #phase 2
