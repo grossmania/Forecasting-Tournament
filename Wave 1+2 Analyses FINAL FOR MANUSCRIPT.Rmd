@@ -1065,9 +1065,19 @@ hist(log(phase1$MASE1_w1)) #possibly do it on logs?
 describe(phase1$MASE1_w1)
 
 #analyses of phase 1  - MASE overall
+model.phase1.together.nodomain.interac<-  lmer(log(MASE1_w1)~isExpert.factor+domain+(1|ResponseId), data=phase1)
+car::Anova(model.phase1.together.nodomain.interac,type="III", test.statistic="F") #sig main effect, but only if we don't include interaction. 
+summ(model.phase1.together.nodomain.interac, digits = 5)
+#Pseudo-R² (fixed effects) = 0.00805
+partR2(model.phase1.together.nodomain.interac,partvars=c("isExpert.factor"), nboot=100)
+
+
 model.phase1.together<-  lmer(log(MASE1_w1)~domain*isExpert.factor+(1|ResponseId), data=phase1)
-car::Anova(model.phase1.together,type="III") #sig interaction!
+car::Anova(model.phase1.together,type="III", test.statistic="F") #sig interaction!
 data.phase1.MASE.together<-as.data.frame(emmeans(model.phase1.together, pairwise~domain*isExpert.factor, adjust = "none", type = "response")$emmeans) #backtransformed to the original scale
+summ(model.phase1.together, digits = 8)
+#Pseudo-R² (fixed effects) = 0.28053205
+partR2(model.phase1.together,partvars=c("isExpert.factor"), nboot=100)
 
 
 #phase 2
