@@ -45,14 +45,14 @@ setwd("~/GitHub/Forecasting-Tournament") #igor's working directory
 
 ```{r Import Data}
 
-dat <- read.csv("/Users/guoxinqieve/Applications/OneDrive - UC San Diego/Forecasting-Tournament/dat_for_analyses.csv", stringsAsFactors = FALSE)
-dat_long <- read.csv("/Users/guoxinqieve/Applications/OneDrive - UC San Diego/Forecasting-Tournament/dat_long.csv", stringsAsFactors = FALSE)
+dat <- read.csv("dat_for_analyses.csv", stringsAsFactors = FALSE)
+dat_long <- read.csv("dat_long.csv", stringsAsFactors = FALSE)
 
 ```
 
 ```{r get simulated benchmark data & add RW to data}
 #add simulation benchmarks
-load("/Users/guoxinqieve/Applications/OneDrive - UC San Diego/Forecasting-Tournament/sim/BenchmarkData_Combined.RData")
+load("sim/BenchmarkData_Combined.RData")
 
 sim.w1 <- Stats_all_benchmarks_raw
 sim.w1$Wave <-"First Tournament (May 2020)"
@@ -64,7 +64,7 @@ sim.w1$Type[sim.w1$source=="Benchmark 1"]<-"Historic Mean"
 sim.w1$Type[sim.w1$source=="Benchmark 2"]<-"Random Walk"
 sim.w1$Type[sim.w1$source=="Benchmark 3"]<-"Linear Regression"
 
-load("/Users/guoxinqieve/Applications/OneDrive - UC San Diego/Forecasting-Tournament/sim/BenchmarkData_Combined_W2.RData")
+load("sim/BenchmarkData_Combined_W2.RData")
 sim.w2<-Stats_all_benchmarks_raw_w2
 sim.w2$Wave<-"Second Tournament (Nov 2020)"
 sim.w2<-subset(sim.w2,source!="ExpertsW2")
@@ -120,8 +120,8 @@ mutate(compare_to_naive_rwf_MASE = case_when(
     ))
 #cross-check data for NAs
 #View(dat[is.na(dat$compare_to_naive_rwf_MASE),c("ResponseId", "team_name", "domain", "compare_to_naive_rwf","phase","Month.1" ,
-                                            "Month.2" ,"Month.3" ,"Month.4" ,"Month.5" ,"Month.6","Month.7",
-                                            "Month.8" ,"Month.9" ,"Month.10" ,"Month.11" ,"Month.12" ,                                           "MASE1_w1", "rw.MASE.w1")]) 
+#                                            "Month.2" ,"Month.3" ,"Month.4" ,"Month.5" ,"Month.6","Month.7",
+#                                            "Month.8" ,"Month.9" ,"Month.10" ,"Month.11" ,"Month.12" ,                                           "MASE1_w1", "rw.MASE.w1")]) 
 
 
 ```
@@ -736,7 +736,7 @@ chisq.test(xtabs( ~ compare_to_naive_linear_MASE_w2+Method.code,academic_only%>%
 #THE SECTION BELOW IS CHIEFLY FOR INFORMATION ABOUT THE HISTORICAL TRENDS, AND VISUALLY INSPECTING VARIABILITY IN TRENDS, AS OUTLINED IN ONE SENTENCE IN THE DISCUSSION OF THE PAPER.
 
 # Read in historical data
-historical <- read.csv("/Users/guoxinqieve/Applications/OneDrive - UC San Diego/Forecasting-Tournament/historical_data.csv")
+historical <- read.csv("historical_data.csv")
 historical_tsbl <- as_tsibble(historical, index = Month)
 
 # Actual change based on survey results for each domain.
