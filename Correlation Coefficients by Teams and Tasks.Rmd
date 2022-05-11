@@ -1,0 +1,130 @@
+---
+title: "Forecast Study"
+author: "Sangsuk Yoon"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output: 
+  html_document:
+    code_folding: hide
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r, echo=T, warning=F, message=F}
+library(tidyverse)
+library(reshape2)
+```
+
+# Read the dataset
+```{r, echo=T, warning=F, message=F}
+dat <- read.csv("dat_for_analyses.csv", stringsAsFactors = FALSE) # Read the dataset
+```
+
+# Getting Correlation Coefficients
+## Part 1: For Phase 1 - Both Academics and General Population
+```{r, warning=F}
+# Getting the Objective Values
+objective <- dat %>%
+  filter(Method == "Objective", phase == 1) %>%
+  select(domain:Month.12)
+
+
+# Getting Phase 1 Data both for Academics and General Population
+phase1_for_correlation <- dat %>% filter(phase == 1 & Method != "Objective")
+
+# Creating an empty dataset to store correlation coefficients
+correlation_phase1 <- data.frame(matrix(NA, nrow = nrow(phase1_for_correlation), ncol = 5))
+colnames(correlation_phase1) <- c("X", "ResponseId", "domain", "phase1_cor_twelve", "phase1_cor_six")
+
+# Looping the Phase 1 data
+for (i in 1:nrow(phase1_for_correlation)) {
+  
+  temp_dat <- phase1_for_correlation[i,] # data for each team, each domain 
+  
+  # key variables to connect correlation coefficients with the original dataset
+  temp_X <- temp_dat$X # X value in the dataset
+  temp_responseid <- temp_dat$ResponseId # ResponseId in the dataset
+  temp_domain <- temp_dat$domain # Domain name in the dataset
+  
+  # Reshape the Objective data from wide to long
+  task_actual <- subset(objective, domain == temp_domain) %>% 
+    pivot_longer(!domain, names_to="month", values_to="actual")
+  
+  # Reshape the team and the domain data from wide to long
+  team_task_estimates <- temp_dat %>% 
+    select(domain:Month.12) %>%  
+    pivot_longer(!domain, names_to="month", values_to="estimate")
+  
+  # Combine the objective data and estimates data
+  temp_combined <- left_join(team_task_estimates, task_actual, by = c("domain", "month"))
+  
+  # Getting correlation coefficient for 12 months data (Month1 through Month12)
+  phase1_cor_twelve <- with(temp_combined, cor(estimate, actual, method = c("pearson"), use = "pairwise.complete.obs"))
+  
+  # Getting correlation coefficient for last 6 months data (Month7 through Month12)
+  phase1_cor_last_six <- with(temp_combined[7:12,], cor(estimate, actual, method = c("pearson"), use = "pairwise.complete.obs"))
+  
+  # Adding the correlation coefficients to the empty data frame for each team and for each domain
+  correlation_phase1[i,] <- c(temp_X, temp_responseid, temp_domain, phase1_cor_twelve, phase1_cor_last_six)
+
+}
+
+```
+
+## Part 2: For Phase 2 - Acadmie
+```{r, warning=F}
+# Academics & Phase 2
+phase2_for_correlation <- dat %>%
+  filter(isExpert == 1 & !(phase == 1 & revised == 1)) #just academics, omitting original (non-revised phase 1) - got this from Igor
+
+# Creating an empty dataset where correlation coefficients will be stored
+correlation_phase2 <- data.frame(matrix(NA, nrow = nrow(phase2_for_correlation), ncol = 5))
+colnames(correlation_phase2) <- c("X", "ResponseId", "domain", "phase2_cor_twelve", "phase2_cor_six")
+
+for (i in 1:nrow(phase2_for_correlation)) {
+  
+  temp_dat <- phase2_for_correlation[i,] # data for each team and each domain
+  
+  # key variables to connect correlation coefficients with the original dataset
+  temp_X <- temp_dat$X # X value in the dataset
+  temp_responseid <- temp_dat$ResponseId # ResponseId in the dataset
+  temp_domain <- temp_dat$domain # task domain in the dataset
+  
+  # Reshape the Objective data from wide to long
+  task_actual <- subset(objective, domain == temp_domain) %>% 
+    pivot_longer(!domain, names_to="month", values_to="actual")
+  
+  # Reshape the team and the domain data from wide to long
+  team_task_estimates <- temp_dat %>% 
+    select(domain:Month.12) %>%  
+    pivot_longer(!domain, names_to="month", values_to="estimate")
+  
+  # Combine the objective data and estimates data
+  temp_combined <- left_join(team_task_estimates, task_actual, by = c("domain", "month"))
+  
+  # Getting correlation coefficient for last 12 months data (Month1 through Month12)
+  phase2_cor_twelve <- with(temp_combined, cor(estimate, actual, method = c("pearson"), use = "pairwise.complete.obs"))
+  
+  # Getting correlation coefficient for last 6 months data (Month7 through Month12)
+  phase2_cor_last_six <- with(temp_combined[7:12,], cor(estimate, actual, method = c("pearson"), use = "pairwise.complete.obs"))
+  
+  # Adding the correlation coefficients to the empty data frame for each team and for each domain
+  correlation_phase2[i,] <- c(temp_X, temp_responseid, temp_domain, phase2_cor_twelve, phase2_cor_last_six)
+
+}
+```
+
+
+
+
+# Combining correlation tables and the original data table
+```{r, warning=F}
+# Merge correlation tables from both phases
+correlation_table_full <- full_join(correlation_phase1, correlation_phase2, by=c("X", "ResponseId", "domain"))
+correlation_table_full$X <- as.integer(correlation_table_full$X)
+
+# Merge the combined correlation data table with the original dataset
+dat <- left_join(dat, correlation_table_full, by=c("X", "ResponseId", "domain"))
+```
+
