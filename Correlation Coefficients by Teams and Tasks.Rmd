@@ -60,12 +60,20 @@ for (i in 1:nrow(phase1_for_correlation)) {
   temp_combined <- left_join(team_task_estimates, task_actual, by = c("domain", "month"))
   
   # Getting correlation coefficient for 12 months data (Month1 through Month12)
-  temp_phase1_cor_twelve <- with(temp_combined, cor.test(estimate, actual, method = c("pearson")))
-  phase1_cor_twelve <- temp_phase1_cor_twelve$estimate[[1]]
+  temp_sd_twelve <- with(temp_combined, sd(estimate, na.rm=T)) # Getting SD of predictions across 12 months
+  if (temp_sd_twelve == 0) {
+    phase1_cor_twelve <- NA
+  } else {
+    phase1_cor_twelve <- with(temp_combined, cor(estimate, actual, method = c("pearson"), use = "pairwise.complete.obs"))
+  }
   
   # Getting correlation coefficient for last 6 months data (Month7 through Month12)
-  temp_phase1_cor_last_six <- with(temp_combined[7:12,], cor.test(estimate, actual, method = c("pearson")))
-  phase1_cor_last_six <- temp_phase1_cor_last_six$estimate[[1]]
+  temp_sd_six <- with(temp_combined[7:12,], sd(estimate, na.rm=T)) # Getting SD of predictions across last six months
+  if (temp_sd_six == 0) {
+    phase1_cor_last_six <- NA
+  } else {
+    phase1_cor_last_six <- with(temp_combined[7:12,], cor(estimate, actual, method = c("pearson"), use = "pairwise.complete.obs"))
+  }
   
   # Adding the correlation coefficients to the empty data frame for each team and for each domain
   correlation_phase1[i,] <- c(temp_X, temp_responseid, temp_domain, phase1_cor_twelve, phase1_cor_last_six)
@@ -106,12 +114,20 @@ for (i in 1:nrow(phase2_for_correlation)) {
   temp_combined <- left_join(team_task_estimates, task_actual, by = c("domain", "month"))
   
   # Getting correlation coefficient for 12 months data (Month1 through Month12)
-  temp_phase2_cor_twelve <- with(temp_combined, cor.test(estimate, actual, method = c("pearson")))
-  phase2_cor_twelve <- temp_phase2_cor_twelve$estimate[[1]]
+  temp_sd_twelve <- with(temp_combined, sd(estimate, na.rm=T)) # Getting SD of predictions across 12 months
+  if (temp_sd_twelve == 0) {
+    phase2_cor_twelve <- NA
+  } else {
+    phase2_cor_twelve <- with(temp_combined, cor(estimate, actual, method = c("pearson"), use = "pairwise.complete.obs"))
+  }
   
   # Getting correlation coefficient for last 6 months data (Month7 through Month12)
-  temp_phase2_cor_last_six <- with(temp_combined[7:12,], cor.test(estimate, actual, method = c("pearson")))
-  phase2_cor_last_six <- temp_phase2_cor_last_six$estimate[[1]]
+  temp_sd_six <- with(temp_combined[7:12,], sd(estimate, na.rm=T)) # Getting SD of predictions across last six months
+  if (temp_sd_six == 0) {
+    phase2_cor_last_six <- NA
+  } else {
+    phase2_cor_last_six <- with(temp_combined[7:12,], cor(estimate, actual, method = c("pearson"), use = "pairwise.complete.obs"))
+  }
   
   # Adding the correlation coefficients to the empty data frame for each team and for each domain
   correlation_phase2[i,] <- c(temp_X, temp_responseid, temp_domain, phase2_cor_twelve, phase2_cor_last_six)
