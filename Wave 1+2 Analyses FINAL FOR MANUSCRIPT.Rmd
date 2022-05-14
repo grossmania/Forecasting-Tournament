@@ -32,6 +32,8 @@ library(CGPfunctions) #to graph change in trends over time.
 library(partR2) #to get partR2 for LME models
 library(moments) #to get skewness
 library(ggpubr) #to combine plots
+#library(simr) # to simulate power - not useful in posthoc designs
+library(rstanarm) #to get bayesian equivalent of difference tests
 
 options(max.print = 20000, scipen = 1000)
 
@@ -1064,7 +1066,7 @@ pd <- position_dodge(0.7) # move them .07 to the left and right
 hist(log(phase1$MASE1_w1)) #possibly do it on logs?
 describe(phase1$MASE1_w1)
 
-#analyses of phase 1  - MASE overall, withot an interaction
+#analyses of phase 1  - MASE overall, without an interaction
 model.phase1.together.nodomain.interac<-  lmer(log(MASE1_w1)~isExpert.factor+domain+(1|ResponseId), data=phase1)
 car::Anova(model.phase1.together.nodomain.interac,type="III", test.statistic="F") #sig main effect, but only if we don't include interaction. 
 summ(model.phase1.together.nodomain.interac, digits = 5)
@@ -1086,6 +1088,20 @@ emmeans(model.layVSsci.phase1,pairwise ~isExpert.factor|domain,  type="response"
 
 eff_size(emmeans(model.layVSsci.phase1,pairwise ~isExpert.factor|domain),sigma = sigma(model.layVSsci.phase1), edf =df.residual(model.layVSsci.phase1) ) #using the smallest DF among the three
 
+#test Bayesian version of main effect.
+#pr = prior(normal(0, 1), class = 'b')
+#bayesian_mixed <- brm(MASE1_w1_log~domain*isExpert.factor+(1|ResponseId), data  = phase1, 
+#  prior = pr,
+#  cores = 4)
+  #stan_lmer(MASE1_w1_log~domain*isExpert.factor+(1|ResponseId), data  = phase1, 
+  #                    prior_intercept = normal(0, 5,autoscale = F),
+   #                prior = normal(0, 5,autoscale = F), 
+    #               prior_covariance = decov(regularization = 2),
+     #              chains = 4,
+      #             iter = 2000, adapt_delta=0.999,warmup=1000)
+
+#prior_summary(bayesian_mixed)
+#summary(bayesian_mixed)
 
 #phase 2
 dat_phase2<-academic_only %>%filter(!(phase == 1 & revised == 1)) #just academics, omitting original (non-revised phase 1)
@@ -1897,9 +1913,11 @@ summ(model.t1.COVID, conf.method="boot", digits=3, center=T) #no significant eff
 model.bothTournaments.accuracy.COVs.phase<-lmer(accuracy_log~phase+domain+phase*parameters_coded+phase*Method.complex+covidconditional+CounterFactual_Presence_Final+n_domains+team_discipline.datasci+team_discipline.SBsci+Multidisciplinary+team_size.coded+team_education+confidence+subexpert+Domain_Publications+previous_tournament.coded+(1|team_name), data=both.sets)
 car::Anova(model.bothTournaments.accuracy.COVs.phase,type="III",test.statistic="F") #no significant interaction between phase and complexity (to test the question of lower number of datapoint favors simpler forecasts)
 
+#supplementary curiosity check - does % gender qualify confidence
 
-
-
+model.confidence.gender<-lmer(confidence~phase+domain+team_gender+(1|team_name), data=both.sets)
+car::Anova(model.confidence.gender,type="III",test.statistic="F") #no significant interaction between phase and complexity (to test the question of lower number of datapoint favors simpler forecasts)
+summ(model.confidence.gender)
 
 ```
 
@@ -1963,6 +1981,9 @@ summ(model.phase2.update.type,scale = F, robust = "HC1", digits=3, n.sd = 2)
 #export_summs(model.phase2.update.type, scale = T, robust = "HC1", n.sd = 2, to.file = "docx")
 partR2(model.phase2.update.type, partvars = 
          c("justification_dataReceived","justification_theoreticalInsight","justification_externalEvent"))
+
+
+
 ```
 
 # demographics Phase 1
@@ -1988,6 +2009,36 @@ summ(model.revised.t1.by.method, conf.method="boot", digits=3, center=T)
 
 #theory vs. intuition in each phase
 table(phase1_exp$basis)
+
+```
+
+# demographics lay people
+
+```{r}
+phase1.noexp.dem<-phase1 %>% filter(isExpert.factor=="Prolific") %>% select(ResponseId,Age, Sex, Ethnicity, Education,Residential.Area, Income) %>% dplyr::group_by(ResponseId) %>% 
+summarize_all(~ mean(.x, na.rm = TRUE))
+psych::describe(phase1.noexp.dem$Age)
+prop.table(table(phase1.noexp$Sex)) #46.36% female
+prop.table(table(phase1.noexp$Education))
+#"1 =  less than highschool
+#2 =  highschool grad
+#3 =  some college
+#4 =  vocational/technical degree
+#5 =  bachelor's
+#6 =  masters'
+#7 =  doctorate
+#8 =  professional degree"
+0.416846652+ 0.162706983+ 0.017278618+ 0.029517639 #proportion with a college degree or above
+0.003599712+ 0.082073434 #high school or less
+0.245500360+ 0.042476602 #some college
+prop.table(table(phase1.noexp$Ethnicity))
+#1-9 ranging from aboriginal/native, asian, black, white, middle eastern, hispanic, east indian, mixed race, other/not listed
+prop.table(table(phase1.noexp$Income))
+#from 0-15k, 15-25k, 25-35k, 35-50k, 50-75k, 75-100k,100-150k, 150k+
+prop.table(table(phase1.noexp$Residential.Area))
+#"1 = Urban,
+#2 = Suburban
+#3 = rural"
 
 ```
 
