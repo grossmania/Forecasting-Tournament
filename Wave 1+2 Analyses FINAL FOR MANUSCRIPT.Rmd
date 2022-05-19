@@ -34,7 +34,7 @@ library(moments) #to get skewness
 library(ggpubr) #to combine plots
 #library(simr) # to simulate power - not useful in posthoc designs
 library(rstanarm) #to get bayesian equivalent of difference tests
-
+library(bayestestR) #to get BayesF factor from BIC scores of different lmer models
 options(max.print = 20000, scipen = 1000)
 
 ```
@@ -1088,6 +1088,65 @@ emmeans(model.layVSsci.phase1,pairwise ~isExpert.factor|domain,  type="response"
 
 eff_size(emmeans(model.layVSsci.phase1,pairwise ~isExpert.factor|domain),sigma = sigma(model.layVSsci.phase1), edf =df.residual(model.layVSsci.phase1) ) #using the smallest DF among the three
 
+#get Bayesfactor scores via BIC approximation of frequentist models for specific domains
+#life satifaction
+m0.lifesat<-lm(log(MASE1_w1)~1, data=subset(phase1,domain=="lifesat" &!is.na(isExpert.factor))) #base model just considers random intercept
+m1.lifesat<-lm(log(MASE1_w1)~isExpert.factor, data=subset(phase1,domain=="lifesat")) #contrast
+bayesfactor_models(m1.lifesat, denominator = m0.lifesat) #strong evidence for alternative
+#pos affect
+m0.posaffect<-lm(log(MASE1_w1)~1, data=subset(phase1,domain=="posaffect" &!is.na(isExpert.factor))) #base model just considers random intercept
+m1.posaffect<-lm(log(MASE1_w1)~isExpert.factor, data=subset(phase1,domain=="posaffect")) #contrast
+bayesfactor_models(m1.posaffect, denominator = m0.posaffect) #anecdotal evidence for null
+#neg affect
+m0.negaffect<-lm(log(MASE1_w1)~1, data=subset(phase1,domain=="negaffect" &!is.na(isExpert.factor))) #base model just considers random intercept
+m1.negaffect<-lm(log(MASE1_w1)~isExpert.factor, data=subset(phase1,domain=="negaffect")) #contrast
+bayesfactor_models(m1.negaffect, denominator = m0.negaffect) #Strong evidence for null hypothesis
+#eafric    
+m0.eafric<-lm(log(MASE1_w1)~1, data=subset(phase1,domain=="eafric" &!is.na(isExpert.factor))) #base model just considers random intercept
+m1.eafric<-lm(log(MASE1_w1)~isExpert.factor, data=subset(phase1,domain=="eafric")) #contrast
+bayesfactor_models(m1.eafric, denominator = m0.eafric) #anecdotal evidence for null hypothesis
+
+#easian
+m0.easian<-lm(log(MASE1_w1)~1, data=subset(phase1,domain=="easian" &!is.na(isExpert.factor))) #base model just considers random intercept
+m1.easian<-lm(log(MASE1_w1)~isExpert.factor, data=subset(phase1,domain=="easian")) #contrast
+bayesfactor_models(m1.easian, denominator = m0.easian) #moderate evidence for alt hypothesis
+
+#egend
+m0.egend<-lm(log(MASE1_w1)~1, data=subset(phase1,domain=="egend" &!is.na(isExpert.factor))) #base model just considers random intercept
+m1.egend<-lm(log(MASE1_w1)~isExpert.factor, data=subset(phase1,domain=="egend")) #contrast
+bayesfactor_models(m1.egend, denominator = m0.egend) #anecdotal evidence for alt hypothesis
+
+#iafric
+m0.iafric<-lm(log(MASE1_w1)~1, data=subset(phase1,domain=="iafric" &!is.na(isExpert.factor))) #base model just considers random intercept
+m1.iafric<-lm(log(MASE1_w1)~isExpert.factor, data=subset(phase1,domain=="iafric")) #contrast
+bayesfactor_models(m1.iafric, denominator = m0.iafric) #moderate evidence for null hypothesis
+
+#iasian
+m0.iasian<-lm(log(MASE1_w1)~1, data=subset(phase1,domain=="iasian" &!is.na(isExpert.factor))) #base model just considers random intercept
+m1.iasian<-lm(log(MASE1_w1)~isExpert.factor, data=subset(phase1,domain=="iasian")) #contrast
+bayesfactor_models(m1.iasian, denominator = m0.iasian) #anecdotal evidence for alt hypothesis
+
+#igend
+m0.igend<-lm(log(MASE1_w1)~1, data=subset(phase1,domain=="igend" &!is.na(isExpert.factor))) #base model just considers random intercept
+m1.igend<-lm(log(MASE1_w1)~isExpert.factor, data=subset(phase1,domain=="igend")) #contrast
+bayesfactor_models(m1.igend, denominator = m0.igend) #anecdotal evidence for alt hypothesis
+
+#ideoldem
+m0.ideoldem<-lm(log(MASE1_w1)~1, data=subset(phase1,domain=="ideoldem" &!is.na(isExpert.factor))) #base model just considers random intercept
+m1.ideoldem<-lm(log(MASE1_w1)~isExpert.factor, data=subset(phase1,domain=="ideoldem")) #contrast
+bayesfactor_models(m1.ideoldem, denominator = m0.ideoldem) #anecdotal evidence for null hypothesis
+
+#ideolrep
+m0.ideolrep<-lm(log(MASE1_w1)~1, data=subset(phase1,domain=="ideolrep" &!is.na(isExpert.factor))) #base model just considers random intercept
+m1.ideolrep<-lm(log(MASE1_w1)~isExpert.factor, data=subset(phase1,domain=="ideolrep")) #contrast
+bayesfactor_models(m1.ideolrep, denominator = m0.ideolrep) #anecdotal evidence for null hypothesis
+
+#polar
+m0.polar<-lm(log(MASE1_w1)~1, data=subset(phase1,domain=="polar" &!is.na(isExpert.factor))) #base model just considers random intercept
+m1.polar<-lm(log(MASE1_w1)~isExpert.factor, data=subset(phase1,domain=="polar")) #contrast
+bayesfactor_models(m1.polar, denominator = m0.polar) #moderate evidence for alt hypothesis
+
+
 #test Bayesian version of main effect.
 #pr = prior(normal(0, 1), class = 'b')
 #bayesian_mixed <- brm(MASE1_w1_log~domain*isExpert.factor+(1|ResponseId), data  = phase1, 
@@ -1882,7 +1941,7 @@ plot.COV<-plot_summs(model.bothTournaments.accuracy.COVs, scale = TRUE, robust =
                      "Team Size"="team_size.coded",
                      "% without PhD on the Team"="team_education",
                      "Confidence in Forecast"="confidence",
-                     "Self-report Expertise"="subexpert",
+                     "Confidence in Expertise"="subexpert",
                      "Team Members Topic Publications"="Domain_Publications",
                       "Prev. Exp. with\nForecasting Tournaments"="previous_tournament.coded"))
 plot.COV$data<-plot.COV$data %>% arrange(estimate) %>%    # First sort by val. This sort the dataframe but NOT the factor levels
