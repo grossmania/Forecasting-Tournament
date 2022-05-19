@@ -730,6 +730,25 @@ proportions(xtabs( ~ compare_to_naive_linear_MASE_w2+Method.code,academic_only%>
 chisq.test(xtabs( ~ compare_to_naive_linear_MASE_w2+Method.code,academic_only%>% filter(!(phase == 1 & revised == 1))))
 
 
+#examine if top 5 in T1 are also among top 5 in t2
+top.5.MASE.t1$phase<-"T1"
+top.5.MASE.t1$MASE<-top.5.MASE.t1$MASE1_w1
+top.5.MASE.t2$phase<-"T2"
+top.5.MASE.t2$MASE<-top.5.MASE.t2$MASE1_w2
+
+top.5.MASE<-rbind(top.5.MASE.t1,top.5.MASE.t2) 
+top.5.MASE%>% select(team_name,MASE,domain,phase,model,revised) %>% group_by(domain) %>% count(team_name)
+#only in five out of 12 domains one top team from the first tournament appeared among the top five teams of a given domain in the second tournament: 
+#Compassionate Values for Explicit African American bias; fearfulastra for Explicit Gender-Career bias; FMTeam for Implicit Asian American bias; AbCdEfG for Ideological Support of Democrats; A Woman Scientist for Negative Sentiment; NYHC for political polarization. The remaining top five teams were unique across tournaments. 
+
+#examine consistency across domains in each tournament
+top5.repeats.t1<-top.5.MASE.t1%>% select(team_name,MASE,domain) %>% group_by(team_name) %>% count(team_name) %>% arrange(desc(n))
+psych::describe(top5.repeats.t1)#14 appear more than once; but M is small = 1.62
+
+top5.repeats.t2<-top.5.MASE.t2%>% select(team_name,MASE,domain) %>% group_by(team_name) %>% count(team_name) %>% arrange(desc(n))
+psych::describe(top5.repeats.t2)#17 appear more than once; but M is small = 1.67
+
+
 ```
 
 # Visualize historical results
@@ -1282,8 +1301,10 @@ phase1_exp_wbench$domain <- factor(phase1_exp_wbench$domain,      # Reordering g
 
 model.phase1.hist.mean.ratio<-  lmer(sqrt(MASE_ratio1)~domain+(1|team_name), data=phase1_exp_wbench)
 Anova(model.phase1.hist.mean.ratio, test.statistic = "F")
-emmeans(model.phase1.hist.mean.ratio,~domain, type="response")
-
+phase1.hist.mean.ratio.means <- as.data.frame(emmeans(model.phase1.hist.mean.ratio,~domain, type="response"))
+phase1.hist.mean.ratio.means$Estimate<-"Historical Mean"
+phase1.hist.mean.ratio.means$Date<-"Tournament 1 (May 2020)"
+phase1.hist.mean.ratio.means
 
 #here are the results of the historical mean tests for Tournament 1
 
@@ -1291,14 +1312,22 @@ plot.t1.hist.mean<-plot(emmeans(model.phase1.hist.mean.ratio,~domain, type="resp
 
 model.phase1.randwalk.ratio<-  lmer(sqrt(MASE_ratio2)~domain+(1|team_name), data=phase1_exp_wbench)
 Anova(model.phase1.randwalk.ratio, test.statistic = "F")
-emmeans(model.phase1.randwalk.ratio,~domain, type="response")
+phase1.randwalk.ratio.means<-as.data.frame(emmeans(model.phase1.randwalk.ratio,~domain, type="response"))
+phase1.randwalk.ratio.means$Estimate<-"Random Walk"
+phase1.randwalk.ratio.means$Date<-"Tournament 1 (May 2020)"
+phase1.randwalk.ratio.means
+
 #here are the results of the random walk tests for Tournament 1
 
 plot.t1.randwalk<-plot(emmeans(model.phase1.randwalk.ratio,~domain, type="response"),comparisons=F, color="black")+scale_y_discrete(labels=labeling, name="Random Walk")+geom_vline(xintercept =1, linetype='dashed', color='black',14)+theme_minimal()+  labs(x="",shape="",color="", title="")
 
 model.phase1.linreg.ratio<-  lmer(sqrt(MASE_ratio3)~domain+(1|team_name), data=phase1_exp_wbench)
 Anova(model.phase1.linreg.ratio, test.statistic = "F")
-emmeans(model.phase1.linreg.ratio,~domain, type="response")
+phase1.linreg.ratio.means<-as.data.frame(emmeans(model.phase1.linreg.ratio,~domain, type="response"))
+phase1.linreg.ratio.means$Estimate<-"Linear Regression"
+phase1.linreg.ratio.means$Date<-"Tournament 1 (May 2020)"
+phase1.linreg.ratio.means
+
 #here are the results of the linear regression tests for Tournament 1
 
 plot.t1.linreg<-plot(emmeans(model.phase1.linreg.ratio,~domain, type="response"),comparisons=F, color="black")+scale_y_discrete(labels=labeling, name="Linear Regression")+geom_vline(xintercept =1, linetype='dashed', color='black',14)+theme_minimal()+  labs(x="",shape="",color="", title="")
@@ -1337,22 +1366,33 @@ phase2_exp_wbench$MASE_ratio3<- phase2_exp_wbench$'Benchmark 3'/phase2_exp_wbenc
 
 model.phase2.hist.mean.ratio<-  lmer(log(MASE_ratio1)~domain+(1|team_name), data=phase2_exp_wbench)
 Anova(model.phase2.hist.mean.ratio, test.statistic = "F")
-emmeans(model.phase2.hist.mean.ratio,~domain, type="response")
 #here are the results of the historical mean tests for Tournament 2
+phase2.hist.mean.ratio.means<-as.data.frame(emmeans(model.phase2.hist.mean.ratio,~domain, type="response"))
+phase2.hist.mean.ratio.means$Estimate<-"Historical Mean"
+phase2.hist.mean.ratio.means$Date<-"Tournament 2 (Nov 2020)"
+phase2.hist.mean.ratio.means
 
 plot.t2.hist.mean<-plot(emmeans(model.phase2.hist.mean.ratio,~domain, type="response"),comparisons=F, color="black")+scale_y_discrete(name="")+geom_vline(xintercept =1, linetype='dashed', color='black',14)+theme_minimal()+  labs(x="",shape="",color="", title="Tournament 2 (Nov 2020)")+theme(axis.text.y=element_blank())
 
 model.phase2.randwalk.ratio<-  lmer(log(MASE_ratio2)~domain+(1|team_name), data=phase2_exp_wbench)
 
 Anova(model.phase2.randwalk.ratio, test.statistic = "F")
-emmeans(model.phase2.randwalk.ratio,~domain, type="response")
+phase2.randwalk.ratio.means<-as.data.frame(emmeans(model.phase2.randwalk.ratio,~domain, type="response"))
+phase2.randwalk.ratio.means$Estimate<-"Random Walk"
+phase2.randwalk.ratio.means$Date<-"Tournament 2 (Nov 2020)"
+phase2.randwalk.ratio.means
+
 #here are the results of the random walk tests for Tournament 2
 
 plot.t2.randwalk<-plot(emmeans(model.phase2.randwalk.ratio,~domain, type="response"),comparisons=F, color="black")+scale_y_discrete(name="")+geom_vline(xintercept =1, linetype='dashed', color='black',14)+theme_minimal()+  labs(x="",shape="",color="", title="")+theme(axis.text.y=element_blank())
 
 model.phase2.linreg.ratio<-  lmer(log(MASE_ratio3)~domain+(1|team_name), data=phase2_exp_wbench)
 Anova(model.phase2.linreg.ratio, test.statistic = "F")
-emmeans(model.phase2.linreg.ratio,~domain, type="response")
+phase2.linreg.ratio.means<-as.data.frame(emmeans(model.phase2.linreg.ratio,~domain, type="response"))
+phase2.linreg.ratio.means$Estimate<-"Linear Regression"
+phase2.linreg.ratio.means$Date<-"Tournament 2 (Nov 2020)"
+phase2.linreg.ratio.means
+
 #here are the results of the linear regression tests for Tournament 2
 
 
@@ -1378,6 +1418,17 @@ figs2<-ggarrange(plot.t1.hist.mean,plot.t2.hist.mean,
                      plot.t1.linreg, plot.t2.linreg,  ncol=2, nrow=3,widths=c(1.3,1))
 
 figs2
+
+####REDO figure in ggplot, sorting the facets differently
+# Combine the datasets of means
+mean.scores.w.benchmarks <- rbind(phase1.hist.mean.ratio.means,phase1.randwalk.ratio.means,phase1.linreg.ratio.means,
+                     phase2.hist.mean.ratio.means,phase2.randwalk.ratio.means,phase2.linreg.ratio.means) 
+
+
+mean.scores.w.benchmarks %>% ggplot(aes(x = response, y = domain, colour = Estimate, fill=Estimate))+
+ geom_pointrange(aes(xmin=lower.CL, xmax=upper.CL), position=pd)+  theme_minimal(base_size = 14) +geom_vline(xintercept =1, linetype='dashed', color='red', 14)+facet_grid(~Date, scales = "free_y")+
+theme(legend.position="bottom") +scale_color_aaas()+scale_fill_aaas()+  scale_y_discrete(labels=labeling, name="")+
+  labs(colour = "",fill="", y="",x="Naïve Benchmark / Scientific Forecast Error Ratio (M +/- 95%CI)") 
 
 ```
 
