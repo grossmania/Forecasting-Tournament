@@ -13,6 +13,7 @@ knitr::opts_chunk$set(echo = TRUE)
 library(forecast)
 library(psych)
 library(tidyverse)
+library(stats) #to get p.adjust
 library(irr)
 library(lme4)
 library(ggplot2)
@@ -347,8 +348,9 @@ labels<-c(
 top.1.MASE.t1 <- phase1 %>% 
   filter(isExpert.factor == 'Academic')  %>%
   arrange(domain,MASE1_w1) %>% 
+    group_by(team_name) %>%  mutate(n_domains = n()) %>% 
   group_by(domain) %>% 
-  dplyr::slice_head(n = 1) %>% select(team_name,mean_abs_error_w1,MASE1_w1,Month.1:Month.12,domain,team_size.coded,discipline,previous_tournament.coded,Method.code,model,theory,numpred,parameters,Method.complex,team_expertise) %>%           arrange(MASE1_w1)
+  dplyr::slice_head(n = 1) %>% select(team_name,mean_abs_error_w1,n_domains,MASE1_w1,Month.1:Month.12,domain,team_size.coded,discipline,previous_tournament.coded,Method.code,model,theory,numpred,parameters,Method.complex,team_expertise) %>%           arrange(MASE1_w1)
 
 # write.csv(top.1.MASE.t1,"top.t1.csv")
 
@@ -367,8 +369,9 @@ median.MASE.t1 <- phase1 %>%
 top.5.MASE.t1 <- phase1 %>% 
   filter(isExpert.factor == 'Academic')  %>%
   arrange(domain,MASE1_w1) %>%
+  group_by(team_name) %>%  mutate(n_domains = n()) %>% 
   group_by(domain) %>% 
-  dplyr::slice_head(n = 5) %>% select(team_name,MASE1_w1,domain,compare_to_naive_linear_MASE,compare_to_naive_rwf_MASE,team_size.coded,discipline,previous_tournament.coded,Method.code,model,theory,numpred,parameters,Method.complex,team_expertise)
+  dplyr::slice_head(n = 5) %>% select(team_name,MASE1_w1,domain,compare_to_naive_linear_MASE,compare_to_naive_rwf_MASE,team_size.coded,discipline,previous_tournament.coded,Method.code,model,theory,numpred,parameters,Method.complex,team_expertise,n_domains)
 
 # Visualize top 5 winners (using MASE scores) by domain and approach.
 top.5.MASE.t1  %>% 
@@ -493,7 +496,8 @@ phase1 %>%
   filter(isExpert.factor == 'Academic')  %>%
   arrange(domain,MASE1_w1) %>% 
   group_by(domain) %>% 
-  dplyr::slice_head(n = 10) %>% select(team_name,MASE1_w1,domain,team_size.coded,discipline,previous_tournament.coded,Method.code,model,theory,numpred,parameters,Method.complex,team_expertise,team_gender,team_education,team_Age,non_US )%>%
+  dplyr::slice_head(n = 10) %>%
+  select(team_name,MASE1_w1,domain,team_size.coded,discipline,previous_tournament.coded,Method.code,model,theory,numpred,parameters,Method.complex,team_expertise,team_gender,team_education,team_Age,non_US )%>%
   ggplot(aes(x = domain, y = non_US)) +
   stat_summary(fun.data="mean_cl_boot", position=pd)+theme_minimal(base_size = 14) +
   theme(legend.position="bottom") + 
@@ -546,8 +550,9 @@ chisq.test(xtabs( ~ compare_to_naive_linear_MASE+Method.code,phase1_exp)) #just 
 top.1.MASE.t2 <- academic_only  %>% 
   filter(!(phase == 1 & revised == 1)) %>% 
   arrange(domain, MASE1_w2) %>% 
+  group_by(team_name) %>%  mutate(n_domains = n()) %>% 
   group_by(domain) %>% 
-  dplyr::slice_head(n = 1) %>%                                                  select(domain,mean_abs_error_w2,MASE1_w2,team_name,mean_abs_percent_error_w2,compare_to_naive_linear_MASE_w2,compare_to_naive_rwf_MASE,team_size.coded,discipline,previous_tournament.coded,Method.code,model,theory,numpred,parameters,Method.complex,team_expertise,phase,revised)
+  dplyr::slice_head(n = 1) %>%                                                  select(domain,mean_abs_error_w2,n_domains,MASE1_w2,team_name,mean_abs_percent_error_w2,compare_to_naive_linear_MASE_w2,compare_to_naive_rwf_MASE,team_size.coded,discipline,previous_tournament.coded,Method.code,model,theory,numpred,parameters,Method.complex,team_expertise,phase,revised)
   
 # write.csv(top.1.MASE.t2,"top.t2.csv")
 
@@ -566,8 +571,9 @@ median.MASE.t2 <- academic_only  %>%
 top.5.MASE.t2 <- academic_only %>% 
   filter(!(phase == 1 & revised == 1)) %>% 
   arrange(domain,MASE1_w2) %>% 
-  group_by(domain) %>% 
-  dplyr::slice_head(n = 5) %>% select(team_name,MASE1_w2,domain,compare_to_naive_linear_MASE_w2,compare_to_naive_rwf_MASE,team_size.coded,discipline,previous_tournament.coded,Method.code,model,theory,numpred,parameters,Method.complex,team_expertise,phase,revised)
+    group_by(team_name) %>%  mutate(n_domains = n()) %>% 
+   group_by(domain) %>% 
+  dplyr::slice_head(n = 5) %>% select(team_name,MASE1_w2,domain,n_domains,compare_to_naive_linear_MASE_w2,compare_to_naive_rwf_MASE,team_size.coded,discipline,previous_tournament.coded,Method.code,model,theory,numpred,parameters,Method.complex,team_expertise,phase,revised)
   
 # Visualize top 5 performers as a function of method used.
 top.5.MASE.t2 %>%  
@@ -736,18 +742,27 @@ top.5.MASE.t1$MASE<-top.5.MASE.t1$MASE1_w1
 top.5.MASE.t2$phase<-"T2"
 top.5.MASE.t2$MASE<-top.5.MASE.t2$MASE1_w2
 
+
+
+
+
 top.5.MASE<-rbind(top.5.MASE.t1,top.5.MASE.t2) 
 top.5.MASE%>% select(team_name,MASE,domain,phase,model,revised) %>% group_by(domain) %>% count(team_name)
 #only in five out of 12 domains one top team from the first tournament appeared among the top five teams of a given domain in the second tournament: 
 #Compassionate Values for Explicit African American bias; fearfulastra for Explicit Gender-Career bias; FMTeam for Implicit Asian American bias; AbCdEfG for Ideological Support of Democrats; A Woman Scientist for Negative Sentiment; NYHC for political polarization. The remaining top five teams were unique across tournaments. 
 
 #examine consistency across domains in each tournament
-top5.repeats.t1<-top.5.MASE.t1%>% select(team_name,MASE,domain) %>% group_by(team_name) %>% count(team_name) %>% arrange(desc(n))
+top5.repeats.t1<-top.5.MASE.t1%>% select(team_name,MASE,domain,n_domains) %>% group_by(team_name) %>% count(team_name) %>% arrange(desc(n))
 psych::describe(top5.repeats.t1)#14 appear more than once; but M is small = 1.62
+top5.repeats.t1.perc<-top5.repeats.t1 %>% left_join(top.5.MASE.t1 %>% select(team_name,n_domains) )
+top5.repeats.t1.perc$perc<-top5.repeats.t1.perc$n/top5.repeats.t1.perc$n_domains*100
+print(top5.repeats.t1.perc) # one team among those who were among the top five in more than 2 domains had a reasonably small number of domains they made predictions about (6), such that in 4 out of 6 = 67% they were in the top five. For the rest, the number of domains they were in the top five were below half of those they made predictions for.   
 
-top5.repeats.t2<-top.5.MASE.t2%>% select(team_name,MASE,domain) %>% group_by(team_name) %>% count(team_name) %>% arrange(desc(n))
+top5.repeats.t2<-top.5.MASE.t2%>% select(team_name,MASE,domain,n_domains) %>% group_by(team_name) %>% count(team_name) %>% arrange(desc(n))
 psych::describe(top5.repeats.t2)#17 appear more than once; but M is small = 1.67
-
+top5.repeats.t2.perc<-top5.repeats.t2 %>% left_join(top.5.MASE.t2 %>% select(team_name,n_domains) )
+top5.repeats.t2.perc$perc<-top5.repeats.t2.perc$n/top5.repeats.t2.perc$n_domains*100
+print(top5.repeats.t2.perc) # one team among those who were among the top five in more than 2 domains had a reasonably small number of domains they made predictions about (9), such that in 5 out of 9 = 55.56% they were in the top five. For the rest, the number of domains they were in the top five were at/below half of those they made predictions for.   
 
 ```
 
@@ -1103,83 +1118,86 @@ partR2(model.phase1.together,partvars=c("isExpert.factor","isExpert.factor:domai
 #test the difference between experts and lay people
 model.layVSsci.phase1<-  lmer(log(MASE1_w1)~domain*isExpert.factor+(1|ResponseId), data=phase1)
 car::Anova(model.layVSsci.phase1,type="III",test.statistic="F") #sig interaction!
-emmeans(model.layVSsci.phase1,pairwise ~isExpert.factor|domain,  type="response",adjust = "fdr") #but this FDR is not doing it across all tests, Need to investigate
+data.phase1.MASE.explaycomp<-as.data.frame(emmeans(model.layVSsci.phase1,pairwise ~isExpert.factor|domain,  type="response")$contrasts) #get the estimates in a dataframe
+
+#get FDR correction across all pairwise tests
+data.phase1.MASE.explaycomp$Hochberg <-p.adjust(data.phase1.MASE.explaycomp$p.value,
+               method = "hochberg")
+data.phase1.MASE.explaycomp
+
 
 eff_size(emmeans(model.layVSsci.phase1,pairwise ~isExpert.factor|domain),sigma = sigma(model.layVSsci.phase1), edf =df.residual(model.layVSsci.phase1) ) #using the smallest DF among the three
 
-#get Bayesfactor scores via BIC approximation of frequentist models for specific domains
+#supplementary Bayesfactor scores via BIC approximation of frequentist models for specific domains
 #life satifaction
-m0.lifesat<-lm(log(MASE1_w1)~1, data=subset(phase1,domain=="lifesat" &!is.na(isExpert.factor))) #base model just considers random intercept
-m1.lifesat<-lm(log(MASE1_w1)~isExpert.factor, data=subset(phase1,domain=="lifesat")) #contrast
-bayesfactor_models(m1.lifesat, denominator = m0.lifesat) #strong evidence for alternative
+#m0.lifesat<-lm(log(MASE1_w1)~1, data=subset(phase1,domain=="lifesat" &!is.na(isExpert.factor))) #base model just considers random intercept
+#m1.lifesat<-lm(log(MASE1_w1)~isExpert.factor, data=subset(phase1,domain=="lifesat")) #contrast
+#bayesfactor_models(m1.lifesat, denominator = m0.lifesat) #strong evidence for alternative
 #pos affect
-m0.posaffect<-lm(log(MASE1_w1)~1, data=subset(phase1,domain=="posaffect" &!is.na(isExpert.factor))) #base model just considers random intercept
-m1.posaffect<-lm(log(MASE1_w1)~isExpert.factor, data=subset(phase1,domain=="posaffect")) #contrast
-bayesfactor_models(m1.posaffect, denominator = m0.posaffect) #anecdotal evidence for null
+#m0.posaffect<-lm(log(MASE1_w1)~1, data=subset(phase1,domain=="posaffect" &!is.na(isExpert.factor))) #base model just considers random intercept
+#m1.posaffect<-lm(log(MASE1_w1)~isExpert.factor, data=subset(phase1,domain=="posaffect")) #contrast
+#bayesfactor_models(m1.posaffect, denominator = m0.posaffect) #anecdotal evidence for null
 #neg affect
-m0.negaffect<-lm(log(MASE1_w1)~1, data=subset(phase1,domain=="negaffect" &!is.na(isExpert.factor))) #base model just considers random intercept
-m1.negaffect<-lm(log(MASE1_w1)~isExpert.factor, data=subset(phase1,domain=="negaffect")) #contrast
-bayesfactor_models(m1.negaffect, denominator = m0.negaffect) #Strong evidence for null hypothesis
+#m0.negaffect<-lm(log(MASE1_w1)~1, data=subset(phase1,domain=="negaffect" &!is.na(isExpert.factor))) #base model just considers random intercept
+#m1.negaffect<-lm(log(MASE1_w1)~isExpert.factor, data=subset(phase1,domain=="negaffect")) #contrast
+#bayesfactor_models(m1.negaffect, denominator = m0.negaffect) #Strong evidence for null hypothesis
 #eafric    
-m0.eafric<-lm(log(MASE1_w1)~1, data=subset(phase1,domain=="eafric" &!is.na(isExpert.factor))) #base model just considers random intercept
-m1.eafric<-lm(log(MASE1_w1)~isExpert.factor, data=subset(phase1,domain=="eafric")) #contrast
-bayesfactor_models(m1.eafric, denominator = m0.eafric) #anecdotal evidence for null hypothesis
+#m0.eafric<-lm(log(MASE1_w1)~1, data=subset(phase1,domain=="eafric" &!is.na(isExpert.factor))) #base model just considers random intercept
+#m1.eafric<-lm(log(MASE1_w1)~isExpert.factor, data=subset(phase1,domain=="eafric")) #contrast
+#bayesfactor_models(m1.eafric, denominator = m0.eafric) #anecdotal evidence for null hypothesis
 
 #easian
-m0.easian<-lm(log(MASE1_w1)~1, data=subset(phase1,domain=="easian" &!is.na(isExpert.factor))) #base model just considers random intercept
-m1.easian<-lm(log(MASE1_w1)~isExpert.factor, data=subset(phase1,domain=="easian")) #contrast
-bayesfactor_models(m1.easian, denominator = m0.easian) #moderate evidence for alt hypothesis
+#m0.easian<-lm(log(MASE1_w1)~1, data=subset(phase1,domain=="easian" &!is.na(isExpert.factor))) #base model just considers random intercept
+#m1.easian<-lm(log(MASE1_w1)~isExpert.factor, data=subset(phase1,domain=="easian")) #contrast
+#bayesfactor_models(m1.easian, denominator = m0.easian) #moderate evidence for alt hypothesis
 
 #egend
-m0.egend<-lm(log(MASE1_w1)~1, data=subset(phase1,domain=="egend" &!is.na(isExpert.factor))) #base model just considers random intercept
-m1.egend<-lm(log(MASE1_w1)~isExpert.factor, data=subset(phase1,domain=="egend")) #contrast
-bayesfactor_models(m1.egend, denominator = m0.egend) #anecdotal evidence for alt hypothesis
+#m0.egend<-lm(log(MASE1_w1)~1, data=subset(phase1,domain=="egend" &!is.na(isExpert.factor))) #base model just considers random intercept
+#m1.egend<-lm(log(MASE1_w1)~isExpert.factor, data=subset(phase1,domain=="egend")) #contrast
+#bayesfactor_models(m1.egend, denominator = m0.egend) #anecdotal evidence for alt hypothesis
 
 #iafric
-m0.iafric<-lm(log(MASE1_w1)~1, data=subset(phase1,domain=="iafric" &!is.na(isExpert.factor))) #base model just considers random intercept
-m1.iafric<-lm(log(MASE1_w1)~isExpert.factor, data=subset(phase1,domain=="iafric")) #contrast
-bayesfactor_models(m1.iafric, denominator = m0.iafric) #moderate evidence for null hypothesis
+#m0.iafric<-lm(log(MASE1_w1)~1, data=subset(phase1,domain=="iafric" &!is.na(isExpert.factor))) #base model just considers random intercept
+#m1.iafric<-lm(log(MASE1_w1)~isExpert.factor, data=subset(phase1,domain=="iafric")) #contrast
+#bayesfactor_models(m1.iafric, denominator = m0.iafric) #moderate evidence for null hypothesis
 
 #iasian
-m0.iasian<-lm(log(MASE1_w1)~1, data=subset(phase1,domain=="iasian" &!is.na(isExpert.factor))) #base model just considers random intercept
-m1.iasian<-lm(log(MASE1_w1)~isExpert.factor, data=subset(phase1,domain=="iasian")) #contrast
-bayesfactor_models(m1.iasian, denominator = m0.iasian) #anecdotal evidence for alt hypothesis
+#m0.iasian<-lm(log(MASE1_w1)~1, data=subset(phase1,domain=="iasian" &!is.na(isExpert.factor))) #base model just considers random intercept
+#m1.iasian<-lm(log(MASE1_w1)~isExpert.factor, data=subset(phase1,domain=="iasian")) #contrast
+#bayesfactor_models(m1.iasian, denominator = m0.iasian) #anecdotal evidence for alt hypothesis
 
 #igend
-m0.igend<-lm(log(MASE1_w1)~1, data=subset(phase1,domain=="igend" &!is.na(isExpert.factor))) #base model just considers random intercept
-m1.igend<-lm(log(MASE1_w1)~isExpert.factor, data=subset(phase1,domain=="igend")) #contrast
-bayesfactor_models(m1.igend, denominator = m0.igend) #anecdotal evidence for alt hypothesis
+#m0.igend<-lm(log(MASE1_w1)~1, data=subset(phase1,domain=="igend" &!is.na(isExpert.factor))) #base model just considers random intercept
+#m1.igend<-lm(log(MASE1_w1)~isExpert.factor, data=subset(phase1,domain=="igend")) #contrast
+#bayesfactor_models(m1.igend, denominator = m0.igend) #anecdotal evidence for alt hypothesis
 
 #ideoldem
-m0.ideoldem<-lm(log(MASE1_w1)~1, data=subset(phase1,domain=="ideoldem" &!is.na(isExpert.factor))) #base model just considers random intercept
-m1.ideoldem<-lm(log(MASE1_w1)~isExpert.factor, data=subset(phase1,domain=="ideoldem")) #contrast
-bayesfactor_models(m1.ideoldem, denominator = m0.ideoldem) #anecdotal evidence for null hypothesis
+#m0.ideoldem<-lm(log(MASE1_w1)~1, data=subset(phase1,domain=="ideoldem" &!is.na(isExpert.factor))) #base model just considers random intercept
+#m1.ideoldem<-lm(log(MASE1_w1)~isExpert.factor, data=subset(phase1,domain=="ideoldem")) #contrast
+#bayesfactor_models(m1.ideoldem, denominator = m0.ideoldem) #anecdotal evidence for null hypothesis
 
 #ideolrep
-m0.ideolrep<-lm(log(MASE1_w1)~1, data=subset(phase1,domain=="ideolrep" &!is.na(isExpert.factor))) #base model just considers random intercept
-m1.ideolrep<-lm(log(MASE1_w1)~isExpert.factor, data=subset(phase1,domain=="ideolrep")) #contrast
-bayesfactor_models(m1.ideolrep, denominator = m0.ideolrep) #anecdotal evidence for null hypothesis
+#m0.ideolrep<-lm(log(MASE1_w1)~1, data=subset(phase1,domain=="ideolrep" &!is.na(isExpert.factor))) #base model just considers random intercept
+#m1.ideolrep<-lm(log(MASE1_w1)~isExpert.factor, data=subset(phase1,domain=="ideolrep")) #contrast
+#bayesfactor_models(m1.ideolrep, denominator = m0.ideolrep) #anecdotal evidence for null hypothesis
 
 #polar
-m0.polar<-lm(log(MASE1_w1)~1, data=subset(phase1,domain=="polar" &!is.na(isExpert.factor))) #base model just considers random intercept
-m1.polar<-lm(log(MASE1_w1)~isExpert.factor, data=subset(phase1,domain=="polar")) #contrast
-bayesfactor_models(m1.polar, denominator = m0.polar) #moderate evidence for alt hypothesis
+#m0.polar<-lm(log(MASE1_w1)~1, data=subset(phase1,domain=="polar" &!is.na(isExpert.factor))) #base model just considers random intercept
+#m1.polar<-lm(log(MASE1_w1)~isExpert.factor, data=subset(phase1,domain=="polar")) #contrast
+#bayesfactor_models(m1.polar, denominator = m0.polar) #moderate evidence for alt hypothesis
 
+#test Bayesian version of full model and estimated simple effects.
+library(rstanarm)
+phase1$MASE1_w1_log<-log(phase1$MASE1_w1)
+stan_model <- stan_lmer(MASE1_w1_log ~ domain*isExpert.factor + (1 | ResponseId), data = phase1,
+                        prior = cauchy(0,c(0.707,0.707,0.5),          # as per Rouder et al., 2012
+                        prior_intercept = student_t(3,0,10),          # weakly informative
+                        prior_aux = exponential(.1),                  # weakly informative
+                        prior_covariance = decov(1,1,1,1))            # weakly informative
+                        
+em_expert_simple <- emmeans(stan_model, pairwise~isExpert.factor | domain)
 
-#test Bayesian version of main effect.
-#pr = prior(normal(0, 1), class = 'b')
-#bayesian_mixed <- brm(MASE1_w1_log~domain*isExpert.factor+(1|ResponseId), data  = phase1, 
-#  prior = pr,
-#  cores = 4)
-  #stan_lmer(MASE1_w1_log~domain*isExpert.factor+(1|ResponseId), data  = phase1, 
-  #                    prior_intercept = normal(0, 5,autoscale = F),
-   #                prior = normal(0, 5,autoscale = F), 
-    #               prior_covariance = decov(regularization = 2),
-     #              chains = 4,
-      #             iter = 2000, adapt_delta=0.999,warmup=1000)
-
-#prior_summary(bayesian_mixed)
-#summary(bayesian_mixed)
+bayesfactor_parameters(em_expert_simple, prior = stan_model)
 
 #phase 2
 dat_phase2<-academic_only %>%filter(!(phase == 1 & revised == 1)) #just academics, omitting original (non-revised phase 1)
@@ -1831,21 +1849,32 @@ partR2(model.phase2.contrast, partvars =
 ### Tournament 1
 model.phase1.contrast.by.domain<-  lmer(log(MASE1_w1)~method.contrast*domain+(1|ResponseId), data=phase1_exp)
 car::Anova(model.phase1.contrast.by.domain, type=3, test.statistic="F")
-emmeans(model.phase1.contrast.by.domain,pairwise ~method.contrast|domain, adjust = "fdr",type="response" )
+data.phase1.MASE.method<-as.data.frame(emmeans(model.phase1.contrast.by.domain,pairwise ~method.contrast|domain, type="response")$contrasts)
+
+#get FDR correction across all pairwise tests
+data.phase1.MASE.method$Hochberg <-p.adjust(data.phase1.MASE.method$p.value,
+               method = "hochberg")
+data.phase1.MASE.method
+
 partR2(model.phase1.contrast.by.domain, partvars = 
          c("method.contrast","domain:method.contrast","domain"))
 
-write.csv(emmeans(model.phase1.contrast.by.domain,pairwise ~method.contrast|domain, adjust = "fdr",type="response" )
-$contrasts,"contrast1.csv") #for the table in supplement
+write.csv(data.phase1.MASE.method,"contrast1.csv") #for the table in supplement
 
 ### Tournament 2
 model.phase2.contrast.by.domain<-  lmer(log(MASE1_w2)~method.contrast*domain+(1|ResponseId), data=dat_phase2)
 car::Anova(model.phase2.contrast.by.domain, type=3, test.statistic="F")
-emmeans(model.phase2.contrast.by.domain,pairwise ~method.contrast|domain, adjust = "fdr",type="response" )
+
+data.phase2.MASE.method<-as.data.frame(emmeans(model.phase2.contrast.by.domain,pairwise ~method.contrast|domain, type="response")$contrasts)
+
+#get FDR correction across all pairwise tests
+data.phase2.MASE.method$Hochberg <-p.adjust(data.phase2.MASE.method$p.value,
+               method = "hochberg")
+data.phase2.MASE.method
+
 partR2(model.phase2.contrast.by.domain, partvars = 
          c("method.contrast","domain:method.contrast","domain"))
-write.csv(emmeans(model.phase2.contrast.by.domain,pairwise ~method.contrast|domain, adjust = "none",type="response" )
-$contrasts,"contrast2.csv") #for table in the supplement
+write.csv(data.phase2.MASE.method,"contrast2.csv") #for table in the supplement
 
 ## supplementary model with all three forecasting methods*domain interaction is below. We use it to get estimates for modelling by domain by method
 ### Tournament 1
@@ -1865,7 +1894,7 @@ partR2(data.phase2.model, partvars =
          c("domain","domain:Method.code","domain"))
 data.phase2.MASE<-as.data.frame(emmeans(data.phase2.model, pairwise~Method.code|domain, adjust = "none", type = "response")$emmeans) #backtransformed to the original scale
 
-## Supplementary analyses to exmaine if data-free forecasts of social scientists were not better than lay estimates, in Tournament 1
+## Supplementary analyses to examine if data-free forecasts of social scientists were not better than lay estimates, in Tournament 1
 ###EXAMINE ONLY ACADEMICS, USING CONTRAST OF THEORY vs. DATA.HYBRID
 phase1$method.contrast.layppl[phase1$Method.code=='Intuition/Theory']<-"Sci data-free"
 phase1$method.contrast.layppl[phase1$Method.code=='Lay People']<-"lay people"

@@ -1,6 +1,6 @@
 ---
-title: "Forecast Study"
-author: "Sangsuk Yoon"
+title: "Correlation indices - Forecast Tournament"
+author: "Sangsuk Yoon & Igor Grossmann"
 date: "`r format(Sys.time(), '%d %B, %Y')`"
 output: 
   html_document:
@@ -13,6 +13,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ```{r, echo=T, warning=F, message=F}
 library(tidyverse)
+library(dplyr)
 library(reshape2)
 ```
 
@@ -22,12 +23,12 @@ dat <- read.csv("dat_for_analyses.csv", stringsAsFactors = FALSE) # Read the dat
 ```
 
 # Getting Correlation Coefficients
-## Part 1: For Phase 1 - Both Academics and General Population
+## Part 1: For Phase 1 - Both Academics and General Population - to allow comparison
 ```{r, warning=F}
 # Getting the Objective Values
 objective <- dat %>%
   filter(Method == "Objective", phase == 1) %>%
-  select(domain:Month.12)
+  dplyr::select(domain:Month.12)
 
 
 # Getting Phase 1 Data both for Academics and General Population
@@ -53,7 +54,7 @@ for (i in 1:nrow(phase1_for_correlation)) {
   
   # Reshape the team and the domain data from wide to long
   team_task_estimates <- temp_dat %>% 
-    select(domain:Month.12) %>%  
+    dplyr::select(domain:Month.12) %>%  
     pivot_longer(!domain, names_to="month", values_to="estimate")
   
   # Combine the objective data and estimates data
@@ -82,7 +83,7 @@ for (i in 1:nrow(phase1_for_correlation)) {
 
 ```
 
-## Part 2: For Phase 2 - Acadmie
+## Part 2: For Phase 2 - Academics
 ```{r, warning=F}
 # Academics & Phase 2
 phase2_for_correlation <- dat %>%
@@ -107,7 +108,7 @@ for (i in 1:nrow(phase2_for_correlation)) {
   
   # Reshape the team and the domain data from wide to long
   team_task_estimates <- temp_dat %>% 
-    select(domain:Month.12) %>%  
+    dplyr::select(domain:Month.12) %>%  
     pivot_longer(!domain, names_to="month", values_to="estimate")
   
   # Combine the objective data and estimates data
@@ -136,15 +137,83 @@ for (i in 1:nrow(phase2_for_correlation)) {
 ```
 
 
-
-
 # Combining correlation tables and the original data table
 ```{r, warning=F}
 # Merge correlation tables from both phases
 correlation_table_full <- full_join(correlation_phase1, correlation_phase2, by=c("X", "ResponseId", "domain"))
 correlation_table_full$X <- as.integer(correlation_table_full$X)
+correlation_table_full$phase1_cor_twelve<-as.numeric(correlation_table_full$phase1_cor_twelve)
+correlation_table_full$phase2_cor_six<-as.numeric(correlation_table_full$phase2_cor_six)
 
 # Merge the combined correlation data table with the original dataset
 dat <- left_join(dat, correlation_table_full, by=c("X", "ResponseId", "domain"))
+```
+
+# associations with MASE scores in each tournament for each group
+```{r}
+academic_only <- filter(dat, isExpert == 1 )
+#datasets that are filtered by phase (1 = May submission, 2 = November submission that were updated)
+phase1 <- filter(dat, phase == 1)
+phase2 <- academic_only %>% 
+  filter(!(phase == 1 & revised == 1))
+
+# Phase 1 further filtered to only include academics 
+phase1_exp <- filter(phase1, isExpert == 1)
+```
+
+# test average correlations by domain and when comparing groups. 
+```{r}
+
+library(correlation)
+
+#phase 1
+phase1_exp %>% dplyr::select(phase1_cor_twelve, MASE1_w1, team_name, domain)  %>%  correlation(multilevel=T)
+phase1_exp %>% dplyr::select(phase1_cor_twelve, MASE1_w1, domain)  %>% group_by(domain)  %>% correlation()
+phase1_exp %>% dplyr::select(phase1_cor_twelve, MASE1_w1, domain)  %>% group_by(domain)  %>% correlation() %>% summarize_all(mean) #get the mean
+phase1_exp %>% dplyr::select(phase1_cor_twelve, MASE1_w1, domain)  %>% group_by(domain)  %>% correlation() %>% summarize_all(median) #get the median
+
+
+phase1 %>%filter(isExpert==0) %>% dplyr::select(phase1_cor_twelve, MASE1_w1, ResponseId, domain)  %>%  correlation(multilevel=T)
+phase1 %>%filter(isExpert==0) %>% dplyr::select(phase1_cor_twelve, MASE1_w1, domain)  %>% group_by(domain)  %>% correlation()
+phase1 %>%filter(isExpert==0) %>% dplyr::select(phase1_cor_twelve, MASE1_w1, domain)  %>% group_by(domain)  %>% correlation() %>% summarize_all(mean)
+phase1 %>%filter(isExpert==0) %>% dplyr::select(phase1_cor_twelve, MASE1_w1, domain)  %>% group_by(domain)  %>% correlation() %>% summarize_all(median)
+
+#phase 1 in total
+phase1 %>%dplyr::select(phase1_cor_twelve, MASE1_w1, ResponseId,domain)  %>% correlation(multilevel=T)
+
+#phase 2
+phase2 %>% dplyr::select(phase2_cor_six, MASE1_w2, team_name, domain)  %>%  correlation(multilevel=T)
+phase2 %>% dplyr::select(phase2_cor_six, MASE1_w2, domain)  %>% group_by(domain)  %>% correlation()
+phase2 %>% dplyr::select(phase2_cor_six, MASE1_w2, domain)  %>% group_by(domain)  %>% correlation() %>% summarize_all(mean)
+phase2 %>% dplyr::select(phase2_cor_six, MASE1_w2, domain)  %>% group_by(domain)  %>% correlation() %>% summarize_all(median)
+```
+
+# compare effects of lay versus academics
+```{r}
+
+library(lme4)
+library(emmeans)
+library(jtools)
+#phase 1
+model.phase1.corr<-  lmer(phase1_cor_twelve~domain*isExpert.factor+(1|ResponseId), data=phase1)
+car::Anova(model.phase1.corr,type="III", test.statistic="F")
+emmeans(model.phase1.corr, ~isExpert.factor) #collapsed estimate across domain # it is very small
+
+emmeans(model.phase1.corr, pairwise~isExpert.factor|domain)  #specific domains
+model.phase1.corr.explaycomp<-as.data.frame(emmeans(model.phase1.corr, pairwise~isExpert.factor|domain)$contrasts) #get the estimates in a dataframe
+
+#get FDR correction across all pairwise tests
+model.phase1.corr.explaycomp$Hochberg <-p.adjust(model.phase1.corr.explaycomp$p.value,
+               method = "hochberg")
+model.phase1.corr.explaycomp
+#neg affect is the only domain with a difference, but in the opposite direction
+
+#phase 2
+model.phase2.corr<-  lmer(phase2_cor_six~domain+(1|ResponseId), data=phase2)
+car::Anova(model.phase2.corr,type="III", test.statistic="F")
+summ(model.phase2.corr)
+emmeans(model.phase2.corr, ~1) #collapsed estimate across domain # it is very small
+
+
 ```
 
