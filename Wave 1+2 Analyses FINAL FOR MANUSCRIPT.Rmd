@@ -86,12 +86,12 @@ sim.w2$Type[sim.w1$source=="Benchmark 3"]<-"Linear Regression"
 sim.w1.rw <- sim.w1 %>% 
   filter(Type == 'Random Walk') %>% 
   mutate(rw.MASE.w1 = response) %>% 
-  select(domain, rw.MASE.w1)
+  dplyr::select(domain, rw.MASE.w1)
 
 sim.w2.rw <- sim.w2 %>% 
   filter(Type == 'Random Walk') %>% 
   mutate(rw.MASE.w2 = response) %>% 
-  select(domain, rw.MASE.w2)
+  dplyr::select(domain, rw.MASE.w2)
 
 ##
 
@@ -146,7 +146,7 @@ phase2_exp <- filter(phase2, isExpert == 1)
 
 objective <- dat %>% 
   filter(Method == "Objective", phase == 1) %>% 
-  select(domain:Month.12)
+  dplyr::select(domain:Month.12)
 
 ```
 
@@ -158,7 +158,7 @@ t1.academ.sorted <- phase1_exp %>%
       group_by(domain) %>% 
       mutate(Rank = row_number()) %>% 
       add_count(name="Nteams") %>% 
-      select(team_name, domain, Rank, Nteams, Method.code, Month.1:Month.12,mean_abs_error_w1,MASE1_w1)
+      dplyr::select(team_name, domain, Rank, Nteams, Method.code, Month.1:Month.12,mean_abs_error_w1,MASE1_w1)
 
 # Create intuitive labels for domains
 t1.academ.sorted$Domains[t1.academ.sorted$domain=="eafric"]<-"Explicit African American Bias"
@@ -176,7 +176,7 @@ t1.academ.sorted$Domains[t1.academ.sorted$domain=="polar"]<-"Political Polarizat
 
 # Compute average accuracy for each domain - non-academic only
 t1.nonacadem.av.sorted <- phase1 %>% 
-  filter(isExpert.factor == 'Prolific') %>%                                                               select(team_name,domain,Month.1:Month.12,mean_abs_error_w1,MASE1_w1,Method.code) %>% 
+  filter(isExpert.factor == 'Prolific') %>%                                                               dplyr::select(team_name,domain,Month.1:Month.12,mean_abs_error_w1,MASE1_w1,Method.code) %>% 
   group_by(domain) %>% 
   summarise(across(where(is.numeric), mean)) %>% 
   arrange(domain,MASE1_w1) %>% 
@@ -184,7 +184,7 @@ t1.nonacadem.av.sorted <- phase1 %>%
 
 # Compute median accuracy for each domain - non-academic only
 t1.nonacadem.median.sorted<- phase1 %>% 
-  filter(isExpert.factor == 'Prolific') %>%                                                               select(team_name,domain,Month.1:Month.12,mean_abs_error_w1,MASE1_w1,,Method.code) %>% 
+  filter(isExpert.factor == 'Prolific') %>%                                                               dplyr::select(team_name,domain,Month.1:Month.12,mean_abs_error_w1,MASE1_w1,,Method.code) %>% 
   group_by(domain) %>% 
   summarise(across(where(is.numeric), median)) %>% 
   arrange(domain,MASE1_w1) %>% 
@@ -192,7 +192,7 @@ t1.nonacadem.median.sorted<- phase1 %>%
 
 # Compute best prediction for each of the domains - in other words prediction with the lowest MASE scores - non academics
 t1.nonacadem.best.sorted <- phase1 %>% 
-  filter(isExpert.factor == 'Prolific') %>%                                                               select(team_name,domain,Month.1:Month.12,mean_abs_error_w1,MASE1_w1,Method.code) %>% 
+  filter(isExpert.factor == 'Prolific') %>%                                                               dplyr::select(team_name,domain,Month.1:Month.12,mean_abs_error_w1,MASE1_w1,Method.code) %>% 
   group_by(domain) %>% 
   summarise(across(where(is.numeric), min)) %>% 
   arrange(domain, MASE1_w1) %>% 
@@ -200,7 +200,7 @@ t1.nonacadem.best.sorted <- phase1 %>%
 
 # Best predictions for academics by domain
 t1.academ.best.sorted <- phase1 %>% 
-  filter(isExpert.factor == 'Academic') %>%                                                               select(team_name,domain,Month.1:Month.12,mean_abs_error_w1,MASE1_w1,Method.code) %>% 
+  filter(isExpert.factor == 'Academic') %>%                                                               dplyr::select(team_name,domain,Month.1:Month.12,mean_abs_error_w1,MASE1_w1,Method.code) %>% 
   group_by(domain) %>% 
   summarise(across(where(is.numeric), min)) %>% 
   arrange(domain,MASE1_w1) %>% 
@@ -222,7 +222,7 @@ t2.academ.sorted <- academic_only %>%
   arrange(domain, MASE1_w2) %>%
   group_by(domain) %>% 
   mutate(Rank = row_number()) %>% 
-  add_count(name="Nteams") %>%                                                                            select(team_name,domain,Rank,Nteams,Method.code,phase,revised,Month.7:Month.12,mean_abs_error_w2,MASE1_w2)
+  add_count(name="Nteams") %>%                                                                            dplyr::select(team_name,domain,Rank,Nteams,Method.code,phase,revised,Month.7:Month.12,mean_abs_error_w2,MASE1_w2)
 
 # Create intuitive labels for each domain
 t2.academ.sorted$Domains[t2.academ.sorted$domain=="eafric"]<-"Explicit African American Bias"
@@ -308,7 +308,7 @@ objective$Tournament<-"Ground truth marker"
 # Combine all and drop unnecessary variables
 results<-rbind(t1.academ.sorted, t2.academ.sorted,objective) %>% 
   ungroup() %>% 
-  select(-domain,-Method.code, -(phase:revised)) 
+  dplyr::select(-domain,-Method.code, -(phase:revised)) 
 
 # Arrange by Tournament and then move Domains and Tournament columns to the beginning of the dataset and all numeric variables after that.
 results <- results %>% 
@@ -350,7 +350,7 @@ top.1.MASE.t1 <- phase1 %>%
   arrange(domain,MASE1_w1) %>% 
     group_by(team_name) %>%  mutate(n_domains = n()) %>% 
   group_by(domain) %>% 
-  dplyr::slice_head(n = 1) %>% select(team_name,mean_abs_error_w1,n_domains,MASE1_w1,Month.1:Month.12,domain,team_size.coded,discipline,previous_tournament.coded,Method.code,model,theory,numpred,parameters,Method.complex,team_expertise) %>%           arrange(MASE1_w1)
+  dplyr::slice_head(n = 1) %>% dplyr::select(team_name,mean_abs_error_w1,n_domains,MASE1_w1,Month.1:Month.12,domain,team_size.coded,discipline,previous_tournament.coded,Method.code,model,theory,numpred,parameters,Method.complex,team_expertise) %>%           arrange(MASE1_w1)
 
 # write.csv(top.1.MASE.t1,"top.t1.csv")
 
@@ -360,7 +360,7 @@ median.MASE.t1 <- phase1 %>%
   arrange(domain) %>%
   group_by(domain) %>% 
   dplyr::summarize(MASE_med = median(MASE1_w1)) %>% 
-  select(domain,MASE_med) %>% 
+  dplyr::select(domain,MASE_med) %>% 
   arrange(MASE_med)
 
 # write.csv(median.MASE.t1,"medianMASE.t1.csv")
@@ -371,7 +371,7 @@ top.5.MASE.t1 <- phase1 %>%
   arrange(domain,MASE1_w1) %>%
   group_by(team_name) %>%  mutate(n_domains = n()) %>% 
   group_by(domain) %>% 
-  dplyr::slice_head(n = 5) %>% select(team_name,MASE1_w1,domain,compare_to_naive_linear_MASE,compare_to_naive_rwf_MASE,team_size.coded,discipline,previous_tournament.coded,Method.code,model,theory,numpred,parameters,Method.complex,team_expertise,n_domains)
+  dplyr::slice_head(n = 5) %>% dplyr::select(team_name,MASE1_w1,domain,compare_to_naive_linear_MASE,compare_to_naive_rwf_MASE,team_size.coded,discipline,previous_tournament.coded,Method.code,model,theory,numpred,parameters,Method.complex,team_expertise,n_domains)
 
 # Visualize top 5 winners (using MASE scores) by domain and approach.
 top.5.MASE.t1  %>% 
@@ -436,7 +436,7 @@ phase1 %>%
   filter(isExpert.factor == 'Academic')  %>%
    arrange(domain,MASE1_w1) %>% 
    group_by(domain) %>% 
-   dplyr::slice_head(n = 10) %>% select(team_name,MASE1_w1,domain,team_size.coded,discipline,previous_tournament.coded,Method.code,model,theory,numpred,parameters,Method.complex,team_expertise) %>%
+   dplyr::slice_head(n = 10) %>% dplyr::select(team_name,MASE1_w1,domain,team_size.coded,discipline,previous_tournament.coded,Method.code,model,theory,numpred,parameters,Method.complex,team_expertise) %>%
   ggplot(aes(x = domain, y = team_size.coded)) +
   stat_summary(fun.data="mean_cl_boot",  position=pd) + 
   theme_minimal(base_size = 14) +
@@ -449,7 +449,7 @@ phase1 %>%
   filter(isExpert.factor == 'Academic')  %>%
   arrange(domain,MASE1_w1) %>% 
   group_by(domain) %>% 
-  dplyr::slice_head(n = 10) %>%                                                                           select(team_name,MASE1_w1,domain,team_size.coded,discipline,previous_tournament.coded,Method.code,model,theory,numpred,parameters,Method.complex,team_expertise) %>%
+  dplyr::slice_head(n = 10) %>%                                                                           dplyr::select(team_name,MASE1_w1,domain,team_size.coded,discipline,previous_tournament.coded,Method.code,model,theory,numpred,parameters,Method.complex,team_expertise) %>%
   ggplot(aes(x = domain, y = Method.complex)) +
   stat_summary(fun.data="mean_cl_boot",  position=pd)+theme_minimal(base_size = 14) +
   theme(legend.position="bottom") +
@@ -461,7 +461,7 @@ phase1 %>%
   filter(isExpert.factor == 'Academic')  %>%
   arrange(domain,MASE1_w1) %>%
   group_by(domain) %>% 
-  dplyr::slice_head(n = 10) %>%                                                                           select(team_name,MASE1_w1,domain,team_size.coded,discipline,previous_tournament.coded,Method.code,model,theory,numpred,parameters,Method.complex,team_expertise,team_gender,team_education,team_Age,non_US ) %>%
+  dplyr::slice_head(n = 10) %>%                                                                           dplyr::select(team_name,MASE1_w1,domain,team_size.coded,discipline,previous_tournament.coded,Method.code,model,theory,numpred,parameters,Method.complex,team_expertise,team_gender,team_education,team_Age,non_US ) %>%
   ggplot(aes(x = domain, y = team_gender)) +
   stat_summary(fun.data="mean_cl_boot",  position=pd)+theme_minimal(base_size = 14) +
   theme(legend.position="bottom") +
@@ -473,7 +473,7 @@ phase1 %>%
   filter(isExpert.factor == 'Academic')  %>%
   arrange(domain,MASE1_w1) %>% 
   group_by(domain) %>% 
-  dplyr::slice_head(n = 10) %>% select(team_name,MASE1_w1,domain,team_size.coded,discipline,previous_tournament.coded,Method.code,model,theory,numpred,parameters,Method.complex,team_expertise,team_gender,team_education,team_Age,non_US ) %>%
+  dplyr::slice_head(n = 10) %>% dplyr::select(team_name,MASE1_w1,domain,team_size.coded,discipline,previous_tournament.coded,Method.code,model,theory,numpred,parameters,Method.complex,team_expertise,team_gender,team_education,team_Age,non_US ) %>%
   ggplot(aes(x = domain, y = team_education)) +
   stat_summary(fun.data="mean_cl_boot",  position=pd)+theme_minimal(base_size = 14) +
   theme(legend.position="bottom") + 
@@ -484,7 +484,7 @@ phase1 %>%
 phase1 %>% 
   filter(isExpert.factor == 'Academic')  %>%
   arrange(domain,MASE1_w1) %>%group_by(domain) %>% 
-  dplyr::slice_head(n = 10) %>%                                                                           select(team_name,MASE1_w1,domain,team_size.coded,discipline,previous_tournament.coded,Method.code,model,theory,numpred,parameters,Method.complex,team_expertise,team_gender,team_education,team_Age,non_US ) %>%
+  dplyr::slice_head(n = 10) %>%                                                                           dplyr::select(team_name,MASE1_w1,domain,team_size.coded,discipline,previous_tournament.coded,Method.code,model,theory,numpred,parameters,Method.complex,team_expertise,team_gender,team_education,team_Age,non_US ) %>%
   ggplot(aes(x = domain, y = team_Age)) +
   stat_summary(fun.data="mean_cl_boot",  position=pd)+theme_minimal(base_size = 14) +
   theme(legend.position="bottom") +scale_x_discrete(labels=labels, name="") +
@@ -497,7 +497,7 @@ phase1 %>%
   arrange(domain,MASE1_w1) %>% 
   group_by(domain) %>% 
   dplyr::slice_head(n = 10) %>%
-  select(team_name,MASE1_w1,domain,team_size.coded,discipline,previous_tournament.coded,Method.code,model,theory,numpred,parameters,Method.complex,team_expertise,team_gender,team_education,team_Age,non_US )%>%
+  dplyr::select(team_name,MASE1_w1,domain,team_size.coded,discipline,previous_tournament.coded,Method.code,model,theory,numpred,parameters,Method.complex,team_expertise,team_gender,team_education,team_Age,non_US )%>%
   ggplot(aes(x = domain, y = non_US)) +
   stat_summary(fun.data="mean_cl_boot", position=pd)+theme_minimal(base_size = 14) +
   theme(legend.position="bottom") + 
@@ -552,7 +552,7 @@ top.1.MASE.t2 <- academic_only  %>%
   arrange(domain, MASE1_w2) %>% 
   group_by(team_name) %>%  mutate(n_domains = n()) %>% 
   group_by(domain) %>% 
-  dplyr::slice_head(n = 1) %>%                                                  select(domain,mean_abs_error_w2,n_domains,MASE1_w2,team_name,mean_abs_percent_error_w2,compare_to_naive_linear_MASE_w2,compare_to_naive_rwf_MASE,team_size.coded,discipline,previous_tournament.coded,Method.code,model,theory,numpred,parameters,Method.complex,team_expertise,phase,revised)
+  dplyr::slice_head(n = 1) %>%                                                  dplyr::select(domain,mean_abs_error_w2,n_domains,MASE1_w2,team_name,mean_abs_percent_error_w2,compare_to_naive_linear_MASE_w2,compare_to_naive_rwf_MASE,team_size.coded,discipline,previous_tournament.coded,Method.code,model,theory,numpred,parameters,Method.complex,team_expertise,phase,revised)
   
 # write.csv(top.1.MASE.t2,"top.t2.csv")
 
@@ -562,7 +562,7 @@ median.MASE.t2 <- academic_only  %>%
   arrange(domain) %>% 
   group_by(domain) %>% 
   dplyr::summarize(MASE_med = median(MASE1_w2)) %>% 
-  select(domain,MASE_med) %>% 
+  dplyr::select(domain,MASE_med) %>% 
   arrange(MASE_med)
 
 #write.csv(median.MASE.t2,"medianMASE.t2.csv")
@@ -573,7 +573,7 @@ top.5.MASE.t2 <- academic_only %>%
   arrange(domain,MASE1_w2) %>% 
     group_by(team_name) %>%  mutate(n_domains = n()) %>% 
    group_by(domain) %>% 
-  dplyr::slice_head(n = 5) %>% select(team_name,MASE1_w2,domain,n_domains,compare_to_naive_linear_MASE_w2,compare_to_naive_rwf_MASE,team_size.coded,discipline,previous_tournament.coded,Method.code,model,theory,numpred,parameters,Method.complex,team_expertise,phase,revised)
+  dplyr::slice_head(n = 5) %>% dplyr::select(team_name,MASE1_w2,domain,n_domains,compare_to_naive_linear_MASE_w2,compare_to_naive_rwf_MASE,team_size.coded,discipline,previous_tournament.coded,Method.code,model,theory,numpred,parameters,Method.complex,team_expertise,phase,revised)
   
 # Visualize top 5 performers as a function of method used.
 top.5.MASE.t2 %>%  
@@ -640,7 +640,7 @@ academic_only %>%
   filter(!(phase == 1 & revised == 1)) %>% 
   arrange(domain,MASE1_w2) %>%
   group_by(domain) %>% 
-  dplyr::slice_head(n = 10) %>% select(team_name,MASE1_w2,domain,team_size.coded,discipline,previous_tournament.coded,Method.code,model,theory,numpred,parameters,Method.complex,team_expertise) %>%
+  dplyr::slice_head(n = 10) %>% dplyr::select(team_name,MASE1_w2,domain,team_size.coded,discipline,previous_tournament.coded,Method.code,model,theory,numpred,parameters,Method.complex,team_expertise) %>%
   ggplot(aes(x = domain, y = team_size.coded)) +
   stat_summary(fun.data="mean_cl_boot",  position=pd)+theme_minimal(base_size = 14) +
   theme(legend.position="bottom") + 
@@ -652,7 +652,7 @@ academic_only %>%
   filter(!(phase == 1 & revised == 1)) %>% 
   arrange(domain,MASE1_w2) %>% 
   group_by(domain) %>% 
-  dplyr::slice_head(n = 10) %>% select(team_name,MASE1_w1,domain,team_size.coded,discipline,previous_tournament.coded,Method.code,model,theory,numpred,parameters,Method.complex,team_expertise) %>%
+  dplyr::slice_head(n = 10) %>% dplyr::select(team_name,MASE1_w1,domain,team_size.coded,discipline,previous_tournament.coded,Method.code,model,theory,numpred,parameters,Method.complex,team_expertise) %>%
   ggplot(aes(x = domain, y = Method.complex)) +
   stat_summary(fun.data="mean_cl_boot", position=pd)+theme_minimal(base_size = 14) +
   theme(legend.position="bottom") + 
@@ -664,7 +664,7 @@ academic_only %>%
   filter(!(phase == 1 & revised == 1)) %>% 
   arrange(domain,MASE1_w2) %>% 
   group_by(domain) %>% 
-  dplyr::slice_head(n = 5) %>% select(team_name,MASE1_w1,domain,team_size.coded,discipline,previous_tournament.coded,Method.code,model,theory,numpred,parameters,Method.complex,team_expertise) %>%
+  dplyr::slice_head(n = 5) %>% dplyr::select(team_name,MASE1_w1,domain,team_size.coded,discipline,previous_tournament.coded,Method.code,model,theory,numpred,parameters,Method.complex,team_expertise) %>%
   ggplot(aes(x = domain, y = Method.complex)) +
   stat_summary(fun.data="mean_cl_boot",  position=pd) + 
   theme_minimal(base_size = 14) +
@@ -677,7 +677,7 @@ academic_only %>%
   filter(!(phase == 1 & revised == 1)) %>% 
   arrange(domain,MASE1_w2) %>% 
   group_by(domain) %>% 
-  dplyr::slice_head(n = 10) %>% select(team_name,MASE1_w2,domain,team_size.coded,discipline,previous_tournament.coded,Method.code,model,theory,numpred,parameters,Method.complex,team_expertise,team_gender,team_education,team_Age,non_US )%>%
+  dplyr::slice_head(n = 10) %>% dplyr::select(team_name,MASE1_w2,domain,team_size.coded,discipline,previous_tournament.coded,Method.code,model,theory,numpred,parameters,Method.complex,team_expertise,team_gender,team_education,team_Age,non_US )%>%
   ggplot(aes(x = domain, y = team_gender)) +
   stat_summary(fun.data="mean_cl_boot",  position=pd)+theme_minimal(base_size = 14) +
   theme(legend.position="bottom") + 
@@ -690,7 +690,7 @@ academic_only %>%
   filter(!(phase == 1 & revised == 1)) %>% 
   arrange(domain,MASE1_w2) %>% 
   group_by(domain) %>% 
-  dplyr::slice_head(n = 10) %>% select(team_name,MASE1_w2,domain,team_size.coded,discipline,previous_tournament.coded,Method.code,model,theory,numpred,parameters,Method.complex,team_expertise,team_gender,team_education,team_Age,non_US )%>%
+  dplyr::slice_head(n = 10) %>% dplyr::select(team_name,MASE1_w2,domain,team_size.coded,discipline,previous_tournament.coded,Method.code,model,theory,numpred,parameters,Method.complex,team_expertise,team_gender,team_education,team_Age,non_US )%>%
   ggplot(aes(x = domain, y = team_education)) +
   stat_summary(fun.data="mean_cl_boot", position=pd)+theme_minimal(base_size = 14) +
   theme(legend.position="bottom") +scale_x_discrete(labels=labels, name="") +
@@ -701,7 +701,7 @@ academic_only %>%
   filter(!(phase == 1 & revised == 1)) %>% 
   arrange(domain,MASE1_w2) %>% 
   group_by(domain) %>% 
-  dplyr::slice_head(n = 10) %>%   select(team_name,MASE1_w2,domain,team_size.coded,discipline,previous_tournament.coded,Method.code,model,theory,numpred,parameters,Method.complex,team_expertise,team_gender,team_education,team_Age,non_US )%>%
+  dplyr::slice_head(n = 10) %>%   dplyr::select(team_name,MASE1_w2,domain,team_size.coded,discipline,previous_tournament.coded,Method.code,model,theory,numpred,parameters,Method.complex,team_expertise,team_gender,team_education,team_Age,non_US )%>%
   ggplot(aes(x = domain, y = team_Age)) +
   stat_summary(fun.data="mean_cl_boot",  position=pd)+theme_minimal(base_size = 14) +
   theme(legend.position="bottom") + 
@@ -713,7 +713,7 @@ academic_only %>%
   filter(!(phase == 1 & revised == 1)) %>% 
   arrange(domain,MASE1_w2) %>%
   group_by(domain) %>% 
-  dplyr::slice_head(n = 10) %>% select(team_name,MASE1_w2,domain,team_size.coded,discipline,previous_tournament.coded,Method.code,model,theory,numpred,parameters,Method.complex,team_expertise,team_gender,team_education,team_Age,non_US) %>%
+  dplyr::slice_head(n = 10) %>% dplyr::select(team_name,MASE1_w2,domain,team_size.coded,discipline,previous_tournament.coded,Method.code,model,theory,numpred,parameters,Method.complex,team_expertise,team_gender,team_education,team_Age,non_US) %>%
   ggplot(aes(x = domain, y = non_US)) +
   stat_summary(fun.data="mean_cl_boot",  position=pd)+theme_minimal(base_size = 14) +
   theme(legend.position="bottom") + 
@@ -747,20 +747,20 @@ top.5.MASE.t2$MASE<-top.5.MASE.t2$MASE1_w2
 
 
 top.5.MASE<-rbind(top.5.MASE.t1,top.5.MASE.t2) 
-top.5.MASE%>% select(team_name,MASE,domain,phase,model,revised) %>% group_by(domain) %>% count(team_name)
+top.5.MASE%>% dplyr::select(team_name,MASE,domain,phase,model,revised) %>% group_by(domain) %>% count(team_name)
 #only in five out of 12 domains one top team from the first tournament appeared among the top five teams of a given domain in the second tournament: 
 #Compassionate Values for Explicit African American bias; fearfulastra for Explicit Gender-Career bias; FMTeam for Implicit Asian American bias; AbCdEfG for Ideological Support of Democrats; A Woman Scientist for Negative Sentiment; NYHC for political polarization. The remaining top five teams were unique across tournaments. 
 
 #examine consistency across domains in each tournament
-top5.repeats.t1<-top.5.MASE.t1%>% select(team_name,MASE,domain,n_domains) %>% group_by(team_name) %>% count(team_name) %>% arrange(desc(n))
+top5.repeats.t1<-top.5.MASE.t1%>% dplyr::select(team_name,MASE,domain,n_domains) %>% group_by(team_name) %>% count(team_name) %>% arrange(desc(n))
 psych::describe(top5.repeats.t1)#14 appear more than once; but M is small = 1.62
-top5.repeats.t1.perc<-top5.repeats.t1 %>% left_join(top.5.MASE.t1 %>% select(team_name,n_domains) )
+top5.repeats.t1.perc<-top5.repeats.t1 %>% left_join(top.5.MASE.t1 %>% dplyr::select(team_name,n_domains) )
 top5.repeats.t1.perc$perc<-top5.repeats.t1.perc$n/top5.repeats.t1.perc$n_domains*100
 print(top5.repeats.t1.perc) # one team among those who were among the top five in more than 2 domains had a reasonably small number of domains they made predictions about (6), such that in 4 out of 6 = 67% they were in the top five. For the rest, the number of domains they were in the top five were below half of those they made predictions for.   
 
-top5.repeats.t2<-top.5.MASE.t2%>% select(team_name,MASE,domain,n_domains) %>% group_by(team_name) %>% count(team_name) %>% arrange(desc(n))
+top5.repeats.t2<-top.5.MASE.t2%>% dplyr::select(team_name,MASE,domain,n_domains) %>% group_by(team_name) %>% count(team_name) %>% arrange(desc(n))
 psych::describe(top5.repeats.t2)#17 appear more than once; but M is small = 1.67
-top5.repeats.t2.perc<-top5.repeats.t2 %>% left_join(top.5.MASE.t2 %>% select(team_name,n_domains) )
+top5.repeats.t2.perc<-top5.repeats.t2 %>% left_join(top.5.MASE.t2 %>% dplyr::select(team_name,n_domains) )
 top5.repeats.t2.perc$perc<-top5.repeats.t2.perc$n/top5.repeats.t2.perc$n_domains*100
 print(top5.repeats.t2.perc) # one team among those who were among the top five in more than 2 domains had a reasonably small number of domains they made predictions about (9), such that in 5 out of 9 = 55.56% they were in the top five. For the rest, the number of domains they were in the top five were at/below half of those they made predictions for.   
 
@@ -798,7 +798,7 @@ hist_long <- as_tibble(historical_tsbl) %>%
 hist_var_w1 <- as_tibble(historical_tsbl) %>% 
     subset(Month < 0) %>% 
     pivot_longer(negaffect:polar,names_to="domain",values_to="Score") %>%
-    select(domain,Score) %>% 
+    dplyr::select(domain,Score) %>% 
     group_by(domain) %>% 
     summarise(sd_hist_w1 = sd(Score), mad_hist_w1 = mad(Score), perp_entropy_hist_w1=permutation_entropy(Score))
 
@@ -807,7 +807,7 @@ tournament1_var <-
   as_tibble(historical_tsbl) %>% 
   subset(Month > 0) %>% 
   pivot_longer(negaffect:polar,names_to="domain",values_to="Score") %>%
-  select(domain,Score) %>% 
+  dplyr::select(domain,Score) %>% 
   na.omit %>% 
   group_by(domain) %>% 
   summarise(sd_w1 = sd(Score), mad_w1 = mad(Score), perp_entropy_w1=permutation_entropy(Score))
@@ -815,14 +815,14 @@ tournament1_var <-
 hist_var_w2 <- as_tibble(historical_tsbl) %>% 
   subset(Month < 7) %>% 
   pivot_longer(negaffect:polar,names_to="domain",values_to="Score") %>%
-  select(domain,Score) %>% 
+  dplyr::select(domain,Score) %>% 
   group_by(domain) %>% 
   summarise(sd_hist_w2 = sd(Score), mad_hist_w2 = mad(Score), perp_entropy_hist_w2=permutation_entropy(Score))
 
 tournament2_var <- as_tibble(historical_tsbl) %>% 
   subset(Month > 6) %>% 
   pivot_longer(negaffect:polar,names_to="domain",values_to="Score") %>%
-  select(domain,Score) %>% 
+  dplyr::select(domain,Score) %>% 
   na.omit%>%group_by(domain) %>% 
   summarise(sd_w2 = sd(Score), mad_w2 = mad(Score), perp_entropy_w2=permutation_entropy(Score))
 
@@ -1247,12 +1247,13 @@ labeling<-c(
 #plot for the supplement
 means.compare.to.naive %>%  
  ggplot(aes(x = response, y = domain, color = Type, shape=Type))+
- geom_pointrange(aes(xmin=lower.CL, xmax=upper.CL), position=pd)+  theme_minimal(base_size = 14)+geom_vline(xintercept =1, linetype='dashed', color='red',14)+theme(legend.position="bottom")+scale_color_jama()+  labs(x="Forecasting Error - MASE (M +/- 95%CI)",shape="",color="")+scale_y_discrete(labels=labeling, name="")+facet_grid(~Wave)
+ geom_pointrange(aes(xmin=lower.CL, xmax=upper.CL), position=pd)+  theme_minimal(base_size = 14)+geom_vline(xintercept =1, linetype='dotted', color='black',14)+
+  geom_vline(xintercept =1.7665, linetype='dashed', color='blue',16)+theme(legend.position="bottom")+scale_color_jama()+  labs(x="Forecasting Error - MASE (M +/- 95%CI)",shape="",color="")+scale_y_discrete(labels=labeling, name="")+facet_grid(~Wave)
 
 #create a main text version with top (lowest MASE) benchmark per domain instead of all three benchmarks
 ##first, get lowest benchmarks per domain
-sim.w1.top<-sim.w1 %>% select(domain,Mean) %>% summarise(response = min(Mean), Wave="First Tournament (May 2020)")
-sim.w2.top<-sim.w2 %>% select(domain,Mean) %>% summarise(response = min(Mean), Wave="Second Tournament (Nov 2020)")
+sim.w1.top<-sim.w1 %>% dplyr::select(domain,Mean) %>% summarise(response = min(Mean), Wave="First Tournament (May 2020)")
+sim.w2.top<-sim.w2 %>% dplyr::select(domain,Mean) %>% summarise(response = min(Mean), Wave="Second Tournament (Nov 2020)")
 #add simulation benchmarks & combine
 means.compare.to.naive.top<-bind_rows(data.phase1.MASE.together,data.phase2.MASE.together,sim.w1.top,sim.w2.top)
 #arrange in descending order based on MASE w1 of academics
@@ -1270,7 +1271,8 @@ means.compare.to.naive.top$Group[means.compare.to.naive.top$Type!="Scientists"]<
 #plot for the main text
 means.compare.to.naive.top %>%  
  ggplot(aes(x = response, y = domain, color = Type, shape=Type))+
- geom_pointrange(aes(xmin=lower.CL, xmax=upper.CL), position=pd)+  theme_minimal(base_size = 14)+geom_vline(xintercept =1, linetype='dashed', color='red',14)+theme(legend.position="bottom")+scale_color_jama()+  labs(x="Forecasting Error - MASE (M +/- 95%CI)",shape="",color="")+scale_y_discrete(labels=labeling, name="")+facet_grid(~Wave)
+ geom_pointrange(aes(xmin=lower.CL, xmax=upper.CL), position=pd)+  theme_minimal(base_size = 14)+geom_vline(xintercept =1, linetype='dotted', color='black',14)+
+  geom_vline(xintercept =1.7665, linetype='dashed', color='blue',16)+theme(legend.position="bottom")+scale_color_jama()+  labs(x="Forecasting Error - MASE (M +/- 95%CI)",shape="",color="")+scale_y_discrete(labels=labeling, name="")+facet_grid(~Wave)
 
 
 #subplots for presentation (talks, etc)
@@ -1302,7 +1304,7 @@ means.compare.to.naive %>%  subset(Type=="Scientists"|Type=="Naive Crowd")%>%
 
 ##Tournament 1 - phase1_exp
 
-phase1_exp_wbench<-phase1_exp %>% left_join(pivot_wider(sim.w1 %>% select(domain,response, source),
+phase1_exp_wbench<-phase1_exp %>% left_join(pivot_wider(sim.w1 %>% dplyr::select(domain,response, source),
                                             names_from="source",values_from="response"))
 
 phase1_exp_wbench$MASE_ratio1<- phase1_exp_wbench$'Benchmark 1'/phase1_exp_wbench$MASE1_w1
@@ -1367,7 +1369,7 @@ plot.t1.topBenchmark<-plot(emmeans(model.phase1.topBenchmark.ratio,~domain, type
 
 #Tournament 2
 
-phase2_exp_wbench<-dat_phase2 %>% left_join(pivot_wider(sim.w2 %>% select(domain,response, source),
+phase2_exp_wbench<-dat_phase2 %>% left_join(pivot_wider(sim.w2 %>% dplyr::select(domain,response, source),
                                             names_from="source",values_from="response"))
 
 phase2_exp_wbench$domain <- factor(phase2_exp_wbench$domain,      # Reordering group factor levels
@@ -1447,7 +1449,6 @@ mean.scores.w.benchmarks %>% ggplot(aes(x = response, y = domain, colour = Estim
  geom_pointrange(aes(xmin=lower.CL, xmax=upper.CL), position=pd)+  theme_minimal(base_size = 14) +geom_vline(xintercept =1, linetype='dashed', color='red', 14)+facet_grid(~Date, scales = "free_y")+
 theme(legend.position="bottom") +scale_color_aaas()+scale_fill_aaas()+  scale_y_discrete(labels=labeling, name="")+
   labs(colour = "",fill="", y="",x="Naïve Benchmark / Scientific Forecast Error Ratio (M +/- 95%CI)") 
-
 ```
 
 ## compare scores from tournament 1 and tournament 2 
@@ -1466,9 +1467,9 @@ dat_phase2$Domain_Publications<-ifelse(dat_phase2$pub==1,1,ifelse(dat_phase2$pub
 #####################
 #create subsets for tournament 1 and for tournament 2 to use in analyses here and later for covariate analyses below
 #####################
-subset1<- phase1_exp %>% ungroup() %>% select(MASE1_w1,domain,Method.code,ResponseId,team_name,covidcondyn,CounterFactual_Presence_Final,Method.complex,parameters_coded,n_domains,multi_dis.factor,team_discipline.coded,non_US,team_size.coded,team_gender,team_education,confidence,subexpert,Domain_Publications,previous_tournament.coded,TournamentStart) %>% mutate(inaccuracy = MASE1_w1,phase = "first")
+subset1<- phase1_exp %>% ungroup() %>% dplyr::select(MASE1_w1,domain,Method.code,ResponseId,team_name,covidcondyn,CounterFactual_Presence_Final,Method.complex,parameters_coded,n_domains,multi_dis.factor,team_discipline.coded,non_US,team_size.coded,team_gender,team_education,confidence,subexpert,Domain_Publications,previous_tournament.coded,TournamentStart) %>% mutate(inaccuracy = MASE1_w1,phase = "first")
 
-subset2<- dat_phase2 %>% ungroup() %>% select(MASE1_w2,domain,Method.code,ResponseId,team_name,covidcondyn,CounterFactual_Presence_Final,Method.complex,parameters_coded,n_domains,multi_dis.factor,team_discipline.coded,non_US,team_size.coded,team_gender,team_education,confidence,subexpert,Domain_Publications,previous_tournament.coded,TournamentStart) %>% mutate(inaccuracy = MASE1_w2,phase = "second")
+subset2<- dat_phase2 %>% ungroup() %>% dplyr::select(MASE1_w2,domain,Method.code,ResponseId,team_name,covidcondyn,CounterFactual_Presence_Final,Method.complex,parameters_coded,n_domains,multi_dis.factor,team_discipline.coded,non_US,team_size.coded,team_gender,team_education,confidence,subexpert,Domain_Publications,previous_tournament.coded,TournamentStart) %>% mutate(inaccuracy = MASE1_w2,phase = "second")
 
 ##compare effects by domain for each tournament
 ##REPORTED IN MAIN TEXT####
@@ -1584,7 +1585,7 @@ median.ranks$Domain[median.ranks$domain=="polar"]<-"Polarization"
 median.ranks$Domain[median.ranks$domain=="negaffect"]<-"Negative Affect"
 median.ranks$Domain[median.ranks$domain=="posaffect"]<-"Positive Affect"
 
-median.ranks<-median.ranks %>% left_join(t.comparison.effects) %>% left_join(t.comparison %>% select(domain,ratio,t.ratio,p.value)) #add the sig testing from the tournament comparisons, incl ratio size and p-values
+median.ranks<-median.ranks %>% left_join(t.comparison.effects) %>% left_join(t.comparison %>% dplyr::select(domain,ratio,t.ratio,p.value)) #add the sig testing from the tournament comparisons, incl ratio size and p-values
 
 #NOTE: here we have median ranks per domain, but also the estimates scores from multi-level models accounting for multiple predictions by different scientist groups. Due to this dependence in the data, we use the latter estimates.
 
@@ -1608,7 +1609,7 @@ newggslopegraph(dataframe = median.ranks,
 ##test reported in MAIN TEXT showing that domain differences in forecasting accuracy corresponded to differences in the complexity of historical data
 
 #covert to wide
-median.ranks.wide<-median.ranks %>% select(domain:phase,MASE) %>% 
+median.ranks.wide<-median.ranks %>% dplyr::select(domain:phase,MASE) %>% 
   pivot_wider(names_from="phase",values_from=c("MASE","MASE_med"))
 
 rank_complex_wide<-median.ranks.wide%>%left_join(complexity)
@@ -1622,10 +1623,10 @@ rank_complex<-median.ranks%>%left_join(complexity)
 
 #the scores below include both complexity markers (SD, MAD, and supplementary entropy) for historical data, as well as the data across the 12 months of the tournament. For the main text analyses we focus on historical complexity
 correlation::correlation(rank_complex%>%filter(phase=="first") %>% 
- select(MASE_med,sd_hist_w1,mad_hist_w1,perp_entropy_hist_w1,sd_w1,mad_w1,perp_entropy_w1), p_adjust="none", ranktransform=T) 
+ dplyr::select(MASE_med,sd_hist_w1,mad_hist_w1,perp_entropy_hist_w1,sd_w1,mad_w1,perp_entropy_w1), p_adjust="none", ranktransform=T) 
 
 correlation::correlation(rank_complex%>%filter(phase=="second") %>% 
- select(MASE_med,sd_hist_w2,mad_hist_w2,perp_entropy_hist_w2,sd_w2,mad_w2,perp_entropy_w2), p_adjust="none", ranktransform=T) 
+ dplyr::select(MASE_med,sd_hist_w2,mad_hist_w2,perp_entropy_hist_w2,sd_w2,mad_w2,perp_entropy_w2), p_adjust="none", ranktransform=T) 
 
 #add difference scores in complexity to the dataset
 #these are additional analyses to check the differences in complexity and differences in accuracy between tournaments
@@ -1667,7 +1668,7 @@ rank_complex_wide$MASE_med_diff<-rank_complex_wide$MASE_med_second-rank_complex_
 
 
 correlation::correlation(rank_complex_wide%>%
- select(MASE_diff,MASE_med_diff,sd_hist_diff,mad_hist_diff,perp_entropy_hist_diff,sd_diff,mad_diff,perp_entropy_diff), p_adjust="none", ranktransform=T) 
+ dplyr::select(MASE_diff,MASE_med_diff,sd_hist_diff,mad_hist_diff,perp_entropy_hist_diff,sd_diff,mad_diff,perp_entropy_diff), p_adjust="none", ranktransform=T) 
 #added info about change in variability correlating to changes in accuracy.
 
 ```
@@ -1687,7 +1688,7 @@ partR2(model.t1.t2, partvars =
 
 #NEXT ANALYSES: compare last months from the T1 to T2
 ##turn to long format (lastmonths T1 an t2 MASE data)
-subset1.lastsix<- phase1_exp %>% ungroup() %>% select(MASE1_w1_lastmonths,domain,Method.code,ResponseId,team_name,covidcondyn,CounterFactual_Presence_Final,Method.complex,parameters_coded,n_domains,multi_dis.factor,team_discipline.coded,team_size.coded,team_gender,team_education,confidence,subexpert,Domain_Publications,previous_tournament.coded, TournamentStart) %>% mutate(inaccuracy = MASE1_w1_lastmonths,phase = "first")
+subset1.lastsix<- phase1_exp %>% ungroup() %>% dplyr::select(MASE1_w1_lastmonths,domain,Method.code,ResponseId,team_name,covidcondyn,CounterFactual_Presence_Final,Method.complex,parameters_coded,n_domains,multi_dis.factor,team_discipline.coded,team_size.coded,team_gender,team_education,confidence,subexpert,Domain_Publications,previous_tournament.coded, TournamentStart) %>% mutate(inaccuracy = MASE1_w1_lastmonths,phase = "first")
 
 #combine
 both.sets.lastsix<-bind_rows(subset1.lastsix,subset2)
@@ -1714,12 +1715,12 @@ dat_long_phase1_exp_wide_by_month$even_month_inaccuracy=rowMeans(dat_long_phase1
 
 #correlations by domain
 
-dat_long_phase1_exp_wide_by_month %>%select(domain,odd_month_inaccuracy,even_month_inaccuracy) %>% 
+dat_long_phase1_exp_wide_by_month %>%dplyr::select(domain,odd_month_inaccuracy,even_month_inaccuracy) %>% 
     group_by(domain) %>%
     correlation::correlation(ranktransform =T)    
 
 #multilevel
-dat_long_phase1_exp_wide_by_month %>%select(domain,odd_month_inaccuracy,even_month_inaccuracy) %>% 
+dat_long_phase1_exp_wide_by_month %>%dplyr::select(domain,odd_month_inaccuracy,even_month_inaccuracy) %>% 
     correlation::correlation(multilevel=T,ranktransform=T)  
 
 
@@ -1738,12 +1739,12 @@ dat_long_phase2_exp_wide_by_month$odd_month_inaccuracy=rowMeans(dat_long_phase2_
 
 #correlations by domain
 
-dat_long_phase2_exp_wide_by_month %>%select(domain,odd_month_inaccuracy,even_month_inaccuracy) %>% 
+dat_long_phase2_exp_wide_by_month %>%dplyr::select(domain,odd_month_inaccuracy,even_month_inaccuracy) %>% 
     group_by(domain) %>%
     correlation::correlation(ranktransform =T)    
 
 #multilevel
-dat_long_phase2_exp_wide_by_month %>%select(domain,odd_month_inaccuracy,even_month_inaccuracy) %>% 
+dat_long_phase2_exp_wide_by_month %>%dplyr::select(domain,odd_month_inaccuracy,even_month_inaccuracy) %>% 
     correlation::correlation(multilevel=T,ranktransform=T) 
 
 
@@ -1957,7 +1958,8 @@ means.compare.by.method$Wave<-factor(means.compare.by.method$Wave,levels=c("Firs
 #plot figure
 means.compare.by.method %>%  
  ggplot(aes(x = Method, y = response, color = Method.code))+
- geom_pointrange(aes(ymin=lower.CL, ymax=upper.CL), position=pd)+  theme_minimal(base_size = 14)+geom_hline(yintercept =1, linetype='dashed', color='red',14)+theme(legend.position="none")+scale_color_futurama()+  labs(y="MASE (M +/- 95%CI)",x="",shape="",color="")+ facet_wrap(~ Wave, scales = "free_x")
+ geom_pointrange(aes(ymin=lower.CL, ymax=upper.CL), position=pd)+  theme_minimal(base_size = 14)+geom_hline(yintercept =1, linetype='dotted', color='black',14)+
+  geom_hline(yintercept =1.7665, linetype='dashed', color='blue',16)+theme(legend.position="none")+scale_color_futurama()+  labs(y="MASE (M +/- 95%CI)",x="",shape="",color="")+ facet_wrap(~ Wave, scales = "free_x")
 
   
 ```
@@ -2154,7 +2156,7 @@ table(phase1_exp$basis)
 # demographics lay people
 
 ```{r}
-phase1.noexp.dem<-phase1 %>% filter(isExpert.factor=="Prolific") %>% select(ResponseId,Age, Sex, Ethnicity, Education,Residential.Area, Income) %>% dplyr::group_by(ResponseId) %>% 
+phase1.noexp.dem<-phase1 %>% filter(isExpert.factor=="Prolific") %>% dplyr::select(ResponseId,Age, Sex, Ethnicity, Education,Residential.Area, Income) %>% dplyr::group_by(ResponseId) %>% 
 summarize_all(~ mean(.x, na.rm = TRUE))
 psych::describe(phase1.noexp.dem$Age)
 prop.table(table(phase1.noexp$Sex)) #46.36% female
