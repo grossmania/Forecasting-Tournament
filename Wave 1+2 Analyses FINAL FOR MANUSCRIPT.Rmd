@@ -2130,19 +2130,61 @@ partR2(model.phase2.update.type, partvars =
 # demographics Phase 1
 
 ```{r}
-psych::describe(phase1_exp$team_Age)
-psych::describe(dat_phase2$team_Age)
 
-#total percentage in the tournament without a PhD
+phase1.exp.dem<-phase1_exp %>% dplyr::select(team_name, team_size.coded, n_domains,team_Age,team_education,non_US,team_gender,revised) %>% dplyr::group_by(team_name) %>% 
+summarize_all(~ mean(.x, na.rm = TRUE))
+
+phase2.exp.dem<-dat_phase2 %>% dplyr::select(team_name, team_size.coded, n_domains,team_Age,team_education,non_US,team_gender,revised) %>% dplyr::group_by(team_name) %>% 
+summarize_all(~ mean(.x, na.rm = TRUE))
+
+
+#number of participants
+sum(phase1.exp.dem$team_size.coded)
+sum(phase2.exp.dem$team_size.coded)
+
+#team size
+psych::describe(phase1.exp.dem$team_size.coded)
+psych::describe(phase2.exp.dem$team_size.coded)
+
+#n forecasted domains
+psych::describe(phase1.exp.dem$n_domains)
+psych::describe(phase2.exp.dem$n_domains)
+
+#age
+psych::describe(phase1.exp.dem$team_Age)
+psych::describe(phase2.exp.dem$team_Age)
+
+#Percentage of team members who indicated their level of education was not PhD
+psych::describe(phase1.exp.dem$team_education)
+psych::describe(phase2.exp.dem$team_education)
+
+#to get number of team members with a PhD
+
 ##multiple % per team without a PhD by number of team members and subtract from 1 and multiple by 100 to get % of forecasts done by PhDs
-(1 - sum(phase1_exp$team_education/100*phase1_exp$team_size.coded)/sum(phase1_exp$team_size.coded))*100
+(1 - sum(phase1.exp.dem$team_education/100*phase1.exp.dem$team_size.coded)/sum(phase1.exp.dem$team_size.coded))*100 #73.33%
 
-(1 - sum(dat_phase2$team_education/100*dat_phase2$team_size.coded)/sum(dat_phase2$team_size.coded))*100
+(1 - sum(phase2.exp.dem$team_education/100*phase2.exp.dem$team_size.coded)/sum(phase2.exp.dem$team_size.coded))*100 #67.37%
 
+# non-US Percentage of team members who indicated their country of residence was not the United States
+psych::describe(phase1.exp.dem$non_US)
+psych::describe(phase2.exp.dem$non_US)
 
-#forecasted domains
-psych::describe(phase1_exp$n_domains)
-psych::describe(dat_phase2$n_domains)
+(sum(phase1.exp.dem$non_US/100*phase1.exp.dem$team_size.coded)/sum(phase1.exp.dem$team_size.coded))*100 #62.22% nonus
+
+(sum(phase2.exp.dem$non_US/100*phase2.exp.dem$team_size.coded)/sum(phase2.exp.dem$team_size.coded))*100 #62.10526% nonus
+
+#gender: Percentage of team members who indicated their gender was either Female or Other
+psych::describe(phase1.exp.dem$team_gender)
+psych::describe(phase2.exp.dem$team_gender)
+
+#male phase 1
+(1 - sum(phase1.exp.dem$team_gender/100*phase1.exp.dem$team_size.coded)/sum(phase1.exp.dem$team_size.coded))*100 #76.2963% male
+
+(1 - sum(phase2.exp.dem$team_gender/100*phase2.exp.dem$team_size.coded)/sum(phase2.exp.dem$team_size.coded))*100 #74.47368% male
+
+#% revised predictions
+
+psych::describe(phase1.exp.dem$revised*100)
 
 #did preference for updating vary by method?
 model.revised.t1.by.method<-glmer(revised~method.contrast+(1|team_name), data=phase1_exp, family=binomial)
@@ -2159,8 +2201,8 @@ table(phase1_exp$basis)
 phase1.noexp.dem<-phase1 %>% filter(isExpert.factor=="Prolific") %>% dplyr::select(ResponseId,Age, Sex, Ethnicity, Education,Residential.Area, Income) %>% dplyr::group_by(ResponseId) %>% 
 summarize_all(~ mean(.x, na.rm = TRUE))
 psych::describe(phase1.noexp.dem$Age)
-prop.table(table(phase1.noexp$Sex)) #46.36% female
-prop.table(table(phase1.noexp$Education))
+prop.table(table(phase1.noexp.dem$Sex)) #46.36% female
+prop.table(table(phase1.noexp.dem$Education))
 #"1 =  less than highschool
 #2 =  highschool grad
 #3 =  some college
