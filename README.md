@@ -1,4 +1,4 @@
-This repository contains the data behind [COVID-19 Tournament] (https://predictions.uwaterloo.ca/tournament) of the [Forecasting Collaborative] (https://predictions.uwaterloo.ca/).
+This repository contains the data behind [COVID-19 Tournament](https://predictions.uwaterloo.ca/tournament) of the [Forecasting Collaborative](https://predictions.uwaterloo.ca/).
 
 ## Data
 
@@ -16,7 +16,7 @@ This repository contains the data behind [COVID-19 Tournament] (https://predicti
 ## Method
 
 * [Recruitment](https://predictions.uwaterloo.ca/tournament/)
-* [Tournament Instructions] (https://predictions.uwaterloo.ca/instructions/)
+* [Tournament Instructions](https://predictions.uwaterloo.ca/instructions/)
 * [Codebook for model complexity](https://github.com/grossmania/Forecasting-Tournament/blob/main/ModelType+ComplexityCodebook_2020-07-21-MTG-LT-57.docx?raw=true)
 * [Codebook for counterfactuals](https://github.com/grossmania/Forecasting-Tournament/blob/main/TournamentCounterfactualWorldviewCodebook_2021-07-12.docx?raw=true)
 
@@ -24,5 +24,4 @@ This repository contains the data behind [COVID-19 Tournament] (https://predicti
 ## Analyses
 
 * [R Markdown file of the main analyses, in the order they appear in the manuscript](https://github.com/grossmania/Forecasting-Tournament/blob/8db528c9055e227d7258d1fdcf836398f9f3d09e/Wave%201+2%20Analyses%20FINAL%20FOR%20MANUSCRIPT.Rmd)
-* [R Markdown file of analyses of a correlation-based index of inaccuracy reported in the supplement](https://grossmania.github.io/Forecasting-Tournament/Correlation-Coefficients-by-Teams-and-Tasks.html)
-
+* [R Markdown file of analyses of a correlation-based index of inaccuracy reported in the supplement](https://github.com/grossmania/Forecasting-Tournament/blob/d9b9c6eea457a6c7cddeea2274bad3ea4cb25ff5/Correlation%20Coefficients%20by%20Teams%20and%20Tasks.Rmd)
