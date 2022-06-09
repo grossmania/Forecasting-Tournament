@@ -1085,6 +1085,7 @@ plot.all
 ```
 
 ## Visualizations of MASE versus benchmarks
+
 ```{r Phases 1 and 2 along with sims}
 ###############################################################
 #graph individual predictions and ground truth markers - FIGURE 2 IN THE SUPPLEMENT in the PAPER, as well as one FIGURE in the MAIN TEXT)
@@ -1128,72 +1129,10 @@ data.phase1.MASE.explaycomp
 
 eff_size(emmeans(model.layVSsci.phase1,pairwise ~isExpert.factor|domain),sigma = sigma(model.layVSsci.phase1), edf =df.residual(model.layVSsci.phase1) ) #using the smallest DF among the three
 
-#supplementary Bayesfactor scores via BIC approximation of frequentist models for specific domains
-#life satifaction
-#m0.lifesat<-lm(log(MASE1_w1)~1, data=subset(phase1,domain=="lifesat" &!is.na(isExpert.factor))) #base model just considers random intercept
-#m1.lifesat<-lm(log(MASE1_w1)~isExpert.factor, data=subset(phase1,domain=="lifesat")) #contrast
-#bayesfactor_models(m1.lifesat, denominator = m0.lifesat) #strong evidence for alternative
-#pos affect
-#m0.posaffect<-lm(log(MASE1_w1)~1, data=subset(phase1,domain=="posaffect" &!is.na(isExpert.factor))) #base model just considers random intercept
-#m1.posaffect<-lm(log(MASE1_w1)~isExpert.factor, data=subset(phase1,domain=="posaffect")) #contrast
-#bayesfactor_models(m1.posaffect, denominator = m0.posaffect) #anecdotal evidence for null
-#neg affect
-#m0.negaffect<-lm(log(MASE1_w1)~1, data=subset(phase1,domain=="negaffect" &!is.na(isExpert.factor))) #base model just considers random intercept
-#m1.negaffect<-lm(log(MASE1_w1)~isExpert.factor, data=subset(phase1,domain=="negaffect")) #contrast
-#bayesfactor_models(m1.negaffect, denominator = m0.negaffect) #Strong evidence for null hypothesis
-#eafric    
-#m0.eafric<-lm(log(MASE1_w1)~1, data=subset(phase1,domain=="eafric" &!is.na(isExpert.factor))) #base model just considers random intercept
-#m1.eafric<-lm(log(MASE1_w1)~isExpert.factor, data=subset(phase1,domain=="eafric")) #contrast
-#bayesfactor_models(m1.eafric, denominator = m0.eafric) #anecdotal evidence for null hypothesis
-
-#easian
-#m0.easian<-lm(log(MASE1_w1)~1, data=subset(phase1,domain=="easian" &!is.na(isExpert.factor))) #base model just considers random intercept
-#m1.easian<-lm(log(MASE1_w1)~isExpert.factor, data=subset(phase1,domain=="easian")) #contrast
-#bayesfactor_models(m1.easian, denominator = m0.easian) #moderate evidence for alt hypothesis
-
-#egend
-#m0.egend<-lm(log(MASE1_w1)~1, data=subset(phase1,domain=="egend" &!is.na(isExpert.factor))) #base model just considers random intercept
-#m1.egend<-lm(log(MASE1_w1)~isExpert.factor, data=subset(phase1,domain=="egend")) #contrast
-#bayesfactor_models(m1.egend, denominator = m0.egend) #anecdotal evidence for alt hypothesis
-
-#iafric
-#m0.iafric<-lm(log(MASE1_w1)~1, data=subset(phase1,domain=="iafric" &!is.na(isExpert.factor))) #base model just considers random intercept
-#m1.iafric<-lm(log(MASE1_w1)~isExpert.factor, data=subset(phase1,domain=="iafric")) #contrast
-#bayesfactor_models(m1.iafric, denominator = m0.iafric) #moderate evidence for null hypothesis
-
-#iasian
-#m0.iasian<-lm(log(MASE1_w1)~1, data=subset(phase1,domain=="iasian" &!is.na(isExpert.factor))) #base model just considers random intercept
-#m1.iasian<-lm(log(MASE1_w1)~isExpert.factor, data=subset(phase1,domain=="iasian")) #contrast
-#bayesfactor_models(m1.iasian, denominator = m0.iasian) #anecdotal evidence for alt hypothesis
-
-#igend
-#m0.igend<-lm(log(MASE1_w1)~1, data=subset(phase1,domain=="igend" &!is.na(isExpert.factor))) #base model just considers random intercept
-#m1.igend<-lm(log(MASE1_w1)~isExpert.factor, data=subset(phase1,domain=="igend")) #contrast
-#bayesfactor_models(m1.igend, denominator = m0.igend) #anecdotal evidence for alt hypothesis
-
-#ideoldem
-#m0.ideoldem<-lm(log(MASE1_w1)~1, data=subset(phase1,domain=="ideoldem" &!is.na(isExpert.factor))) #base model just considers random intercept
-#m1.ideoldem<-lm(log(MASE1_w1)~isExpert.factor, data=subset(phase1,domain=="ideoldem")) #contrast
-#bayesfactor_models(m1.ideoldem, denominator = m0.ideoldem) #anecdotal evidence for null hypothesis
-
-#ideolrep
-#m0.ideolrep<-lm(log(MASE1_w1)~1, data=subset(phase1,domain=="ideolrep" &!is.na(isExpert.factor))) #base model just considers random intercept
-#m1.ideolrep<-lm(log(MASE1_w1)~isExpert.factor, data=subset(phase1,domain=="ideolrep")) #contrast
-#bayesfactor_models(m1.ideolrep, denominator = m0.ideolrep) #anecdotal evidence for null hypothesis
-
-#polar
-#m0.polar<-lm(log(MASE1_w1)~1, data=subset(phase1,domain=="polar" &!is.na(isExpert.factor))) #base model just considers random intercept
-#m1.polar<-lm(log(MASE1_w1)~isExpert.factor, data=subset(phase1,domain=="polar")) #contrast
-#bayesfactor_models(m1.polar, denominator = m0.polar) #moderate evidence for alt hypothesis
-
 #test Bayesian version of full model and estimated simple effects.
-library(rstanarm)
 phase1$MASE1_w1_log<-log(phase1$MASE1_w1)
-stan_model <- stan_lmer(MASE1_w1_log ~ domain*isExpert.factor + (1 | ResponseId), data = phase1,
-                        prior = cauchy(0,c(0.707,0.707,0.5),          # as per Rouder et al., 2012
-                        prior_intercept = student_t(3,0,10),          # weakly informative
-                        prior_aux = exponential(.1),                  # weakly informative
-                        prior_covariance = decov(1,1,1,1))            # weakly informative
+stan_model <- stan_lmer(MASE1_w1_log ~ domain*isExpert.factor + (1|ResponseId), data = phase1,prior = cauchy(0,c(0.707,0.707,0.5),          # as per Rouder et al., 2012, weakly informative
+prior_intercept = student_t(3,0,10),prior_aux = exponential(.1),prior_covariance = decov(1,1,1,1))   
                         
 em_expert_simple <- emmeans(stan_model, pairwise~isExpert.factor | domain)
 
@@ -1280,12 +1219,14 @@ means.compare.to.naive.top %>%
 #scientists
 means.compare.to.naive %>%  subset(Type=="Scientists")%>%  
  ggplot(aes(x = response, y = domain, color = Type, shape=Type))+
- geom_pointrange(aes(xmin=lower.CL, xmax=upper.CL), position=pd)+  theme_minimal(base_size = 14)+geom_vline(xintercept =1, linetype='dashed', color='red',14)+theme(legend.position="bottom")+scale_color_jama()+  labs(x="Forecasting Error - MASE (M +/- 95%CI)",shape="",color="")+scale_y_discrete(labels=labeling, name="")+facet_grid(~Wave)
+ geom_pointrange(aes(xmin=lower.CL, xmax=upper.CL), position=pd)+  theme_minimal(base_size = 14)+geom_vline(xintercept =1, linetype='dotted', color='black',14)+
+  geom_vline(xintercept =1.7665, linetype='dashed', color='blue',16)+theme(legend.position="bottom")+scale_color_jama()+  labs(x="Forecasting Error - MASE (M +/- 95%CI)",shape="",color="")+scale_y_discrete(labels=labeling, name="")+facet_grid(~Wave)
 
 #scientists & lay crowd
 means.compare.to.naive %>%  subset(Type=="Scientists"|Type=="Naive Crowd")%>%  
  ggplot(aes(x = response, y = domain, color = Type, shape=Type))+
- geom_pointrange(aes(xmin=lower.CL, xmax=upper.CL), position=pd)+  theme_minimal(base_size = 14)+geom_vline(xintercept =1, linetype='dashed', color='red',14)+theme(legend.position="bottom")+scale_color_jama()+  labs(x="Forecasting Error - MASE (M +/- 95%CI)",shape="",color="")+scale_y_discrete(labels=labeling, name="")+facet_grid(~Wave)
+ geom_pointrange(aes(xmin=lower.CL, xmax=upper.CL), position=pd)+  theme_minimal(base_size = 14)+geom_vline(xintercept =1, linetype='dotted', color='black',14)+
+  geom_vline(xintercept =1.7665, linetype='dashed', color='blue',16)+theme(legend.position="bottom")+scale_color_jama()+  labs(x="Forecasting Error - MASE (M +/- 95%CI)",shape="",color="")+scale_y_discrete(labels=labeling, name="")+facet_grid(~Wave)
 ###############################################################
 #graph individual predictions and ground truth markers - FIGURE 2 IN THE SUPPLEMENT in the PAPER, as well as one FIGURE in the MAIN TEXT)
 #ALSO: analyses of scientists versus lay people in tournament 1
@@ -2149,6 +2090,23 @@ psych::describe(phase2.exp.dem$team_size.coded)
 #n forecasted domains
 psych::describe(phase1.exp.dem$n_domains)
 psych::describe(phase2.exp.dem$n_domains)
+
+#% participating teams per domain (out of 86/120
+phase1_exp %>% dplyr::select(team_name, domain) %>% dplyr::group_by(domain) %>% 
+  summarize_all(~ n()) %>% mutate(perc = team_name/86*100)
+
+dat_phase2 %>% dplyr::select(team_name, domain) %>% dplyr::group_by(domain) %>% 
+  summarize_all(~ n()) %>% mutate(perc = team_name/120*100)
+
+# % teams with expertise
+
+phase1_exp %>% dplyr::select(team_name, domain,Domain_Publications) %>% dplyr::group_by(domain,Domain_Publications) %>% 
+  summarize_all(~ n()) %>% dplyr::group_by(domain) %>% mutate(perc = team_name/sum(team_name)*100)%>% arrange(-Domain_Publications) %>% filter(Domain_Publications ==1)
+
+proportions(xtabs( ~ domain+Domain_Publications,phase1_exp),"domain")*100 #by domain
+
+proportions(xtabs( ~ domain+Domain_Publications,dat_phase2),"domain")*100 #by domain
+
 
 #age
 psych::describe(phase1.exp.dem$team_Age)
