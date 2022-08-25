@@ -967,38 +967,9 @@ dat_long$phaseF[dat_long$phase==2]<-"Follow-up Tournament\n(Nov 2020)"
 objective$phaseF<-"Ground Truth"
 dat_longX<-dat_long %>% subset(!is.na(Method.code)& Method.code!="Ground Truth"& Method.code!="Naive-linear"&Method.code!="Naive-rfw" &Method.code!="Lay People"& Month %in% c(1:12)) 
                                #to get extra scores for indiv point visualization 
-dat_longX<-dat_longX %>%subset(!(domain=="lifesat" & value <6)) #cut off scores below 5 for life satisfaction for visualization of trends
+dat_longX<-dat_longX %>%subset(!(domain=="lifesat" & value <5.5)) #cut off scores below 5 for life satisfaction for visualization of trends
 
 dat_longX$GT<-"Forecasts from\nIndiv. Teams"
-
-dat_long$date[dat_long$Month==1] <- "05-2020"
-dat_long$date[dat_long$Month==2] <- "06-2020"
-dat_long$date[dat_long$Month==3] <- "07-2020"
-dat_long$date[dat_long$Month==4] <- "08-2020"
-dat_long$date[dat_long$Month==5] <- "09-2020"
-dat_long$date[dat_long$Month==6] <- "10-2020"
-dat_long$date[dat_long$Month==7] <- "11-2020"
-dat_long$date[dat_long$Month==8] <- "12-2020"
-dat_long$date[dat_long$Month==9] <- "01-2021"
-dat_long$date[dat_long$Month==10] <- "02-2021"
-dat_long$date[dat_long$Month==11] <- "03-2021"
-dat_long$date[dat_long$Month==12] <- "04-2021"
-
-dat_long$date<-my(dat_long$date)
-objective$date[objective$Month==1] <- "05-2020"
-objective$date[objective$Month==2] <- "06-2020"
-objective$date[objective$Month==3] <- "07-2020"
-objective$date[objective$Month==4] <- "08-2020"
-objective$date[objective$Month==5] <- "09-2020"
-objective$date[objective$Month==6] <- "10-2020"
-objective$date[objective$Month==7] <- "11-2020"
-objective$date[objective$Month==8] <- "12-2020"
-objective$date[objective$Month==9] <- "01-2021"
-objective$date[objective$Month==10] <- "02-2021"
-objective$date[objective$Month==11] <- "03-2021"
-objective$date[objective$Month==12] <- "04-2021"
-objective$date<-my(objective$date)
-
 
 dat_long %>% subset(!is.na(Method.code)& Method.code!="Ground Truth"& Method.code!="Naive-linear"&Method.code!="Naive-rfw" &Method.code!="Lay People"& Month %in% c(1:12)) %>% 
    ggplot(aes(x = Month0, y = value, colour = phaseF, fill=phaseF))+geom_line(data=dat_longX,alpha=.09,aes(x = Month0, group=team_name), na.rm=TRUE)+  #geom_point(data = dat_longX,alpha=.1,aes(x = Month0, group=team_name)) +
@@ -1035,27 +1006,36 @@ hist.t<-subset(hist_long,Month %in% c(-2:-1))
 hist.t$phaseF<-"Historical"
 
 # with 3 historical months before the tournament
+
 hist_long%>% subset(Month %in% c(-2:12))%>%
    ggplot(aes(x = Month, y = value, colour = phaseF, fill=phaseF))+  
   theme_pubclean()+
-  geom_line(data=objective.t,alpha=.8,aes(x = Month), na.rm=TRUE)+  geom_point(data=objective.t,alpha=.9,aes(x = Month)) +geom_line(data=hist.t,alpha=.8,aes(x = Month), na.rm=TRUE)+  geom_point(data=hist.t,alpha=.9,aes(x = Month))+   theme(legend.position="bottom") +scale_color_d3()+scale_fill_d3()+ scale_x_continuous(breaks=c(-2:12), labels =c("Feb","","","May","","","Aug","","","Nov","","","Feb","",""))+  labs(colour = "",fill="", x="",y="Forecasted & Observed Change")+facet_wrap(~domain, scales = "free_y", nrow = 4, labeller=labeller(domain=labels))+ geom_line(data=dat_longX,alpha=.09,aes(x = Month, group=team_name), na.rm=TRUE)+  #geom_point(data = dat_longX,alpha=.1,aes(x = Month0, group=team_name)) +
+  geom_line(data=objective.t,alpha=.8,aes(x = Month), na.rm=TRUE)+  geom_point(data=objective.t,alpha=.9,aes(x = Month)) +geom_line(data=hist.t,alpha=.8,aes(x = Month), na.rm=TRUE)+  geom_point(data=hist.t,alpha=.9,aes(x = Month))+   theme(legend.position="bottom") +scale_color_d3()+scale_fill_d3()+ scale_x_continuous(breaks=c(-2:12), labels =c("Feb","","","May","","","Aug","","","Nov","","","Feb","",""))+  labs(colour = "",fill="", x="",y="Forecasted & Observed Change")+facet_wrap(~domain, scales = "free_y", nrow = 4, labeller=labeller(domain=labels))+ 
+  geom_line(data=subset(dat_longX,phase==1),aes(x = Month, group=team_name), alpha=.5, color="#aec7e8", na.rm=TRUE)+ #phase1 in light blue 
+    geom_line(data=subset(dat_longX,phase==2),aes(x = Month, group=team_name), alpha=.5, color="#ffbb78", na.rm=TRUE)+ #phase1 in light orange 
   theme(axis.text.x = element_text(angle=45, vjust=.5, hjust=1, size=rel(0.8)))+geom_smooth(data=dat_long %>% subset(!is.na(Method.code)& Method.code!="Ground Truth"& Method.code!="Naive-linear"&Method.code!="Naive-rfw" &Method.code!="Lay People"& Month %in% c(-2:12)), aes(x = Month, y = value, colour = phaseF, fill=phaseF),method = "loess") 
+
+
 
 # select just negative affect 
 plot.negaffect<-hist_long%>% subset(Month %in% c(-2:12) & domain %in% c("negaffect"))%>%
    ggplot(aes(x = Month, y = value, colour = phaseF, fill=phaseF))+  
   theme_pubclean()+
-  geom_line(data=subset(objective.t,domain %in% c("negaffect")),alpha=.8,aes(x = Month), na.rm=TRUE)+  geom_point(data=subset(objective.t, domain %in% c("negaffect")),alpha=.9,aes(x = Month)) +geom_line(data=subset(hist.t,domain %in% c("negaffect")),alpha=.8,aes(x = Month), na.rm=TRUE)+  geom_point(data=subset(hist.t,domain %in% c("negaffect")),alpha=.9,aes(x = Month))+   theme(legend.position="bottom") +  theme(legend.position="bottom", legend.text = element_text(size=7)) +scale_color_d3()+scale_fill_d3()+ scale_x_continuous(breaks=c(-2:12), labels =c("Feb","","","May","","","Aug","","","Nov","","","Feb","",""))+  labs(colour = "",fill="", x="",y="z-score", title="Negative Affect", subtitle = "Standartized against historical M/SD")+ geom_line(data=subset(dat_longX, domain %in% c("negaffect")),alpha=.13,aes(x = Month, group=team_name), na.rm=TRUE)+  #geom_point(data = dat_longX,alpha=.1,aes(x = Month0, group=team_name)) +
-  theme(axis.text.x = element_text(angle=45, vjust=.5, hjust=1, size=rel(0.8)))+geom_smooth(data=dat_long %>% subset(!is.na(Method.code)& Method.code!="Ground Truth"& Method.code!="Naive-linear"&Method.code!="Naive-rfw" &Method.code!="Lay People"& Month %in% c(-2:12) & domain %in% c("negaffect")), aes(x = Month, y = value, colour = phaseF, fill=phaseF),method = "loess") +theme(plot.title = element_text(hjust = 0.5),plot.subtitle = element_text(hjust = 0.5))
+  geom_line(data=subset(objective.t,domain %in% c("negaffect")),aes(x = Month), na.rm=TRUE)+  geom_point(data=subset(objective.t, domain %in% c("negaffect")),aes(x = Month)) +geom_line(data=subset(hist.t,domain %in% c("negaffect")),aes(x = Month), na.rm=TRUE)+  geom_point(data=subset(hist.t,domain %in% c("negaffect")),aes(x = Month))+   theme(legend.position="bottom") +  theme(legend.position="bottom", legend.text = element_text(size=7)) +scale_color_d3()+scale_fill_d3()+ scale_x_continuous(breaks=c(-2:12), labels =c("Feb","","","May","","","Aug","","","Nov","","","Feb","",""))+  labs(colour = "",fill="", x="",y="z-score", title="Negative Affect", subtitle = "Standartized against historical M/SD")+ 
+  geom_line(data=subset(dat_longX,phase==1 & domain %in% c("negaffect")),aes(x = Month, group=team_name), alpha=.4, color="#aec7e8", na.rm=TRUE)+ #phase1 in light blue 
+    geom_line(data=subset(dat_longX,phase==2 &domain %in% c("negaffect")),aes(x = Month, group=team_name), alpha=.4, color="#ffbb78", na.rm=TRUE)+ #phase1 in light orange 
+  theme(axis.text.x = element_text(angle=45, vjust=.5, hjust=1, size=rel(0.8)))+geom_smooth(data=dat_long %>% subset(!is.na(Method.code)& Method.code!="Ground Truth"& Method.code!="Naive-linear"&Method.code!="Naive-rfw" &Method.code!="Lay People"& Month %in% c(-2:12) & domain %in% c("negaffect")), aes(x = Month, y = value, colour = phaseF, fill=phaseF),method = "loess", alpha=.5) +theme(plot.title = element_text(hjust = 0.5),plot.subtitle = element_text(hjust = 0.5))
 
 # select pos affect and life satisfaction
 
 plot.LS.and.posaffect<-hist_long%>% subset(Month %in% c(-2:12)& domain %in% c("posaffect", "lifesat"))%>%
    ggplot(aes(x = Month, y = value, colour = phaseF, fill=phaseF))+  
   theme_pubclean()+
- geom_line(data=subset(objective.t,domain %in% c("posaffect", "lifesat")),alpha=.8,aes(x = Month), na.rm=TRUE)+  geom_point(data=subset(objective.t, domain %in% c("posaffect", "lifesat")),alpha=.9,aes(x = Month)) +geom_line(data=subset(hist.t,domain %in% c("posaffect", "lifesat")),alpha=.8,aes(x = Month), na.rm=TRUE)+  geom_point(data=subset(hist.t,domain %in% c("posaffect", "lifesat")),alpha=.9,aes(x = Month))+
-  theme(legend.position="none") +scale_color_d3()+scale_fill_d3()+ scale_x_continuous(breaks=c(-2:12), labels =c("Feb","","","May","","","Aug","","","Nov","","","Feb","",""))+  labs(colour = "",fill="", x="",y="")+facet_wrap(~domain, scales = "free_y", nrow = 4, labeller=labeller(domain=labels))+ geom_line(data=subset(dat_longX, domain %in% c("posaffect", "lifesat")) ,alpha=.09,aes(x = Month, group=team_name), na.rm=TRUE)+  #geom_point(data = dat_longX,alpha=.1,aes(x = Month0, group=team_name)) +
-  theme(axis.text.x = element_text(angle=45, vjust=.5, hjust=1, size=rel(0.8)))+geom_smooth(data=dat_long  %>% subset(!is.na(Method.code)& Method.code!="Ground Truth"& Method.code!="Naive-linear"&Method.code!="Naive-rfw" &Method.code!="Lay People"& Month %in% c(-2:12)& domain %in% c("posaffect", "lifesat")), aes(x = Month, y = value, colour = phaseF, fill=phaseF),method = "loess") 
+geom_line(data=subset(dat_longX,phase==1 & domain %in% c("posaffect", "lifesat")),aes(x = Month, group=team_name), alpha=.4, color="#aec7e8", na.rm=TRUE)+ #phase1 in light blue 
+    geom_line(data=subset(dat_longX,phase==2 &domain %in% c("posaffect", "lifesat")),aes(x = Month, group=team_name), alpha=.4, color="#ffbb78", na.rm=TRUE)+ #phase1 in light orange
+  geom_smooth(data=dat_long  %>% subset(!is.na(Method.code)& Method.code!="Ground Truth"& Method.code!="Naive-linear"&Method.code!="Naive-rfw" &Method.code!="Lay People"& Month %in% c(-2:12)& domain %in% c("posaffect", "lifesat")), aes(x = Month, y = value, colour = phaseF, fill=phaseF),method = "loess",alpha=.5)+
+  geom_line(data=subset(objective.t,domain %in% c("posaffect", "lifesat")),aes(x = Month), na.rm=TRUE)+  geom_point(data=subset(objective.t, domain %in% c("posaffect", "lifesat")),aes(x = Month)) +geom_line(data=subset(hist.t,domain %in% c("posaffect", "lifesat")),aes(x = Month), na.rm=TRUE)+  geom_point(data=subset(hist.t,domain %in% c("posaffect", "lifesat")),aes(x = Month))+
+  theme(legend.position="none") +scale_color_d3()+scale_fill_d3()+ scale_x_continuous(breaks=c(-2:12), labels =c("Feb","","","May","","","Aug","","","Nov","","","Feb","",""))+  labs(colour = "",fill="", x="",y="")+facet_wrap(~domain, scales = "free_y", nrow = 4, labeller=labeller(domain=labels))+ theme(axis.text.x = element_text(angle=45, vjust=.5, hjust=1, size=rel(0.8)))
 
 plot.wb<-ggarrange(plot.negaffect,plot.LS.and.posaffect,  ncol=2, nrow=1,widths=c(2,1))
 #graph for slides
@@ -1065,9 +1045,15 @@ plot.wb<-ggarrange(plot.negaffect,plot.LS.and.posaffect,  ncol=2, nrow=1,widths=
 plot.negaffectX<-hist_long%>% subset(Month %in% c(-2:12) & domain %in% c("negaffect"))%>%
    ggplot(aes(x = Month, y = value, colour = phaseF, fill=phaseF))+  
   theme_pubclean()+
-  geom_line(data=subset(objective.t,domain %in% c("negaffect")),alpha=.8,aes(x = Month), na.rm=TRUE)+  geom_point(data=subset(objective.t, domain %in% c("negaffect")),alpha=.9,aes(x = Month)) +geom_line(data=subset(hist.t,domain %in% c("negaffect")),alpha=.8,aes(x = Month), na.rm=TRUE)+  geom_point(data=subset(hist.t,domain %in% c("negaffect")),alpha=.9,aes(x = Month))+
-  theme(legend.position="none") +scale_color_d3()+scale_fill_d3()+ scale_x_continuous(breaks=c(-2:12), labels =c("Feb","","","May","","","Aug","","","Nov","","","Feb","",""))+  labs(colour = "",fill="", x="",y="z-score", title="Negative Affect", subtitle = "Standardized against historical M/SD")+ geom_line(data=subset(dat_longX, domain %in% c("negaffect")),alpha=.13,aes(x = Month, group=team_name), na.rm=TRUE)+  #geom_point(data = dat_longX,alpha=.1,aes(x = Month0, group=team_name)) +
-  theme(axis.text.x = element_text(angle=45, vjust=.5, hjust=1, size=rel(0.8)))+geom_smooth(data=dat_long %>% subset(!is.na(Method.code)& Method.code!="Ground Truth"& Method.code!="Naive-linear"&Method.code!="Naive-rfw" &Method.code!="Lay People"& Month %in% c(-2:12) & domain %in% c("negaffect")), aes(x = Month, y = value, colour = phaseF, fill=phaseF),method = "loess") +theme(plot.title = element_text(hjust = 0.5),plot.subtitle = element_text(hjust = 0.5))
+  geom_line(data=subset(dat_longX,phase==1 & domain %in% c("negaffect")),aes(x = Month, group=team_name), alpha=.4, color="#aec7e8", na.rm=TRUE)+ #phase1 in light blue 
+    geom_line(data=subset(dat_longX,phase==2 &domain %in% c("negaffect")),aes(x = Month, group=team_name), alpha=.4, color="#ffbb78", na.rm=TRUE)+ #phase1 in light orange 
+  geom_smooth(data=dat_long %>% subset(!is.na(Method.code)& Method.code!="Ground Truth"& Method.code!="Naive-linear"&Method.code!="Naive-rfw" &Method.code!="Lay People"& Month %in% c(-2:12) & domain %in% c("negaffect")), aes(x = Month, y = value, colour = phaseF, fill=phaseF),method = "loess",alpha=.5) +
+  geom_line(data=subset(objective.t,domain %in% c("negaffect")),aes(x = Month), na.rm=TRUE)+  geom_point(data=subset(objective.t, domain %in% c("negaffect")),aes(x = Month)) +geom_line(data=subset(hist.t,domain %in% c("negaffect")),aes(x = Month), na.rm=TRUE)+  geom_point(data=subset(hist.t,domain %in% c("negaffect")),aes(x = Month))+
+  theme(legend.position="none") +scale_color_d3()+scale_fill_d3()+ scale_x_continuous(breaks=c(-2:12), labels =c("Feb","","","May","","","Aug","","","Nov","","","Feb","",""))+  labs(colour = "",fill="", x="",y="z-score", title="Negative Affect", subtitle = "Standardized against historical M/SD")+ 
+  theme(axis.text.x = element_text(angle=45, vjust=.5, hjust=1, size=rel(0.8)))+theme(plot.title = element_text(hjust = 0.5),plot.subtitle = element_text(hjust = 0.5))
+
+
+
 
 plot.wbX<-ggarrange(plot.negaffectX,plot.LS.and.posaffect,  ncol=2, nrow=1,widths=c(1.8,1))
 
@@ -1076,15 +1062,18 @@ plot.all.but.WB<-hist_long%>% subset(Month %in% c(-2:12)& domain %in% c("egend",
                                     "igend","iasian","iafric","polar","ideoldem","ideolrep"))%>%
    ggplot(aes(x = Month, y = value, colour = phaseF, fill=phaseF))+  
   theme_pubclean()+
+  geom_line(data=subset(dat_longX,phase==1 & domain %in% c("egend","easian","eafric",
+                                    "igend","iasian","iafric","polar","ideoldem","ideolrep")),aes(x = Month, group=team_name), alpha=.4, color="#aec7e8", na.rm=TRUE)+ #phase1 in light blue 
+    geom_line(data=subset(dat_longX,phase==2 &domain %in% c("egend","easian","eafric",
+                                    "igend","iasian","iafric","polar","ideoldem","ideolrep")),aes(x = Month, group=team_name), alpha=.4, color="#ffbb78", na.rm=TRUE)+ #phase1 in light orange 
+  geom_smooth(data=dat_long  %>% subset(!is.na(Method.code)& Method.code!="Ground Truth"& Method.code!="Naive-linear"&Method.code!="Naive-rfw" &Method.code!="Lay People"& Month %in% c(-2:12)& domain %in% c("egend","easian","eafric",
+                                    "igend","iasian","iafric","polar","ideoldem","ideolrep")), aes(x = Month, y = value, colour = phaseF, fill=phaseF),method = "loess",alpha=.5)+
   geom_line(data=subset(objective.t,domain %in% c("egend","easian","eafric",
-                                    "igend","iasian","iafric","polar","ideoldem","ideolrep")),alpha=.8,aes(x = Month), na.rm=TRUE)+  geom_point(data=subset(objective.t, domain %in% c("egend","easian","eafric",
-                                    "igend","iasian","iafric","polar","ideoldem","ideolrep")),alpha=.9,aes(x = Month)) +geom_line(data=subset(hist.t,domain %in% c("egend","easian","eafric",
-                                    "igend","iasian","iafric","polar","ideoldem","ideolrep")),alpha=.8,aes(x = Month), na.rm=TRUE)+  geom_point(data=subset(hist.t,domain %in% c("egend","easian","eafric",
-                                    "igend","iasian","iafric","polar","ideoldem","ideolrep")),alpha=.9,aes(x = Month))+
-  theme(legend.position="bottom") +scale_color_d3()+scale_fill_d3()+ scale_x_continuous(breaks=c(-2:12), labels =c("Feb","","","May","","","Aug","","","Nov","","","Feb","",""))+  labs(colour = "",fill="", x="",y="")+facet_wrap(~domain, scales = "free_y", nrow = 4, labeller=labeller(domain=labels))+ geom_line(data=subset(dat_longX, domain %in% c("egend","easian","eafric",
-                                    "igend","iasian","iafric","polar","ideoldem","ideolrep")) ,alpha=.09,aes(x = Month, group=team_name), na.rm=TRUE)+  #geom_point(data = dat_longX,alpha=.1,aes(x = Month0, group=team_name)) +
-  theme(axis.text.x = element_text(angle=45, vjust=.5, hjust=1, size=rel(0.8)))+geom_smooth(data=dat_long  %>% subset(!is.na(Method.code)& Method.code!="Ground Truth"& Method.code!="Naive-linear"&Method.code!="Naive-rfw" &Method.code!="Lay People"& Month %in% c(-2:12)& domain %in% c("egend","easian","eafric",
-                                    "igend","iasian","iafric","polar","ideoldem","ideolrep")), aes(x = Month, y = value, colour = phaseF, fill=phaseF),method = "loess") 
+                                    "igend","iasian","iafric","polar","ideoldem","ideolrep")),aes(x = Month), na.rm=TRUE)+  geom_point(data=subset(objective.t, domain %in% c("egend","easian","eafric",
+                                    "igend","iasian","iafric","polar","ideoldem","ideolrep")),aes(x = Month)) +geom_line(data=subset(hist.t,domain %in% c("egend","easian","eafric",
+                                    "igend","iasian","iafric","polar","ideoldem","ideolrep")),aes(x = Month), na.rm=TRUE)+  geom_point(data=subset(hist.t,domain %in% c("egend","easian","eafric",
+                                    "igend","iasian","iafric","polar","ideoldem","ideolrep")),aes(x = Month))+
+  theme(legend.position="bottom") +scale_color_d3()+scale_fill_d3()+ scale_x_continuous(breaks=c(-2:12), labels =c("Feb","","","May","","","Aug","","","Nov","","","Feb","",""))+  labs(colour = "",fill="", x="",y="")+facet_wrap(~domain, scales = "free_y", nrow = 4, labeller=labeller(domain=labels))+ theme(axis.text.x = element_text(angle=45, vjust=.5, hjust=1, size=rel(0.8)))
 
 #combine into megaplot
 ### Fig. S1. in the manuscript
