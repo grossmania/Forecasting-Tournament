@@ -374,6 +374,7 @@ top.5.MASE.t1 <- phase1 %>%
   dplyr::slice_head(n = 5) %>% dplyr::select(team_name,MASE1_w1,domain,compare_to_naive_linear_MASE,compare_to_naive_rwf_MASE,team_size.coded,discipline,previous_tournament.coded,Method.code,model,theory,numpred,parameters,Method.complex,team_expertise,n_domains)
 
 # Visualize top 5 winners (using MASE scores) by domain and approach.
+#### Fig. S4. in manuscript
 top.5.MASE.t1  %>% 
   ggplot(aes(x=domain, y=MASE1_w1, colour=Method.code)) +  
   geom_point(size=3, position=pd, alpha = .5) + 
@@ -389,6 +390,8 @@ proportions(xtabs( ~ Method.code,top.5.MASE.t1))*100 #in total
 proportions(xtabs( ~ domain+Method.code,top.5.MASE.t1),"domain")*100 #by domain
 
 # Visualize top 5 predictions for each domain as they compare to baseline models such as naive linear model and random walk. 
+#### Fig. S5. in manuscript
+
 top.5.MASE.t1  %>%
   ggplot(aes(x=domain, y=MASE1_w1, colour=compare_to_naive_linear_MASE, shape =compare_to_naive_rwf_MASE)) +  
   geom_point(size=3, position=pd, alpha = .5) + 
@@ -399,6 +402,8 @@ top.5.MASE.t1  %>%
 
 
 # Visualize top 5 predictions for each domain by discipline
+#### Fig. S6. in manuscript
+
 top.5.MASE.t1 %>%  
   ggplot(aes(x=domain, y=MASE1_w1, colour=discipline)) +  
   geom_point(size=3, position=pd, alpha = .5) + 
@@ -414,6 +419,8 @@ proportions(xtabs( ~ discipline, top.5.MASE.t1))*100 #in total
 proportions(xtabs( ~ domain+discipline,top.5.MASE.t1),"domain")*100 #by domain
 
 # Visualize top 5 predictions for each domain as a function of previous forecasting experience
+#### Fig. S7. in manuscript
+
 top.5.MASE.t1 %>%  
   ggplot(aes(x=domain, y=MASE1_w1, colour=as.factor(previous_tournament.coded))) +  
   geom_point(size=3, position=pd, alpha = .5) + 
@@ -576,6 +583,8 @@ top.5.MASE.t2 <- academic_only %>%
   dplyr::slice_head(n = 5) %>% dplyr::select(team_name,MASE1_w2,domain,n_domains,compare_to_naive_linear_MASE_w2,compare_to_naive_rwf_MASE,team_size.coded,discipline,previous_tournament.coded,Method.code,model,theory,numpred,parameters,Method.complex,team_expertise,phase,revised)
   
 # Visualize top 5 performers as a function of method used.
+#### Fig. S8. in manuscript
+
 top.5.MASE.t2 %>%  
   ggplot(aes(x=domain, y=MASE1_w2, colour=Method.code)) +  
   geom_point(size=3, position=pd, alpha = .5) + 
@@ -592,6 +601,8 @@ proportions(xtabs( ~ domain+Method.code,top.5.MASE.t2),"domain")*100 #by domain
 
 
 # Top 5 Performance compared against naive linear and random walk by domain.
+#### Fig. S9. in manuscript
+
 top.5.MASE.t2 %>% 
   ggplot(aes(x=domain, y=MASE1_w2, colour=compare_to_naive_linear_MASE_w2, shape =compare_to_naive_rwf_MASE )) +  
   geom_point(size=3, position=pd, alpha = .5) + 
@@ -602,6 +613,8 @@ top.5.MASE.t2 %>%
   ylab("MASE")
 
 # Top 5 Performance by discipline and domain.
+#### Fig. S10. in manuscript
+
 top.5.MASE.t2 %>%  
   ggplot(aes(x=domain, y=MASE1_w2, colour=discipline)) +  
   geom_point(size=3, position=pd, alpha = .5) + 
@@ -617,6 +630,8 @@ proportions(xtabs( ~ discipline,top.5.MASE.t2))*100 #in total
 proportions(xtabs( ~ domain+discipline,top.5.MASE.t2),"domain")*100 #by domain
 
 # Performance of top 5 by prior forecasting experience and domain.
+#### Fig. S11. in manuscript
+
 top.5.MASE.t2  %>% 
   ggplot(aes(x=domain, y=MASE1_w2, colour=as.factor(previous_tournament.coded))) +  
   geom_point(size=3, position=pd, alpha = .5) + 
@@ -1072,6 +1087,7 @@ plot.all.but.WB<-hist_long%>% subset(Month %in% c(-2:12)& domain %in% c("egend",
                                     "igend","iasian","iafric","polar","ideoldem","ideolrep")), aes(x = Month, y = value, colour = phaseF, fill=phaseF),method = "loess") 
 
 #combine into megaplot
+### Fig. S1. in the manuscript
 
 plot.all<-ggarrange(plot.wbX,plot.all.but.WB,  ncol=1, nrow=2, heights = c(1.2,1.8),  common.legend = TRUE, legend="bottom")
 
@@ -1184,6 +1200,7 @@ labeling<-c(
   posaffect = "Positive Affect")
 
 #plot for the supplement
+#### Fig. S2. in the manuscript
 means.compare.to.naive %>%  
  ggplot(aes(x = response, y = domain, color = Type, shape=Type))+
  geom_pointrange(aes(xmin=lower.CL, xmax=upper.CL), position=pd)+  theme_minimal(base_size = 14)+geom_vline(xintercept =1, linetype='dotted', color='black',14)+
@@ -1208,6 +1225,8 @@ means.compare.to.naive.top$Group[means.compare.to.naive.top$Type=="Scientists"]<
 means.compare.to.naive.top$Group[means.compare.to.naive.top$Type!="Scientists"]<-"Non Estimate"
 
 #plot for the main text
+#### Figure 1. in the manuscript
+
 means.compare.to.naive.top %>%  
  ggplot(aes(x = response, y = domain, color = Type, shape=Type))+
  geom_pointrange(aes(xmin=lower.CL, xmax=upper.CL), position=pd)+  theme_minimal(base_size = 14)+geom_vline(xintercept =1, linetype='dotted', color='black',14)+
@@ -1385,7 +1404,7 @@ figs2
 mean.scores.w.benchmarks <- rbind(phase1.hist.mean.ratio.means,phase1.randwalk.ratio.means,phase1.linreg.ratio.means,
                      phase2.hist.mean.ratio.means,phase2.randwalk.ratio.means,phase2.linreg.ratio.means) 
 
-
+#### Figure 2 in the manuscript
 mean.scores.w.benchmarks %>% ggplot(aes(x = response, y = domain, colour = Estimate, fill=Estimate))+
  geom_pointrange(aes(xmin=lower.CL, xmax=upper.CL), position=pd)+  theme_minimal(base_size = 14) +geom_vline(xintercept =1, linetype='dashed', color='red', 14)+facet_grid(~Date, scales = "free_y")+
 theme(legend.position="bottom") +scale_color_aaas()+scale_fill_aaas()+  scale_y_discrete(labels=labeling, name="")+
@@ -1530,6 +1549,8 @@ median.ranks<-median.ranks %>% left_join(t.comparison.effects) %>% left_join(t.c
 
 #NOTE: here we have median ranks per domain, but also the estimates scores from multi-level models accounting for multiple predictions by different scientist groups. Due to this dependence in the data, we use the latter estimates.
 
+
+### Figure 3 in the manuscript
 median.ranks$sig<-ifelse(median.ranks$p.value<.05,"eff","noeff")
 median.ranks$MASE<-round(median.ranks$response,2) #two decimals
 median.ranks$ranksize<-round(median.ranks$ratio,2) #two decimals
@@ -1742,6 +1763,8 @@ perc.by.domain.phase2<-dat_phase2 %>%
 
 #combine plots
 #plot percentages of different forecasting method choices by domain for tournament 1 and tournament 2 (i.e., put them together)
+### Fig. S3 in the manuscript
+
 cowplot::plot_grid(perc.by.domain.phase1,perc.by.domain.phase2,labels=c("1st Tournament","2nd Tournament"), label_size = 10,
   align = "v")
 ####################################
@@ -1897,6 +1920,8 @@ means.compare.by.method$Wave<-factor(means.compare.by.method$Wave,levels=c("Firs
 
 
 #plot figure
+### Figure 4 in the manuscript
+
 means.compare.by.method %>%  
  ggplot(aes(x = Method, y = response, color = Method.code))+
  geom_pointrange(aes(ymin=lower.CL, ymax=upper.CL), position=pd)+  theme_minimal(base_size = 14)+geom_hline(yintercept =1, linetype='dotted', color='black',14)+
@@ -1969,6 +1994,8 @@ plot.COV<-plot_summs(model.bothTournaments.accuracy.COVs, scale = TRUE, robust =
                       "Prev. Exp. with\nForecasting Tournaments"="previous_tournament.coded"))
 plot.COV$data<-plot.COV$data %>% arrange(estimate) %>%    # First sort by val. This sort the dataframe but NOT the factor levels
   mutate(term=factor(term, levels=term))
+
+### Figure 5 in the manuscript
   plot.COV+theme_pubclean()+labs(y="",x="Contribution to Accuracy",caption = "most negative <===========================================> most positive")
   
 export_summs(model.bothTournaments.accuracy.COVs, scale = TRUE, robust = "HC1",n.sd = 2, to.file = "docx", file.name="indiv.differences.standartized.docx")
@@ -2172,11 +2199,11 @@ prop.table(table(phase1.noexp.dem$Education))
 0.416846652+ 0.162706983+ 0.017278618+ 0.029517639 #proportion with a college degree or above
 0.003599712+ 0.082073434 #high school or less
 0.245500360+ 0.042476602 #some college
-prop.table(table(phase1.noexp$Ethnicity))
+prop.table(table(phase1.noexp.dem$Ethnicity))
 #1-9 ranging from aboriginal/native, asian, black, white, middle eastern, hispanic, east indian, mixed race, other/not listed
-prop.table(table(phase1.noexp$Income))
+prop.table(table(phase1.noexp.dem$Income))
 #from 0-15k, 15-25k, 25-35k, 35-50k, 50-75k, 75-100k,100-150k, 150k+
-prop.table(table(phase1.noexp$Residential.Area))
+prop.table(table(phase1.noexp.dem$Residential.Area))
 #"1 = Urban,
 #2 = Suburban
 #3 = rural"
