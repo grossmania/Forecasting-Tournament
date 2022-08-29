@@ -1110,36 +1110,38 @@ describe(phase1$MASE1_w1)
 model.phase1.together.nodomain.interac<-  lmer(log(MASE1_w1)~isExpert.factor+domain+(1|ResponseId), data=phase1)
 car::Anova(model.phase1.together.nodomain.interac,type="III", test.statistic="F") #sig main effect, but only if we don't include interaction. 
 summ(model.phase1.together.nodomain.interac, digits = 5)
-partR2(model.phase1.together.nodomain.interac,partvars=c("isExpert.factor"), nboot=100)
+partR2(model.phase1.together.nodomain.interac,partvars=c("isExpert.factor","domain"), nboot=100, parallel=T)
 #Pseudo-R² (fixed effects) = 0.0132
 
 
 model.phase1.together<-  lmer(log(MASE1_w1)~domain*isExpert.factor+(1|ResponseId), data=phase1)
 car::Anova(model.phase1.together,type="III", test.statistic="F") #sig interaction!
-data.phase1.MASE.together<-as.data.frame(emmeans(model.phase1.together, pairwise~domain*isExpert.factor, adjust = "none", type = "response")$emmeans) #backtransformed to the original scale
+data.phase1.MASE.together<-as.data.frame(emmeans(model.phase1.together, pairwise~domain*isExpert.factor, adjust = "none", type = "response")$emmeans %>% rbind(adjust=T)) #backtransformed to the original scale and adjusted for simulatenous inference
+plot(model.phase1.together) #residuals show adequate transformation ( compared to non-transformed and sqroot transformations)
+
 summ(model.phase1.together, digits = 8)
 #Pseudo-R² (fixed effects) = 0.28053205
-partR2(model.phase1.together,partvars=c("isExpert.factor","isExpert.factor:domain"), nboot=100)
+partR2(model.phase1.together,partvars=c("isExpert.factor","isExpert.factor:domain"), nboot=100, parallel=T)
 
 #test the difference between experts and lay people
 model.layVSsci.phase1<-  lmer(log(MASE1_w1)~domain*isExpert.factor+(1|ResponseId), data=phase1)
 car::Anova(model.layVSsci.phase1,type="III",test.statistic="F") #sig interaction!
-data.phase1.MASE.explaycomp<-as.data.frame(emmeans(model.layVSsci.phase1,pairwise ~isExpert.factor|domain,  type="response")$contrasts) #get the estimates in a dataframe
+data.phase1.MASE.explaycomp<-as.data.frame(emmeans(model.layVSsci.phase1,revpairwise ~isExpert.factor|domain,  type="response")$contrasts%>% rbind(adjust="fdr")) #get the estimates in a dataframe
 
-#get FDR correction across all pairwise tests
-data.phase1.MASE.explaycomp$Hochberg <-p.adjust(data.phase1.MASE.explaycomp$p.value,
-               method = "hochberg")
-data.phase1.MASE.explaycomp
+emmeans(model.layVSsci.phase1,revpairwise ~isExpert.factor|domain,  type="response")$contrasts%>%
+     rbind(adjust="fdr") #get FDR correction across all pairwise tests
 
+eff_size(emmeans(model.layVSsci.phase1,revpairwise ~isExpert.factor|domain,  type="response"),sigma = sigma(model.layVSsci.phase1), edf =df.residual(model.layVSsci.phase1)) %>% rbind(adjust="mvt") #using the smallest DF among the three #adjusting for muliple testing via mvt (which is less conservative and more "exact' compared to Bonferroni)
 
-eff_size(emmeans(model.layVSsci.phase1,pairwise ~isExpert.factor|domain),sigma = sigma(model.layVSsci.phase1), edf =df.residual(model.layVSsci.phase1) ) #using the smallest DF among the three
 
 #test Bayesian version of full model and estimated simple effects.
 phase1$MASE1_w1_log<-log(phase1$MASE1_w1)
-stan_model <- stan_lmer(MASE1_w1_log ~ domain*isExpert.factor + (1|ResponseId), data = phase1,prior = cauchy(0,c(0.707,0.707,0.5),          # as per Rouder et al., 2012, weakly informative
-prior_intercept = student_t(3,0,10),prior_aux = exponential(.1),prior_covariance = decov(1,1,1,1))   
-                        
-em_expert_simple <- emmeans(stan_model, pairwise~isExpert.factor | domain)
+stan_model <- stan_lmer(MASE1_w1_log ~ domain*isExpert.factor + (1|ResponseId), data = phase1,
+                        prior = cauchy(0,c(0.707,0.707,0.5),          # as per Rouder et al., 2012
+                        prior_intercept = student_t(3,0,10),          # weakly informative
+                        prior_aux = exponential(.1),                  # weakly informative
+                        prior_covariance = decov(1,1,1,1))            # weakly informative
+em_expert_simple <- emmeans(stan_model, revpairwise~isExpert.factor | domain,  type="response")
 
 bayesfactor_parameters(em_expert_simple, prior = stan_model)
 
@@ -1147,7 +1149,7 @@ bayesfactor_parameters(em_expert_simple, prior = stan_model)
 dat_phase2<-academic_only %>%filter(!(phase == 1 & revised == 1)) #just academics, omitting original (non-revised phase 1)
 model.phase2.together<-  lmer(log(MASE1_w2)~domain+(1|team_name), data=dat_phase2)
 car::Anova(model.phase2.together,type="III") #sig interaction!
-data.phase2.MASE.together<-as.data.frame(emmeans(model.phase2.together, pairwise~domain, adjust = "none", type = "response")$emmeans) #backtransformed to the original scale
+data.phase2.MASE.together<-as.data.frame(emmeans(model.phase2.together, pairwise~domain, type = "response")$emmeans %>%rbind(adjust="mvt")) #backtransformed to the original scale #adjust for MVT
 
 data.phase1.MASE.together$Wave<-"First Tournament (May 2020)"
 data.phase1.MASE.together$Type[data.phase1.MASE.together$isExpert.factor=="Academic"]<-"Scientists"
@@ -1221,6 +1223,30 @@ means.compare.to.naive.top %>%
  geom_pointrange(aes(xmin=lower.CL, xmax=upper.CL), position=pd)+  theme_minimal(base_size = 14)+geom_vline(xintercept =1, linetype='dotted', color='black',14)+
   geom_vline(xintercept =1.7665, linetype='dashed', color='blue',16)+theme(legend.position="bottom")+scale_color_jama()+  labs(x="Forecasting Error - MASE (M +/- 95%CI)",shape="",color="")+scale_y_discrete(labels=labeling, name="")+facet_grid(~Wave)
 
+#create an alternative version with a mean of MASE of benchmarks per domain instead of all three benchmarks
+##first, get lowest benchmarks per domain
+sim.w1.mean<-sim.w1 %>% dplyr::select(domain,Mean) %>% summarise(response = mean(Mean), Wave="First Tournament (May 2020)")
+sim.w2.mean<-sim.w2 %>% dplyr::select(domain,Mean) %>% summarise(response = mean(Mean), Wave="Second Tournament (Nov 2020)")
+#add simulation benchmarks & combine
+means.compare.to.naive.mean<-bind_rows(data.phase1.MASE.together,data.phase2.MASE.together,sim.w1.mean,sim.w2.mean)
+#arrange in descending order based on MASE w1 of academics
+means.compare.to.naive.mean$domain<-factor(means.compare.to.naive.mean$domain,levels=c("iafric","ideolrep","eafric",
+  "negaffect", "lifesat","easian","ideoldem","iasian", "polar", "igend","posaffect","egend"))
+#arrange in order of tournament factors
+means.compare.to.naive.mean$Wave<-factor(means.compare.to.naive.mean$Wave,levels=c("First Tournament (May 2020)","Second Tournament (Nov 2020)"))
+#arrange groups
+means.compare.to.naive.mean$Type[is.na(means.compare.to.naive.mean$Type)==T]<-"Average of Naive Statistics"
+means.compare.to.naive.mean$Type<-factor(means.compare.to.naive.mean$Type,levels=c("Scientists","Naive Crowd","Average of Naive Statistics"))
+#add var for Scientists vs. rest (to define colors)
+means.compare.to.naive.mean$Group[means.compare.to.naive.mean$Type=="Scientists"]<-"Estimate"
+means.compare.to.naive.mean$Group[means.compare.to.naive.mean$Type!="Scientists"]<-"Non Estimate"
+
+##ADDITIONAL PLOT TO EXAMINE DIFFERENCES OF SCIENTIST FORECASTS AGAINST THE AVERAGE OF NAIVE STATISTICS
+means.compare.to.naive.mean %>%  
+ ggplot(aes(x = response, y = domain, color = Type, shape=Type))+
+ geom_pointrange(aes(xmin=lower.CL, xmax=upper.CL), position=pd)+  theme_minimal(base_size = 14)+geom_vline(xintercept =1, linetype='dotted', color='black',14)+
+  geom_vline(xintercept =1.7665, linetype='dashed', color='blue',16)+theme(legend.position="bottom")+scale_color_jama()+  labs(x="Forecasting Error - MASE (M +/- 95%CI)",shape="",color="")+scale_y_discrete(labels=labeling, name="")+facet_grid(~Wave)
+##
 
 #subplots for presentation (talks, etc)
 
@@ -1266,40 +1292,55 @@ phase1_exp_wbench$domain <- factor(phase1_exp_wbench$domain,      # Reordering g
                                     "iafric","iasian","igend",
                                     "eafric","easian","egend" ))
 
-#skewness test suggests that sqrt is the most reasonable transformation across the three metrics (esp. the first one) hence we will use it.
+###Test performance against all three benchmarks in a linear mixed model - ratio scores nested in participants
 
+phase1_exp_wbench_long<-phase1_exp_wbench %>% pivot_longer(MASE_ratio1:MASE_ratio3,names_to="Benchmark",values_to="scores")
+#use logs due to proportion scores
+model.phase1.all.ratio<-  lmer(log(scores)~domain*Benchmark+(1|team_name), data=phase1_exp_wbench_long)
+
+Anova(model.phase1.all.ratio, type=3)
+emmeans(model.phase1.all.ratio,~domain, type="response") %>% rbind(adjust="mvt")
+#nine out of 12 domains show no significant difference from zero (includes 1)
+
+plot.t1.avBenchmark<-plot(emmeans(model.phase1.all.ratio,~domain, type="response")%>% rbind(adjust="mvt"),comparisons=F, color="black")+scale_y_discrete(labels=labeling, name="Domain")+geom_vline(xintercept =1, linetype='dashed', color='black',14)+theme_minimal()+  labs(x="",shape="",color="", title="Tournament 1 (May 2020)")
+#9 domains with no difference
+
+
+###Test individual markers
+
+#skewness test suggests that sqrt is the most reasonable transformation across the three metrics (esp. the first one) hence we will use it.
 model.phase1.hist.mean.ratio<-  lmer(sqrt(MASE_ratio1)~domain+(1|team_name), data=phase1_exp_wbench)
 Anova(model.phase1.hist.mean.ratio, test.statistic = "F")
-phase1.hist.mean.ratio.means <- as.data.frame(emmeans(model.phase1.hist.mean.ratio,~domain, type="response"))
+phase1.hist.mean.ratio.means <- as.data.frame(emmeans(model.phase1.hist.mean.ratio,~domain, type="response")%>% rbind(adjust="mvt"))
 phase1.hist.mean.ratio.means$Estimate<-"Historical Mean"
 phase1.hist.mean.ratio.means$Date<-"Tournament 1 (May 2020)"
 phase1.hist.mean.ratio.means
 
 #here are the results of the historical mean tests for Tournament 1
 
-plot.t1.hist.mean<-plot(emmeans(model.phase1.hist.mean.ratio,~domain, type="response"),comparisons=F, color="black")+scale_y_discrete(labels=labeling, name="Historical Mean")+geom_vline(xintercept =1, linetype='dashed', color='black',14)+theme_minimal()+  labs(x="",shape="",color="", title="Tournament 1 (May 2020)")
+plot.t1.hist.mean<-plot(emmeans(model.phase1.hist.mean.ratio,~domain, type="response")%>% rbind(adjust="mvt"),comparisons=F, color="black")+scale_y_discrete(labels=labeling, name="Historical Mean")+geom_vline(xintercept =1, linetype='dashed', color='black',14)+theme_minimal()+  labs(x="",shape="",color="", title="Tournament 1 (May 2020)")
 
 model.phase1.randwalk.ratio<-  lmer(sqrt(MASE_ratio2)~domain+(1|team_name), data=phase1_exp_wbench)
 Anova(model.phase1.randwalk.ratio, test.statistic = "F")
-phase1.randwalk.ratio.means<-as.data.frame(emmeans(model.phase1.randwalk.ratio,~domain, type="response"))
+phase1.randwalk.ratio.means<-as.data.frame(emmeans(model.phase1.randwalk.ratio,~domain, type="response")%>% rbind(adjust="mvt"))
 phase1.randwalk.ratio.means$Estimate<-"Random Walk"
 phase1.randwalk.ratio.means$Date<-"Tournament 1 (May 2020)"
 phase1.randwalk.ratio.means
 
 #here are the results of the random walk tests for Tournament 1
 
-plot.t1.randwalk<-plot(emmeans(model.phase1.randwalk.ratio,~domain, type="response"),comparisons=F, color="black")+scale_y_discrete(labels=labeling, name="Random Walk")+geom_vline(xintercept =1, linetype='dashed', color='black',14)+theme_minimal()+  labs(x="",shape="",color="", title="")
+plot.t1.randwalk<-plot(emmeans(model.phase1.randwalk.ratio,~domain, type="response")%>% rbind(adjust="mvt"),comparisons=F, color="black")+scale_y_discrete(labels=labeling, name="Random Walk")+geom_vline(xintercept =1, linetype='dashed', color='black',14)+theme_minimal()+  labs(x="",shape="",color="", title="")
 
 model.phase1.linreg.ratio<-  lmer(sqrt(MASE_ratio3)~domain+(1|team_name), data=phase1_exp_wbench)
 Anova(model.phase1.linreg.ratio, test.statistic = "F")
-phase1.linreg.ratio.means<-as.data.frame(emmeans(model.phase1.linreg.ratio,~domain, type="response"))
+phase1.linreg.ratio.means<-as.data.frame(emmeans(model.phase1.linreg.ratio,~domain, type="response")%>% rbind(adjust="mvt"))
 phase1.linreg.ratio.means$Estimate<-"Linear Regression"
 phase1.linreg.ratio.means$Date<-"Tournament 1 (May 2020)"
 phase1.linreg.ratio.means
 
 #here are the results of the linear regression tests for Tournament 1
 
-plot.t1.linreg<-plot(emmeans(model.phase1.linreg.ratio,~domain, type="response"),comparisons=F, color="black")+scale_y_discrete(labels=labeling, name="Linear Regression")+geom_vline(xintercept =1, linetype='dashed', color='black',14)+theme_minimal()+  labs(x="",shape="",color="", title="")
+plot.t1.linreg<-plot(emmeans(model.phase1.linreg.ratio,~domain, type="response")%>% rbind(adjust="mvt"),comparisons=F, color="black")+scale_y_discrete(labels=labeling, name="Linear Regression")+geom_vline(xintercept =1, linetype='dashed', color='black',14)+theme_minimal()+  labs(x="",shape="",color="", title="")
 
 
 ##examine if better than all 3 benchmarks
@@ -1310,10 +1351,11 @@ phase1_exp_wbench$MASE_ratio1_topBenchmark<- phase1_exp_wbench$phase1_exp_wbench
 #skewness test suggests that sqrt is the most reasonable transformation  hence we will use it.
 model.phase1.topBenchmark.ratio<-  lmer(sqrt(MASE_ratio1_topBenchmark)~domain+(1|team_name), data=phase1_exp_wbench)
 Anova(model.phase1.topBenchmark.ratio, test.statistic = "F")
-emmeans(model.phase1.topBenchmark.ratio,~domain, type="response")
+emmeans(model.phase1.topBenchmark.ratio,~domain, type="response")%>% rbind(adjust="mvt")
 
 
-plot.t1.topBenchmark<-plot(emmeans(model.phase1.topBenchmark.ratio,~domain, type="response"),comparisons=F, color="black")+scale_y_discrete(labels=labeling, name="Top Naive Benchmark")+geom_vline(xintercept =1, linetype='dashed', color='black',14)+theme_minimal()+  labs(x="",shape="",color="", title="Tournament 1 (May 2020)")
+plot.t1.topBenchmark<-plot(emmeans(model.phase1.topBenchmark.ratio,~domain, type="response")%>% rbind(adjust="mvt"),comparisons=F, color="black")+scale_y_discrete(labels=labeling, name="Top Naive Benchmark")+geom_vline(xintercept =1, linetype='dashed', color='black',14)+theme_minimal()+  labs(x="",shape="",color="", title="Tournament 1 (May 2020)")
+
 
 
 #Tournament 2
@@ -1331,33 +1373,51 @@ phase2_exp_wbench$MASE_ratio1<- phase2_exp_wbench$'Benchmark 1'/phase2_exp_wbenc
 phase2_exp_wbench$MASE_ratio2<- phase2_exp_wbench$'Benchmark 2'/phase2_exp_wbench$MASE1_w2
 phase2_exp_wbench$MASE_ratio3<- phase2_exp_wbench$'Benchmark 3'/phase2_exp_wbench$MASE1_w2
 
+###Test performance against all three benchmarks in a linear mixed model - ratio scores nested in participants
+
+phase2_exp_wbench_long<-phase2_exp_wbench %>% pivot_longer(MASE_ratio1:MASE_ratio3,names_to="Benchmark",values_to="scores")
+#use logs due to proportion scores
+model.phase2.all.ratio<-  lmer(log(scores)~domain*Benchmark+(1|team_name), data=phase2_exp_wbench_long)
+
+Anova(model.phase2.all.ratio, type=3)
+emmeans(model.phase2.all.ratio,~domain, type="response")%>% rbind(adjust="mvt")
+#three out of 12 domains show no significant difference from zero (includes 1)
+
+emmeans(model.phase2.all.ratio,~1, type="response")
+
+
+plot.t2.avBenchmark<-plot(emmeans(model.phase2.all.ratio,~domain, type="response")%>% rbind(adjust="mvt"),comparisons=F, color="black")+scale_y_discrete(labels=labeling, name="Domain")+geom_vline(xintercept =1, linetype='dashed', color='black',14)+theme_minimal()+  labs(x="",shape="",color="", title="Tournament 2 (Nov 2020)")
+
+###Test individual markers
+
+
 #here we use logs, because skewness suggests that sqrt is not enough and logs do a good job across all three markers
 
 model.phase2.hist.mean.ratio<-  lmer(log(MASE_ratio1)~domain+(1|team_name), data=phase2_exp_wbench)
 Anova(model.phase2.hist.mean.ratio, test.statistic = "F")
 #here are the results of the historical mean tests for Tournament 2
-phase2.hist.mean.ratio.means<-as.data.frame(emmeans(model.phase2.hist.mean.ratio,~domain, type="response"))
+phase2.hist.mean.ratio.means<-as.data.frame(emmeans(model.phase2.hist.mean.ratio,~domain, type="response")%>% rbind(adjust="mvt"))
 phase2.hist.mean.ratio.means$Estimate<-"Historical Mean"
 phase2.hist.mean.ratio.means$Date<-"Tournament 2 (Nov 2020)"
 phase2.hist.mean.ratio.means
 
-plot.t2.hist.mean<-plot(emmeans(model.phase2.hist.mean.ratio,~domain, type="response"),comparisons=F, color="black")+scale_y_discrete(name="")+geom_vline(xintercept =1, linetype='dashed', color='black',14)+theme_minimal()+  labs(x="",shape="",color="", title="Tournament 2 (Nov 2020)")+theme(axis.text.y=element_blank())
+plot.t2.hist.mean<-plot(emmeans(model.phase2.hist.mean.ratio,~domain, type="response")%>% rbind(adjust="mvt"),comparisons=F, color="black")+scale_y_discrete(name="")+geom_vline(xintercept =1, linetype='dashed', color='black',14)+theme_minimal()+  labs(x="",shape="",color="", title="Tournament 2 (Nov 2020)")+theme(axis.text.y=element_blank())
 
 model.phase2.randwalk.ratio<-  lmer(log(MASE_ratio2)~domain+(1|team_name), data=phase2_exp_wbench)
 
 Anova(model.phase2.randwalk.ratio, test.statistic = "F")
-phase2.randwalk.ratio.means<-as.data.frame(emmeans(model.phase2.randwalk.ratio,~domain, type="response"))
+phase2.randwalk.ratio.means<-as.data.frame(emmeans(model.phase2.randwalk.ratio,~domain, type="response")%>% rbind(adjust="mvt"))
 phase2.randwalk.ratio.means$Estimate<-"Random Walk"
 phase2.randwalk.ratio.means$Date<-"Tournament 2 (Nov 2020)"
 phase2.randwalk.ratio.means
 
 #here are the results of the random walk tests for Tournament 2
 
-plot.t2.randwalk<-plot(emmeans(model.phase2.randwalk.ratio,~domain, type="response"),comparisons=F, color="black")+scale_y_discrete(name="")+geom_vline(xintercept =1, linetype='dashed', color='black',14)+theme_minimal()+  labs(x="",shape="",color="", title="")+theme(axis.text.y=element_blank())
+plot.t2.randwalk<-plot(emmeans(model.phase2.randwalk.ratio,~domain, type="response")%>% rbind(adjust="mvt"),comparisons=F, color="black")+scale_y_discrete(name="")+geom_vline(xintercept =1, linetype='dashed', color='black',14)+theme_minimal()+  labs(x="",shape="",color="", title="")+theme(axis.text.y=element_blank())
 
 model.phase2.linreg.ratio<-  lmer(log(MASE_ratio3)~domain+(1|team_name), data=phase2_exp_wbench)
 Anova(model.phase2.linreg.ratio, test.statistic = "F")
-phase2.linreg.ratio.means<-as.data.frame(emmeans(model.phase2.linreg.ratio,~domain, type="response"))
+phase2.linreg.ratio.means<-as.data.frame(emmeans(model.phase2.linreg.ratio,~domain, type="response")%>% rbind(adjust="mvt"))
 phase2.linreg.ratio.means$Estimate<-"Linear Regression"
 phase2.linreg.ratio.means$Date<-"Tournament 2 (Nov 2020)"
 phase2.linreg.ratio.means
@@ -1365,7 +1425,7 @@ phase2.linreg.ratio.means
 #here are the results of the linear regression tests for Tournament 2
 
 
-plot.t2.linreg<-plot(emmeans(model.phase2.linreg.ratio,~domain, type="response"),comparisons=F, color="black")+scale_y_discrete(name="")+geom_vline(xintercept =1, linetype='dashed', color='black',14)+theme_minimal()+  labs(x="",shape="",color="", title="")+theme(axis.text.y=element_blank())
+plot.t2.linreg<-plot(emmeans(model.phase2.linreg.ratio,~domain, type="response")%>% rbind(adjust="mvt"),comparisons=F, color="black")+scale_y_discrete(name="")+geom_vline(xintercept =1, linetype='dashed', color='black',14)+theme_minimal()+  labs(x="",shape="",color="", title="")+theme(axis.text.y=element_blank())
 
 ##examine if better than all 3 benchmarks
 
@@ -1375,10 +1435,10 @@ phase2_exp_wbench$MASE_ratio2_topBenchmark<- phase2_exp_wbench$phase2_exp_wbench
 #skewness test suggests that sqrt is the most reasonable transformation  hence we will use it.
 model.phase2.topBenchmark.ratio<-  lmer(sqrt(MASE_ratio2_topBenchmark)~domain+(1|team_name), data=phase2_exp_wbench)
 Anova(model.phase2.topBenchmark.ratio, test.statistic = "F")
-emmeans(model.phase2.topBenchmark.ratio,~domain, type="response")
+emmeans(model.phase2.topBenchmark.ratio,~domain, type="response")%>% rbind(adjust="mvt")
 
 
-plot.t2.topBenchmark<-plot(emmeans(model.phase2.topBenchmark.ratio,~domain, type="response"),comparisons=F, color="black")+scale_y_discrete(labels=labeling, name="Top Naive Benchmark")+geom_vline(xintercept =1, linetype='dashed', color='black',14)+theme_minimal()+  labs(x="",shape="",color="", title="Tournament 2 (Nov 2020)")
+plot.t2.topBenchmark<-plot(emmeans(model.phase2.topBenchmark.ratio,~domain, type="response")%>% rbind(adjust="mvt"),comparisons=F, color="black")+scale_y_discrete(labels=labeling, name="Top Naive Benchmark")+geom_vline(xintercept =1, linetype='dashed', color='black',14)+theme_minimal()+  labs(x="",shape="",color="", title="Tournament 2 (Nov 2020)")
 
 
 #combine all graphs
@@ -1392,7 +1452,8 @@ figs2
 # Combine the datasets of means
 mean.scores.w.benchmarks <- rbind(phase1.hist.mean.ratio.means,phase1.randwalk.ratio.means,phase1.linreg.ratio.means,
                      phase2.hist.mean.ratio.means,phase2.randwalk.ratio.means,phase2.linreg.ratio.means) 
-
+mean.scores.w.benchmarks$domain<-factor(mean.scores.w.benchmarks$domain,levels=c("iafric","ideolrep","eafric",
+  "negaffect", "lifesat","easian","ideoldem","iasian", "polar", "igend","posaffect","egend"))
 #### Figure 2 in the manuscript
 mean.scores.w.benchmarks %>% ggplot(aes(x = response, y = domain, colour = Estimate, fill=Estimate))+
  geom_pointrange(aes(xmin=lower.CL, xmax=upper.CL), position=pd)+  theme_minimal(base_size = 14) +geom_vline(xintercept =1, linetype='dashed', color='red', 14)+facet_grid(~Date, scales = "free_y")+
