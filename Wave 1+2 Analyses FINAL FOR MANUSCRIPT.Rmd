@@ -23,7 +23,6 @@ library(car)
 library(jtools)
 library(dplyr)
 library(ggsci)
-library(dplyr)
 library(Hmisc)
 library(lubridate)
 library(statcomp) #to get complexity measures for time series
@@ -36,6 +35,9 @@ library(ggpubr) #to combine plots
 #library(simr) # to simulate power - not useful in posthoc designs
 library(rstanarm) #to get bayesian equivalent of difference tests
 library(bayestestR) #to get BayesF factor from BIC scores of different lmer models
+library(ggdist) #to get raincloud
+library(tidyquant) #to get raincloud plots
+
 options(max.print = 20000, scipen = 1000)
 
 ```
@@ -222,7 +224,8 @@ t2.academ.sorted <- academic_only %>%
   arrange(domain, MASE1_w2) %>%
   group_by(domain) %>% 
   mutate(Rank = row_number()) %>% 
-  add_count(name="Nteams") %>%                                                                            dplyr::select(team_name,domain,Rank,Nteams,Method.code,phase,revised,Month.7:Month.12,mean_abs_error_w2,MASE1_w2)
+  add_count(name="Nteams") %>% 
+  dplyr::select(team_name,domain,Rank,Nteams,Method.code,phase,revised,Month.7:Month.12,mean_abs_error_w2,MASE1_w2)
 
 # Create intuitive labels for each domain
 t2.academ.sorted$Domains[t2.academ.sorted$domain=="eafric"]<-"Explicit African American Bias"
@@ -277,6 +280,16 @@ t1.academ.sorted <- t1.academ.sorted %>% rename(MASE=MASE1_w1,MAE=mean_abs_error
 # Create tournament length variable
 t1.academ.sorted$Tournament<-"May - 12-months"
 
+# Examine St error across 12 months
+t1.academ.sorted$stdev <- apply(t1.academ.sorted[c("May2020","June2020","July2020",  "August2020",
+                                                      "Sept2020",    "Oct2020",     "Nov2020",     "Dec2020",
+                                                      "Jan2021",     "Feb2021",     "March2021",   "April2021")], 1, sd)   
+
+describeBy(t1.academ.sorted$stdev,group=t1.academ.sorted$domain)
+ 
+t1.academ.sorted %>% group_by(domain) %>%
+  dplyr::summarize(medianSD = median(stdev), min = min(stdev), max = max(stdev)) %>% arrange(desc(medianSD))
+
 # Create intuitive labels for each month
 t2.academ.sorted <- t2.academ.sorted %>% rename(MASE=MASE1_w2,MAE=mean_abs_error_w2,
                                               Nov2020=Month.7,
@@ -305,6 +318,11 @@ objective <- objective %>% rename(May2020=Month.1,
 
 objective$Tournament<-"Ground truth marker"
 
+#examine SD
+# Examine St error across 12 months
+objective$stdev <- apply(objective[c("May2020","June2020","July2020",  "August2020",
+                                                      "Sept2020",    "Oct2020",     "Nov2020",     "Dec2020",
+                                                      "Jan2021",     "Feb2021",     "March2021",   "April2021")], 1, sd, na.rm=T)   
 # Combine all and drop unnecessary variables
 results<-rbind(t1.academ.sorted, t2.academ.sorted,objective) %>% 
   ungroup() %>% 
@@ -757,10 +775,6 @@ top.5.MASE.t1$MASE<-top.5.MASE.t1$MASE1_w1
 top.5.MASE.t2$phase<-"T2"
 top.5.MASE.t2$MASE<-top.5.MASE.t2$MASE1_w2
 
-
-
-
-
 top.5.MASE<-rbind(top.5.MASE.t1,top.5.MASE.t2) 
 top.5.MASE%>% dplyr::select(team_name,MASE,domain,phase,model,revised) %>% group_by(domain) %>% count(team_name)
 #only in five out of 12 domains one top team from the first tournament appeared among the top five teams of a given domain in the second tournament: 
@@ -789,18 +803,54 @@ print(top5.repeats.t2.perc) # one team among those who were among the top five i
 # Read in historical data
 historical <- read.csv("historical_data.csv")
 historical_tsbl <- as_tsibble(historical, index = Month)
+labels<-c(
+  eafric = "Exp. Bias Vs. Afr.-Am\nhigher=stereotype-consistent\n(-3 to +3)",
+  easian = "Exp. Bias Vs. Asian.-Am\nhigher=stereotype-consistent\n(-3 to +3)",
+  egend = "Exp. Bias Vs. Women-Career\nhigher=stereotype-consistent\n(-3 to +3)",
+  iafric = "Imp. Bias Vs. Afr.-Am.\nhigher=stereotype-consistent\n(IAT D score)",
+  iasian = "Imp. Bias Vs. Asian.-Am.\nhigher=stereotype-consistent\n(IAT D score)",
+  ideoldem = "Democratic Support\n(% Population)",
+  ideolrep ="Republican Support\n(% Population)",
+  igend = "Imp. Bias Vs. Women-Career\nhigher=stereotype-consistent\n(IAT D score)",
+  lifesat = "Life Satisfaction\nCantril ladder\n(0-10 scale)",
+  negaffect = "Negative Affect\nstandardized Vs. historical M/SD\n(z-score)",
+  polar = "Polit. Polarization\n% of Rep. Vs. Dem. approvals\n(absolute difference score) ",
+  posaffect = "Positive Affect\n(z-score)")
 
+#calculate SD in historical data for the last 12 months before the pandemic.
+historical %>% filter(Month < 0 & Month >-13) %>% dplyr::summarise_at(vars(negaffect:polar), sd, na.rm = TRUE)
+  
 # Actual change based on survey results for each domain.
 historical_tsbl %>% 
-  pivot_longer(negaffect:polar,names_to="Domain",values_to="Score") %>% 
+  pivot_longer(negaffect:polar,names_to="Domain",values_to="Score") %>% mutate(Domain = factor(Domain,      # Reordering group factor levels
+                         levels = c("egend","easian","eafric",
+                                    "igend","iasian","iafric",
+                                    "posaffect","negaffect","lifesat",
+                                    "polar","ideoldem","ideolrep"))) %>% 
   ggplot(aes(x = Month, y = Score, colour = Domain))+
-  geom_smooth(aes(x = Month, y = Score, colour = Domain),method = "loess") +  
-    facet_wrap(~Domain, scales = "free", nrow = 3, labeller=labeller(Domain=labels))+
-  theme_minimal(base_size = 14) +
-   theme(legend.position="none") +
-  labs(x="Months (< 0 = before May 2020)",y="Estimate") 
+ # geom_smooth(aes(x = Month, y = Score, colour = Domain),method = "loess") +
+  geom_line()+
+  theme_minimal(base_size = 14) +geom_vline(xintercept =1, linetype='dotted', color='black',14)+
+  geom_point()+
+  # Shade area above x = 1 (after start of the tournament)
+  geom_rect(aes(ymin = -Inf, ymax = Inf, xmin = 1, xmax = Inf),
+            alpha = 1/200,
+            fill = "blue")+
+  facet_wrap(~Domain, scales = "free_y", nrow = 4, labeller=labeller(Domain=labels))+
+   theme(legend.position="none") +scale_x_continuous(breaks=c(-39:12), labels =c("Jan","","","","May","","","","Sep","","","","Jan","","","","May","","",
+                                                                                 "","Sep","","","","Jan","","","","May","","","","Sep","","","","Jan",
+                                                                                 "","","","May","","","","Sep","","","","Jan","","","Apr"))+  theme(axis.text.x = element_text(angle=45, vjust=.5, hjust=1, size=rel(0.8)))+
+  labs(x="",y="Estimate") 
 
 # Historical long
+
+#reorder levels of the domains
+dat_long$domain <- factor(dat_long$domain,      # Reordering group factor levels
+                         levels = c("egend","easian","eafric",
+                                    "igend","iasian","iafric",
+                                    "posaffect","negaffect","lifesat",
+                                    "polar","ideoldem","ideolrep"))
+
 
 ## Convert data.frame into a tibble long format.
 hist_long <- as_tibble(historical_tsbl) %>%
@@ -929,21 +979,23 @@ dat_longX$GT<-"Forecasts from\nIndiv. Teams"
 
 dat_long$GT[dat_long$Method.code!="Ground Truth"]<-"Forecasting Estimate"
 
+####HERE IS THE GRAPH OF HISTORICAL< AND SCIENTIST FORECASTS, ALONG WITH LOWESS CURVE OF LAY PEOPLE IN TOURNAMENT 1
 dat_long %>% subset(phase == 1 & !is.na(Method.code)& Method.code!="Ground Truth"& Method.code!="Naive-linear"&Method.code!="Naive-rfw" &Method.code!="Lay People") %>% 
-   ggplot(aes(x = as.numeric(Month0), y = value, colour = GT, fill=GT))+geom_line(data=dat_longX,alpha=.3,aes(group=team_name), na.rm=TRUE)+  geom_point(data = dat_longX,alpha=.1,aes(group=team_name)) +
-  geom_smooth(aes(x = Month0, y = value, colour = GT, fill=GT),method = "loess") +  
-  facet_wrap(~domain, scales = "free", nrow = 6, labeller=labeller(domain=labels))+theme_minimal() +
-  geom_smooth(data=hist_long,se=F) + #here we add the ground truth markers without confidence band
-   theme(legend.position="bottom") +scale_color_npg()+scale_fill_npg()+ 
-  labs(colour = "",fill="", x="Months (< 0 = before May 2020 Tournament)",y="Estimate (M +/- 95%CI)")
+   ggplot(aes(x = Month, y = value))+ theme_minimal() +
+      geom_line(data=subset(dat_longX,phase==1),aes(x = Month, group=team_name), alpha=.4, colour="#aec7e8", na.rm=TRUE)+ #phase1 in light blue 
+  facet_wrap(~domain, scales = "free", nrow = 4, labeller=labeller(domain=labels))+
+  geom_line(data=hist_long) +   geom_point(data=hist_long) + #here we add the ground truth markers
+  geom_smooth(data=dat_long %>% subset(Method.code=="Lay People"),aes(x = Month, y = value, colour = "salmon", fill="salmon"),method = "loess")+ #lay people
+    geom_smooth(aes(x = Month, y = value, colour = "blue", fill="blue"),method = "loess") +  #academics
+  scale_x_continuous(breaks=c(-39:12), labels =c("Jan","","","","May","","","","Sep","","","","Jan","","","","May","","","","Sep","","","","Jan","","","","May","","","","Sep","","","","Jan","","","","May","","","","Sep","","","","Jan","","","Apr"))+ 
+  guides(fill = "none")+
+    scale_color_manual(labels = c("Scientists", "Naive Crowd"), values=c(blue="blue",salmon="salmon"))+
+      scale_fill_manual(labels = c("Scientists", "Naive Crowd"), values=c(blue="blue",salmon="salmon"))+
+  labs(colour = "",fill="", x="",y="Estimate (M +/- 95%CI)")+
+    theme(legend.position="bottom",axis.text.x = element_text(vjust=.5, hjust=1, size=rel(0.7)), panel.grid.minor.x = element_blank(),legend.title = element_blank())
 
-dat_long %>% subset(phase == 1 & !is.na(Method.code)& Method.code!="Ground Truth"& Method.code!="Naive-linear"&Method.code!="Naive-rfw" &Method.code!="Lay People") %>% 
-   ggplot(aes(x = as.numeric(Month0), y = value, colour = GT, fill=GT))+geom_line(data=dat_longX,alpha=.3,aes(group=team_name), na.rm=TRUE)+  geom_point(data = dat_longX,alpha=.1,aes(group=team_name)) +
-  geom_smooth(aes(x = Month0, y = value, colour = GT, fill=GT),method = "loess") +  
-  facet_wrap(~domain, scales = "free", nrow = 6, labeller=labeller(domain=labels))+theme_minimal() +
-  geom_smooth(data=objective,se=F) + #here we add the ground truth markers without confidence band
-   theme(legend.position="bottom") +scale_color_d3()+scale_fill_d3()+ 
-  labs(colour = "",fill="", x="Months (< 0 = before May 2020 Tournament)",y="Estimate (M +/- 95%CI)")
+
+
 
 ###############################################################
 #graph individual predictions (supplementary, NOT in the paper)
@@ -972,7 +1024,9 @@ dat_longX<-dat_longX %>%subset(!(domain=="lifesat" & value <5.5)) #cut off score
 dat_longX$GT<-"Forecasts from\nIndiv. Teams"
 
 dat_long %>% subset(!is.na(Method.code)& Method.code!="Ground Truth"& Method.code!="Naive-linear"&Method.code!="Naive-rfw" &Method.code!="Lay People"& Month %in% c(1:12)) %>% 
-   ggplot(aes(x = Month0, y = value, colour = phaseF, fill=phaseF))+geom_line(data=dat_longX,alpha=.09,aes(x = Month0, group=team_name), na.rm=TRUE)+  #geom_point(data = dat_longX,alpha=.1,aes(x = Month0, group=team_name)) +
+   ggplot(aes(x = Month0, y = value, colour = phaseF, fill=phaseF))+
+    geom_line(data=subset(dat_longX,phase==1),aes(x = Month, group=team_name), alpha=.4, color="#aec7e8", na.rm=TRUE)+ #phase1 in light blue 
+    geom_line(data=subset(dat_longX,phase==2),aes(x = Month, group=team_name), alpha=.4, color="#ffbb78", na.rm=TRUE)+ #phase1 in light orange 
   geom_smooth(aes(x = Month0, y = value, colour = phaseF, fill=phaseF),method = "loess") +  
   facet_wrap(~domain, scales = "free", nrow = 4, labeller=labeller(domain=labels))+theme_minimal() +
   geom_line(data=objective,alpha=.8,aes(x = Month0, group=team_name), na.rm=TRUE)+  geom_point(data = objective,alpha=.9,aes(x = Month0)) + #here we add the ground truth markers without confidence band
@@ -988,14 +1042,14 @@ hist_long$domain <- factor(hist_long$domain,      # Reordering group factor leve
                                     "polar","ideoldem","ideolrep"))
 
 labels<-c(
-  eafric = "Exp. Bias Vs. Afr.-Am\nhigher=stereo-consistent\n(-3 to +3)",
-  easian = "Exp. Bias Vs. Asian.-Am\nhigher=stereo-consistent\n(-3 to +3)",
-  egend = "Exp. Bias Vs. Women-Career\nhigher=stereo-consistent\n(-3 to +3)",
-  iafric = "Imp. Bias Vs. Afr.-Am.\nhigher=stereo-consistent\n(IAT D score)",
-  iasian = "Imp. Bias Vs. Asian.-Am.\nhigher=stereo-consistent\n(IAT D score)",
+  eafric = "Exp. Bias Vs. Afr.-Am\nhigher=stereotype-consistent\n(-3 to +3)",
+  easian = "Exp. Bias Vs. Asian.-Am\nhigher=stereotype-consistent\n(-3 to +3)",
+  egend = "Exp. Bias Vs. Women-Career\nhigher=stereotype-consistent\n(-3 to +3)",
+  iafric = "Imp. Bias Vs. Afr.-Am.\nhigher=stereotype-consistent\n(IAT D score)",
+  iasian = "Imp. Bias Vs. Asian.-Am.\nhigher=stereotype-consistent\n(IAT D score)",
   ideoldem = "Democratic Support\n(% Population)",
   ideolrep ="Republican Support\n(% Population)",
-  igend = "Imp. Bias Vs. Women-Career\nhigher=stereo-consistent\n(IAT D score)",
+  igend = "Imp. Bias Vs. Women-Career\nhigher=stereotype-consistent\n(IAT D score)",
   lifesat = "Life Satisfaction\nCantril ladder\n(0-10 scale)",
   negaffect = "Negative Affect\nstandardized Vs. historical M/SD\n(z-score)",
   polar = "Polit. Polarization\n% of Rep. Vs. Dem. approvals\n(absolute difference score) ",
@@ -1109,9 +1163,9 @@ describe(phase1$MASE1_w1)
 #analyses of phase 1  - MASE overall, without an interaction
 model.phase1.together.nodomain.interac<-  lmer(log(MASE1_w1)~isExpert.factor+domain+(1|ResponseId), data=phase1)
 car::Anova(model.phase1.together.nodomain.interac,type="III", test.statistic="F") #sig main effect, but only if we don't include interaction. 
-summ(model.phase1.together.nodomain.interac, digits = 5)
+summ(model.phase1.together.nodomain.interac, digits = 8)
 partR2(model.phase1.together.nodomain.interac,partvars=c("isExpert.factor","domain"), nboot=100, parallel=T)
-#Pseudo-R² (fixed effects) = 0.0132
+#Pseudo-R² (fixed effects) =  0.28628897
 
 
 model.phase1.together<-  lmer(log(MASE1_w1)~domain*isExpert.factor+(1|ResponseId), data=phase1)
@@ -1121,6 +1175,7 @@ plot(model.phase1.together) #residuals show adequate transformation ( compared t
 
 summ(model.phase1.together, digits = 8)
 #Pseudo-R² (fixed effects) = 0.28053205
+
 partR2(model.phase1.together,partvars=c("isExpert.factor","isExpert.factor:domain"), nboot=100, parallel=T)
 
 #test the difference between experts and lay people
@@ -1265,6 +1320,55 @@ means.compare.to.naive %>%  subset(Type=="Scientists"|Type=="Naive Crowd")%>%
 #graph individual predictions and ground truth markers - FIGURE 2 IN THE SUPPLEMENT in the PAPER, as well as one FIGURE in the MAIN TEXT)
 #ALSO: analyses of scientists versus lay people in tournament 1
 #END
+
+#add rainclouds to inspect distributions of responses to see if there are outliers!
+phase1$domain<-factor(phase1$domain,levels=c("iafric","ideolrep","eafric",
+  "negaffect", "lifesat","easian","ideoldem","iasian", "polar", "igend","posaffect","egend")) #order by mean accuracy in T1
+
+#### tournament 1 data
+phase1 %>%
+  ggplot(aes(x = domain, y = MASE1_w1,fill=domain))+ 
+ # stat_slab(side = "left", scale = 0.5, position = "dodge") +
+  stat_dotsinterval(quantiles = 100, position = "dodge") +
+ scale_x_discrete(labels=labeling)+scale_fill_tq()+
+  theme_minimal()+
+  labs(title = "First Tournament (May 2020)",
+       y = "MASE",
+      x = "")+
+  coord_flip()+
+    theme(legend.position = "none")+ylim(0,50)+
+  geom_boxplot(
+    width = .12,
+    ## remove outliers
+    alpha = 0.5
+      )+ geom_point(data=subset(data.phase1.MASE.together, isExpert.factor %in% c("Academic")),alpha=.9,aes(y = response), size=3.5, shape=7, colour="red") 
+
+
+
+dat_phase2$domain<-factor(dat_phase2$domain,levels=c("iafric","ideolrep","eafric",
+  "negaffect", "lifesat","easian","ideoldem","iasian", "polar", "igend","posaffect","egend")) #order by mean accuracy in T1
+
+#### tournament 1 data
+
+dat_phase2 %>%
+  ggplot(aes(x = domain, y = MASE1_w2,fill=domain))+ 
+  stat_dotsinterval( quantiles = 100, position = "dodge") +
+ scale_fill_tq()+scale_x_discrete(labels=labeling)+
+  theme_minimal()+
+  labs(title = "Second Tournament (Nov 2020)",
+       y = "MASE",
+      x = "")+
+  coord_flip()+
+    theme(legend.position = "none")+ylim(0,40)+
+  geom_boxplot(
+    width = .12,
+    ## remove outliers
+    #outlier.color = NA,
+    alpha = 0.5
+      )+ geom_point(data=data.phase2.MASE.together,alpha=.9,aes(y = response), size=3.5, shape=7, colour="red") 
+
+
+
 ```
 
 #statistical tests of difference from benchmark
@@ -1759,7 +1863,16 @@ dat_long_phase2_exp_wide_by_month %>%dplyr::select(domain,odd_month_inaccuracy,e
 dat_long_phase2_exp_wide_by_month %>%dplyr::select(domain,odd_month_inaccuracy,even_month_inaccuracy) %>% 
     correlation::correlation(multilevel=T,ranktransform=T) 
 
+### Compare performance from PHASE 1 and PHASE 2 to see if higher scores in Tournament 1 correspond to higher scores in Tournament 2
 
+#obviously, we have to take people from Tournament 1 and examine their scores in Tournament 1 and Tournament 2
+
+##correlation of errors between T1 and T2 (38 groups)
+model.phase2.predicted.by.phase1.academ<-  lmer(scale(log(MASE1_w2))~scale(log(MASE1_w1))*domain+(1|ResponseId), data=dat_phase2)
+summ(model.phase2.predicted.by.phase1.academ, digits=4) #icc is 866
+emtrends(model.phase2.predicted.by.phase1.academ,"domain",var = "MASE1_w1"                        ) %>% rbind(adjust="mvt") #in nine domains, forecasting error scores from Tournament 1 predict fprecasting error scores from Tournament 2
+model.phase2.predicted.by.phase1.academ.diff<-  lmer(scale((MASE1_w1-MASE1_w2))~scale(log(MASE1_w1))+(1|ResponseId), data=dat_phase2) #effect of inaccuracy in the 12m tournament for changes in inaccuracy between 12 and 6 m tournaments
+emtrends(model.phase2.predicted.by.phase1.academ.diff,"domain",var = "MASE1_w1"                        ) %>% rbind(adjust="mvt")
 ```
 
 ## visualize by method (phase 1 and 2)

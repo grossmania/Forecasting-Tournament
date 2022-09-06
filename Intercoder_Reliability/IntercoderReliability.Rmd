@@ -1,0 +1,151 @@
+---
+title: "IntercoderReliability"
+author: "Oliver Twardus"
+date: "2022-08-26"
+output: html_document
+---
+
+```{r libraries & imported files}
+
+library(irr)
+library(readxl)
+
+counterfact <- read.csv("Counterfactuals_fixed.csv")
+
+lay_responses <- read.csv("Lay_Sample_Filtered_2021-05-18.csv")
+
+method_complexity <- read.csv("Method+ComplexityCoding_fixed.csv")
+method_complexity2 <- read.csv("Method_ComplexityCoding_Merged_2021-04-22.csv")
+
+review_justification <- read.csv("review_justificationV2.csv")
+review_justification2 <- read.csv("review_justification_merged.csv")
+
+num_params <- read.csv("NumParameters_final.csv")
+num_params2 <- read_excel("NumParameters_Merged_2021-08-17.xlsx")
+
+
+
+```
+
+```{r lay_responses}
+
+# kappa for lay responses that were flagged as either not taking the task seriously (troll responses) or misunderstanding the task
+
+#first 2 coders for lay responses
+lay_codersA <- as.matrix(cbind(lay_responses$OM.Flag, lay_responses$HK.Flag))
+
+kappa2(lay_codersA)
+# k = .57
+
+# kappa for coders 2 & 3:
+lay_codersB <- as.matrix(cbind(lay_responses$OM.Flag, lay_responses$Final.Code))
+
+kappa2(lay_codersB)
+# k = .91
+
+# All 3 coders:
+lay_coders <- (cbind(lay_responses$OM.Flag, lay_responses$HK.Flag, lay_responses$Final.Code))
+
+kappam.light(lay_coders)
+
+# k = .7
+```
+
+```{r Counterfactuals}
+
+# reported kappa for covid counterfactual has a typo, should be .68. Otherwise good
+
+# Whether participants considered a counterfactual
+counterfact_presence <- as.matrix(cbind(counterfact$Presence.of.Counterfactual.OT, counterfact$Presence.of.Counterfactual.HK))
+
+kappa2(counterfact_presence)
+# k = .8
+
+# Whether the counterfactual mentioned COVID
+counterfact_COVID <- as.matrix(cbind(counterfact$COVID.19.OT, counterfact$COVID.19.HK))
+
+
+kappa2(counterfact_COVID)
+# k = .68
+
+# Whether the counterfactual placed the onus/responsibility on an entity
+counterfact_Onus <- as.matrix(cbind(counterfact$Onus.OT, counterfact$Onus.HK))
+
+kappa2(counterfact_Onus)
+# k = .38
+
+```
+
+```{r Number of paramaters considered}
+
+# use 2nd/earlier file
+
+parameters <- as.matrix(cbind(num_params$MA_UniqueParam, num_params$OT_UniqueParam))
+
+kappa2(parameters)
+# k = .74
+
+parameters2 <- as.matrix(cbind(num_params2$MA_UniqueParam, num_params2$`OT_Unique Param`))
+
+kappa2(parameters2)
+
+# k = .56
+
+```
+
+
+```{r Forecast method & complexity}
+# need to check older files to ensure original coding files are compared
+
+# agreement for forecasting method and complexity of method used by each team.
+
+
+# type of method that participants used for their analyses
+method <- as.matrix(cbind(method_complexity$TS.BA.Type, method_complexity$OT.SK.Type))
+
+kappa2(method)
+# k = .81
+
+complex <- as.matrix(cbind(method_complexity$TS.BA.Complexity, method_complexity$OT.SK.Complexity))
+
+kappa2(complex)
+# k = .8
+
+
+```
+
+```{r justification/rationale for updating forecast}
+
+data_received <- as.matrix(cbind(review_justification$OM_Data_Received, review_justification$VK_Data_Received))
+
+kappa2(data_received)
+# k = .341
+
+theoretical <- as.matrix(cbind(review_justification$OM_Theoretical.Insights , review_justification$VK_Theoretical.Insights))
+
+kappa2(theoretical)
+# irr kappa2 returns NaN when agreement is 100%
+
+external <- as.matrix(cbind(review_justification$OM_External.Events , review_justification$VK_External.Events))
+
+kappa2(external)
+# k = .79
+
+# checking older coding file
+data_received2 <- as.matrix(cbind(review_justification2$OM_Data_Received, review_justification2$VK_Data_Received))
+
+kappa2(data_received2)
+
+theoretical2 <- as.matrix(cbind(review_justification2$OM_Theoretical.Insights , review_justification2$VK_Theoretical.Insights))
+
+kappa2(theoretical2)
+# irr kappa2 returns NaN when agreement is 100%
+
+external2 <- as.matrix(cbind(review_justification2$OM_External.Events , review_justification2$VK_External.Events))
+
+kappa2(external2)
+# k = .71
+
+```
+
+
