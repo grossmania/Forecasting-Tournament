@@ -8,7 +8,17 @@ editor_options:
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = TRUE,
+  # --- drawing canvas (inches) -------------
+  fig.width  = 12,           # big enough → sharp at 300 dpi
+  #fig.asp    = 9/16,         # 16 : 9 aspect ratio
+  dpi        = 300,
+
+  # --- how the <img> is shown --------------
+  out.width  = "100%",       # occupy the whole column
+  out.height = "auto",       # keep the 16 : 9 ratio
+  fig.align  = "center"      # still wrap in a centred div
+)
 
 library(forecast)
 library(psych)
@@ -797,7 +807,7 @@ print(top5.repeats.t2.perc) # one team among those who were among the top five i
 
 # Visualize historical results
 
-```{r INSPECT HISTORICAL TRENDS AND CALCULATE COMPLEXITY}
+```{r actual_change_plot, fig.height = 18}
 #THE SECTION BELOW IS CHIEFLY FOR INFORMATION ABOUT THE HISTORICAL TRENDS, AND VISUALLY INSPECTING VARIABILITY IN TRENDS, AS OUTLINED IN ONE SENTENCE IN THE DISCUSSION OF THE PAPER.
 
 # Read in historical data
@@ -821,7 +831,7 @@ labels<-c(
 historical %>% filter(Month < 0 & Month >-13) %>% dplyr::summarise_at(vars(negaffect:polar), sd, na.rm = TRUE)
   
 # Actual change based on survey results for each domain.
-historical_tsbl %>% 
+actual_change_plot<-historical_tsbl %>% 
   pivot_longer(negaffect:polar,names_to="Domain",values_to="Score") %>% mutate(Domain = factor(Domain,      # Reordering group factor levels
                          levels = c("egend","easian","eafric",
                                     "igend","iasian","iafric",
@@ -841,6 +851,8 @@ historical_tsbl %>%
                                                                                  "","Sep","","","","Jan","","","","May","","","","Sep","","","","Jan",
                                                                                  "","","","May","","","","Sep","","","","Jan","","","Apr"))+  theme(axis.text.x = element_text(angle=45, vjust=.5, hjust=1, size=rel(0.8)))+
   labs(x="",y="Estimate") 
+
+actual_change_plot
 
 # Historical long
 
@@ -903,7 +915,7 @@ complexity <- hist_var_w1 %>%
 
 ## Visualizations of predictions across domains
 
-```{r PHASE 1 prep and simple visualizations of trends}
+```{r graph_indiv_pred, fig.height = 18}
 
 #do by method (among experts now)
 #reorder levels of the domains
@@ -950,24 +962,30 @@ dat_long_phase1$objectivexpert<-ifelse(dat_long_phase1$pub==1,"Expert",ifelse(da
 ###############################################################
 
 
-dat_long %>% subset(phase == 1 & !is.na(Method.code)& Method.code!="Ground Truth"& Method.code!="Naive-linear"&Method.code!="Naive-rfw") %>% 
+graph_indiv_pred<-dat_long %>% subset(phase == 1 & !is.na(Method.code)& Method.code!="Ground Truth"& Method.code!="Naive-linear"&Method.code!="Naive-rfw") %>% 
    ggplot(aes(x = Month0, y = value, colour = Method.code, fill=Method.code))+
   geom_smooth(aes(x = Month0, y = value, colour = Method.code, fill=Method.code),method = "loess") +  
   facet_wrap(~domain, scales = "free", nrow = 3, labeller=labeller(domain=labels))+theme_minimal(base_size = 14) +
   geom_smooth(data=objective,se=F) + #here we add the ground truth markers without confidence band
    theme(legend.position="bottom") +scale_color_d3()+scale_fill_d3()+ 
   labs(colour = "Sample",fill="Sample", x="Months (from May 2021)",y="Estimate (M +/- 95%CI)")
+
+graph_indiv_pred
+
 ##without any benchmarks
 dat_long$GT[dat_long$Method.code!="Ground Truth"]<-"Forecasting Estimate"
 dat_long$GT[dat_long$Method.code=="Ground Truth"]<-"Ground Truth"
 objective$GT<-objective$Method.code
-dat_long %>% subset(phase == 1 & !is.na(Method.code)& Method.code!="Ground Truth"& Method.code!="Naive-linear"&Method.code!="Naive-rfw" &Method.code!="Lay People") %>% 
+
+graph_indiv_pred_nobechmarks<-dat_long %>% subset(phase == 1 & !is.na(Method.code)& Method.code!="Ground Truth"& Method.code!="Naive-linear"&Method.code!="Naive-rfw" &Method.code!="Lay People") %>% 
    ggplot(aes(x = Month0, y = value, colour = GT, fill=GT))+
   geom_smooth(aes(x = Month0, y = value, colour = GT, fill=GT),method = "loess") +  
   facet_wrap(~domain, scales = "free", nrow = 3, labeller=labeller(domain=labels))+theme_minimal() +
   geom_smooth(data=objective,se=F) + #here we add the ground truth markers without confidence band
    theme(legend.position="bottom") +scale_color_d3()+scale_fill_d3()+ 
   labs(colour = "",fill="", x="Months (from May 2021)",y="Estimate (M +/- 95%CI)")
+
+graph_indiv_pred_nobechmarks
 
 hist_long$Domain<-hist_long$domain
 hist_long$GT<-"Ground Truth"
@@ -980,7 +998,7 @@ dat_longX$GT<-"Forecasts from\nIndiv. Teams"
 dat_long$GT[dat_long$Method.code!="Ground Truth"]<-"Forecasting Estimate"
 
 ####HERE IS THE GRAPH OF HISTORICAL< AND SCIENTIST FORECASTS, ALONG WITH LOWESS CURVE OF LAY PEOPLE IN TOURNAMENT 1
-dat_long %>% subset(phase == 1 & !is.na(Method.code)& Method.code!="Ground Truth"& Method.code!="Naive-linear"&Method.code!="Naive-rfw" &Method.code!="Lay People") %>% 
+FIGURE_2<-dat_long %>% subset(phase == 1 & !is.na(Method.code)& Method.code!="Ground Truth"& Method.code!="Naive-linear"&Method.code!="Naive-rfw" &Method.code!="Lay People") %>% 
    ggplot(aes(x = Month, y = value))+ theme_minimal() +
       geom_line(data=subset(dat_longX,phase==1),aes(x = Month, group=team_name), alpha=.4, colour="#aec7e8", na.rm=TRUE)+ #phase1 in light blue 
   facet_wrap(~domain, scales = "free", nrow = 4, labeller=labeller(domain=labels))+
@@ -994,7 +1012,7 @@ dat_long %>% subset(phase == 1 & !is.na(Method.code)& Method.code!="Ground Truth
   labs(colour = "",fill="", x="",y="Estimate (M +/- 95%CI)")+
     theme(legend.position="bottom",axis.text.x = element_text(vjust=.5, hjust=1, size=rel(0.7)), panel.grid.minor.x = element_blank(),legend.title = element_blank())
 
-
+FIGURE_2
 
 
 ###############################################################
@@ -1061,7 +1079,7 @@ hist.t$phaseF<-"Historical"
 
 # with 3 historical months before the tournament
 
-hist_long%>% subset(Month %in% c(-2:12))%>%
+graph_hist_months<-hist_long%>% subset(Month %in% c(-2:12))%>%
    ggplot(aes(x = Month, y = value, colour = phaseF, fill=phaseF))+  
   theme_pubclean()+
   geom_line(data=objective.t,alpha=.8,aes(x = Month), na.rm=TRUE)+  geom_point(data=objective.t,alpha=.9,aes(x = Month)) +geom_line(data=hist.t,alpha=.8,aes(x = Month), na.rm=TRUE)+  geom_point(data=hist.t,alpha=.9,aes(x = Month))+   theme(legend.position="bottom") +scale_color_d3()+scale_fill_d3()+ scale_x_continuous(breaks=c(-2:12), labels =c("Feb","","","May","","","Aug","","","Nov","","","Feb","",""))+  labs(colour = "",fill="", x="",y="Forecasted & Observed Change")+facet_wrap(~domain, scales = "free_y", nrow = 4, labeller=labeller(domain=labels))+ 
@@ -1069,7 +1087,7 @@ hist_long%>% subset(Month %in% c(-2:12))%>%
     geom_line(data=subset(dat_longX,phase==2),aes(x = Month, group=team_name), alpha=.5, color="#ffbb78", na.rm=TRUE)+ #phase1 in light orange 
   theme(axis.text.x = element_text(angle=45, vjust=.5, hjust=1, size=rel(0.8)))+geom_smooth(data=dat_long %>% subset(!is.na(Method.code)& Method.code!="Ground Truth"& Method.code!="Naive-linear"&Method.code!="Naive-rfw" &Method.code!="Lay People"& Month %in% c(-2:12)), aes(x = Month, y = value, colour = phaseF, fill=phaseF),method = "loess") 
 
-
+graph_hist_months
 
 # select just negative affect 
 plot.negaffect<-hist_long%>% subset(Month %in% c(-2:12) & domain %in% c("negaffect"))%>%
@@ -1192,10 +1210,12 @@ eff_size(emmeans(model.layVSsci.phase1,revpairwise ~isExpert.factor|domain,  typ
 #test Bayesian version of full model and estimated simple effects.
 phase1$MASE1_w1_log<-log(phase1$MASE1_w1)
 stan_model <- stan_lmer(MASE1_w1_log ~ domain*isExpert.factor + (1|ResponseId), data = phase1,
-                        prior = cauchy(0,c(0.707,0.707,0.5),          # as per Rouder et al., 2012
+                        #prior = cauchy(0, 0.707),          # as per Rouder et al., 2012 |used before - changed to autoscale
                         prior_intercept = student_t(3,0,10),          # weakly informative
                         prior_aux = exponential(.1),                  # weakly informative
                         prior_covariance = decov(1,1,1,1))            # weakly informative
+
+
 em_expert_simple <- emmeans(stan_model, revpairwise~isExpert.factor | domain,  type="response")
 
 bayesfactor_parameters(em_expert_simple, prior = stan_model)
@@ -1372,7 +1392,7 @@ dat_phase2 %>%
 ```
 
 #statistical tests of difference from benchmark
-```{r}
+```{r figs2, fig.height = 18}
 ########################################################################################
 #THIS SECTION INCLUDES STATISTICAL TESTS AGAINST THE BENCHMARKS AND THEIR VISUALIZATION
 ########################################################################################
@@ -1539,10 +1559,10 @@ phase2_exp_wbench$MASE_ratio2_topBenchmark<- phase2_exp_wbench$phase2_exp_wbench
 #skewness test suggests that sqrt is the most reasonable transformation  hence we will use it.
 model.phase2.topBenchmark.ratio<-  lmer(sqrt(MASE_ratio2_topBenchmark)~domain+(1|team_name), data=phase2_exp_wbench)
 Anova(model.phase2.topBenchmark.ratio, test.statistic = "F")
-emmeans(model.phase2.topBenchmark.ratio,~domain, type="response")%>% rbind(adjust="mvt")
+model.phase2.topBenchmark.ratio.means<-emmeans(model.phase2.topBenchmark.ratio,~domain, type="response")%>% rbind(adjust="mvt")
+model.phase2.topBenchmark.ratio.means
 
-
-plot.t2.topBenchmark<-plot(emmeans(model.phase2.topBenchmark.ratio,~domain, type="response")%>% rbind(adjust="mvt"),comparisons=F, color="black")+scale_y_discrete(labels=labeling, name="Top Naive Benchmark")+geom_vline(xintercept =1, linetype='dashed', color='black',14)+theme_minimal()+  labs(x="",shape="",color="", title="Tournament 2 (Nov 2020)")
+plot.t2.topBenchmark<-plot(model.phase2.topBenchmark.ratio.means,comparisons=F, color="black")+scale_y_discrete(labels=labeling, name="Top Naive Benchmark")+geom_vline(xintercept =1, linetype='dashed', color='black',14)+theme_minimal()+  labs(x="",shape="",color="", title="Tournament 2 (Nov 2020)")
 
 
 #combine all graphs
@@ -1618,7 +1638,7 @@ both.sets$team_discipline.SBsci<-ifelse(both.sets$team_discipline.coded==1,1,ife
 
 #add complexity
 
-both.sets<-both.sets %>% left_join(complexity)
+both.sets<-both.sets %>% ungroup() %>% left_join(complexity)
 both.sets$sd_hist<-ifelse(both.sets$phase=="first",both.sets$sd_hist_w1,both.sets$sd_hist_w2)
 both.sets$mad_hist<-ifelse(both.sets$phase=="first",both.sets$mad_hist_w1,both.sets$mad_hist_w2)
 both.sets$perp_entropy_hist<-ifelse(both.sets$phase=="first",both.sets$perp_entropy_hist_w1,both.sets$perp_entropy_hist_w2)
@@ -1677,7 +1697,7 @@ partR2(both.sets.model.cov, partvars =
 
 
 #graph change in ranking
-```{r}
+```{r figure_3, fig.height = 18}
 ##MAIN TEXT FIGURE SHOWING RANKING AND DOMAIN'S MASE, AS WELL AS SHOWING WHICH DIFFERENCES ARE SIG
 
 #get ranking of scores among academics in May and November
@@ -1708,7 +1728,7 @@ median.ranks<-median.ranks %>% left_join(t.comparison.effects) %>% left_join(t.c
 median.ranks$sig<-ifelse(median.ranks$p.value<.05,"eff","noeff")
 median.ranks$MASE<-round(median.ranks$response,2) #two decimals
 median.ranks$ranksize<-round(median.ranks$ratio,2) #two decimals
-newggslopegraph(dataframe = median.ranks,
+figure_3<-newggslopegraph(dataframe = median.ranks,
                 Times = Wave,
                 Measurement = MASE,
                 Grouping = Domain,LineThickness = 2,
@@ -1717,6 +1737,8 @@ newggslopegraph(dataframe = median.ranks,
                 SubTitle = NULL,
                 Caption = "Ranking based on MASE scores per domain",
                 ThemeChoice="ipsum")+scale_color_d3(palette = "category20")+geom_line(aes(linetype=sig, color="black",alpha=1))
+
+figure_3
 ```
 
 # ranking of domain by forecasting error and correlation to historical variability in trends
@@ -1791,7 +1813,7 @@ correlation::correlation(rank_complex_wide%>%
 
 
 ## compare scores from tournament 1 - first six months vs. last six months
-```{r}
+```{r compare scores from tournament 1 - first six months vs. last six months}
 #turn to long format (firstmonths and lastmonths MASE data)
 data.t1.t2.exp.long<- phase1_exp %>% ungroup() %>%pivot_longer(cols=c("MASE1_w1_firstmonths","MASE1_w1_lastmonths"), names_to="Time",values_to="MASE") 
 model.t1.t2<-lmer(log(MASE)~Time*domain+(1|team_name), data=data.t1.t2.exp.long)
@@ -1870,20 +1892,16 @@ dat_long_phase2_exp_wide_by_month %>%dplyr::select(domain,odd_month_inaccuracy,e
 ##correlation of errors between T1 and T2 (38 groups)
 model.phase2.predicted.by.phase1.academ<-  lmer(scale(log(MASE1_w2))~scale(log(MASE1_w1))*domain+(1|ResponseId), data=dat_phase2)
 summ(model.phase2.predicted.by.phase1.academ, digits=4) #icc is 866
-emtrends(model.phase2.predicted.by.phase1.academ,"domain",var = "MASE1_w1"                        ) %>% rbind(adjust="mvt") #in nine domains, forecasting error scores from Tournament 1 predict fprecasting error scores from Tournament 2
-model.phase2.predicted.by.phase1.academ.diff<-  lmer(scale((MASE1_w1-MASE1_w2))~scale(log(MASE1_w1))+(1|ResponseId), data=dat_phase2) #effect of inaccuracy in the 12m tournament for changes in inaccuracy between 12 and 6 m tournaments
+emtrends(model.phase2.predicted.by.phase1.academ,"domain",var = "MASE1_w1"                        ) %>% rbind(adjust="mvt") #in nine domains, forecasting error scores from Tournament 1 predict forecasting error scores from Tournament 2
+model.phase2.predicted.by.phase1.academ.diff<-  lmer(scale((MASE1_w1-MASE1_w2))~scale(log(MASE1_w1))*domain+(1|ResponseId), data=dat_phase2) #effect of inaccuracy in the 12m tournament for changes in inaccuracy between 12 and 6 m tournaments
 emtrends(model.phase2.predicted.by.phase1.academ.diff,"domain",var = "MASE1_w1"                        ) %>% rbind(adjust="mvt")
 ```
 
 ## visualize by method (phase 1 and 2)
 
-```{r}
+```{r perc.by.domain.phase1, fig.height = 18}
 #analyses of phase 1  - MASE overall
 #For models evaluating overall accuracy of the forecasted model, we will use forecasting type (purely theoretical, purely data-driven and hybrid models), forecasting domain as predictors, with MASE scores nested within teams. 
-
-#first, data the proper subset for Tournament 2
-dat_phase2<-academic_only %>%filter(!(phase == 1 & revised == 1)) #just academics
-
 
 ######################################
 #what is the percentage using different method?
@@ -1928,8 +1946,11 @@ perc.by.domain.phase2<-dat_phase2 %>%
 #plot percentages of different forecasting method choices by domain for tournament 1 and tournament 2 (i.e., put them together)
 ### Fig. S3 in the manuscript
 
-cowplot::plot_grid(perc.by.domain.phase1,perc.by.domain.phase2,labels=c("1st Tournament","2nd Tournament"), label_size = 10,
+perc_per_domain_both<-cowplot::plot_grid(perc.by.domain.phase1,perc.by.domain.phase2,labels=c("1st T.","2nd T."), label_size = 10,
   align = "v")
+
+perc_per_domain_both
+
 ####################################
 
 ####################################
@@ -2117,7 +2138,7 @@ model.bothTournaments.no.COVs<-lmer(inaccuracy_log~domain+(1|team_name), data=bo
 summ(model.bothTournaments.no.COVs, conf.method="boot", digits=3, center=T)
 
 
-#xtra analysis with US residents on the team - not included to avoid overfitting.
+#extra analysis with US residents on the team - not included to avoid overfitting.
 model.bothTournaments.COVs.incl.US<-lmer(inaccuracy_log~domain+parameters_coded+Method.complex+covidconditional+CounterFactual_Presence_Final+n_domains+team_discipline.datasci+team_discipline.SBsci+Multidisciplinary+non_US+team_size.coded+team_education+confidence+subexpert+Domain_Publications+previous_tournament.coded+(1|team_name), data=both.sets)
 car::Anova(model.bothTournaments.COVs.incl.US,type="III",test.statistic="F") 
 #no effect of US residency
@@ -2201,7 +2222,6 @@ proportions(table(phase1_exp$revised,phase1_exp$domain),margin=2)
 
 #set up the file for analyses
 pd <- position_dodge(0.7) # move them .07 to the left and right
-dat_phase2<-academic_only %>%filter(!(phase == 1 & revised == 1)) #just academics
 dat_phase2$Method.code <- relevel(factor(dat_phase2$Method.code), "Intuition/Theory") #use lay people as a reference group
 dat_phase2$method.contrast<-ifelse(dat_phase2$Method.code=='Intuition/Theory',0,1)
 dat_phase2$compare_to_naive_rwf_MASE2.update<-ifelse(dat_phase2$compare_to_naive_rwf_MASE_w2!="Equal to Naive rwf",dat_phase2$compare_to_naive_rwf_MASE_w2,ifelse(dat_phase2$compare_to_naive_rwf_MASE_w2=="Equal to Naive rwf","Below Naive rwf",NA))
@@ -2258,9 +2278,9 @@ partR2(model.phase2.update.type, partvars =
 
 ```
 
-# demographics Phase 1
+# demographics experts
 
-```{r}
+```{r demo experts}
 
 phase1.exp.dem<-phase1_exp %>% dplyr::select(team_name, team_size.coded, n_domains,team_Age,team_education,non_US,team_gender,revised) %>% dplyr::group_by(team_name) %>% 
 summarize_all(~ mean(.x, na.rm = TRUE))
@@ -2345,7 +2365,7 @@ table(phase1_exp$basis)
 
 # demographics lay people
 
-```{r}
+```{r demo lay}
 phase1.noexp.dem<-phase1 %>% filter(isExpert.factor=="Prolific") %>% dplyr::select(ResponseId,Age, Sex, Ethnicity, Education,Residential.Area, Income) %>% dplyr::group_by(ResponseId) %>% 
 summarize_all(~ mean(.x, na.rm = TRUE))
 psych::describe(phase1.noexp.dem$Age)
