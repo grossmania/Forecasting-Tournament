@@ -23,5 +23,6 @@ This repository contains the data behind [COVID-19 Tournament](https://predictio
 
 ## Analyses
 
-* [R Markdown file of the main analyses, in the order they appear in the manuscript](https://github.com/grossmania/Forecasting-Tournament/blob/8db528c9055e227d7258d1fdcf836398f9f3d09e/Wave%201+2%20Analyses%20FINAL%20FOR%20MANUSCRIPT.Rmd)
+* [R Markdown file of the main analyses, in the order they appear in the manuscript](https://github.com/grossmania/Forecasting-Tournament/blob/main/Wave%201%2B2%20Analyses%20FINAL%20FOR%20MANUSCRIPT.Rmd)
+* [HTML Notebook of the R Markdown file of the main analyses, in the order they appear in the manuscript] (https://github.com/grossmania/Forecasting-Tournament/blob/main/Wave-1%2B2-Analyses-FINAL-FOR-MANUSCRIPT.html)
 * [R Markdown file of analyses of a correlation-based index of inaccuracy reported in the supplement](https://github.com/grossmania/Forecasting-Tournament/blob/d9b9c6eea457a6c7cddeea2274bad3ea4cb25ff5/Correlation%20Coefficients%20by%20Teams%20and%20Tasks.Rmd)
