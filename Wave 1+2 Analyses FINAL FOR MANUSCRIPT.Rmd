@@ -6,8 +6,58 @@ output: html_document
 editor_options: 
   chunk_output_type: console
 ---
+This document reproduces the main analyses, figures, and tables for the Wave 1 + 2 manuscript.
+
+**How to run (from a fresh clone):**
+
+1. In RStudio, open the project.
+2. Run `GET_STARTED.R` once (e.g., `source("GET_STARTED.R")`) to install all required packages.
+3. Then knit this R Markdown file.
+
+**Key project files (see `GET_STARTED.R` for more details):**
+
+- `GET_STARTED.R` – installs packages and documents project structure.  
+- `Wave 1+2 Analyses FINAL FOR MANUSCRIPT.Rmd` – this file; main manuscript analyses.  
+- `data/` – raw and derived data (if present).  
+- `outputs/` – tables and figures created by this document.
 
 ```{r setup, include=FALSE}
+# Core tidy + plotting
+library(tidyverse)   # ggplot2, dplyr, tidyr, lubridate, etc.
+library(ggsci)
+library(ggpubr)
+library(ggdist)
+library(tidyquant)
+library(jtools)
+
+# Time series / forecasting
+library(forecast)
+library(tsibble)
+library(statcomp)
+
+# Psychometrics / stats
+library(psych)
+library(irr)
+library(lme4)
+library(emmeans)
+library(car)
+library(Hmisc)
+library(partR2)
+library(moments)
+
+# Specialized plotting
+library(CGPfunctions)
+
+# Bayesian tools
+library(rstanarm)
+library(bayestestR)
+
+# Global options (match GET_STARTED.R where relevant)
+options(
+  max.print = 20000,
+  scipen = 1000
+)
+
 knitr::opts_chunk$set(echo = TRUE,
   # --- drawing canvas (inches) -------------
   fig.width  = 12,           # big enough → sharp at 300 dpi
@@ -19,42 +69,11 @@ knitr::opts_chunk$set(echo = TRUE,
   out.height = "auto",       # keep the 16 : 9 ratio
   fig.align  = "center"      # still wrap in a centred div
 )
-
-library(forecast)
-library(psych)
-library(tidyverse)
-library(stats) #to get p.adjust
-library(irr)
-library(lme4)
-library(ggplot2)
-library(tidyr)
-library(emmeans)
-library(car)
-library(jtools)
-library(dplyr)
-library(ggsci)
-library(Hmisc)
-library(lubridate)
-library(statcomp) #to get complexity measures for time series
-library(tsibble) #to converte into time series tibble for tidy analyses
-#install.packages("CGPfunctions")
-library(CGPfunctions) #to graph change in trends over time.
-library(partR2) #to get partR2 for LME models
-library(moments) #to get skewness
-library(ggpubr) #to combine plots
-#library(simr) # to simulate power - not useful in posthoc designs
-library(rstanarm) #to get bayesian equivalent of difference tests
-library(bayestestR) #to get BayesF factor from BIC scores of different lmer models
-library(ggdist) #to get raincloud
-library(tidyquant) #to get raincloud plots
-
-options(max.print = 20000, scipen = 1000)
-
 ```
 
 ```{r setup working directory}
 
-setwd("~/GitHub/Forecasting-Tournament") #igor's working directory
+setwd("~/GitHub/Forecasting-Tournament") #main working directory
 
 ```
 
